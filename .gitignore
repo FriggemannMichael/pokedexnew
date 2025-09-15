@@ -53,3 +53,28 @@ coverage/
 *.zip
 *.rar
 *.7z
+
+# Documentation / Generated large scratch files
+# Ausschließen der versehentlich generierten, sehr großen Citations-Datei
+# (Falls du sie behalten willst, bitte diesen Eintrag entfernen.)
+# Code Citations.md
+
+# Local analysis / tooling outputs
+analyzeFunctionLengths-report.json
+/.cache/
+
+# Potential future build artifacts (if you introduce tooling later)
+/.parcel-cache/
+/.vite/
+/.eslintcache
+
+# Backup / export artifacts
+exported-team-*.json
+
+# OS specific
+Thumbs.db:encryptable
+
+# Misc
+*.orig
+*.rej
+
