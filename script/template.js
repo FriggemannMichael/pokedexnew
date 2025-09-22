@@ -139,6 +139,7 @@ function getPokemonCardTemplate(pokemon) {
         window.pokemonGoFeatures.getRatingStarsHTML(pokemon.id, pokemon) : '';
     const powerLevel = window.pokemonGoFeatures ? 
         window.pokemonGoFeatures.getPowerLevelHTML(pokemon) : '';
+
     
     return `
         <div class="pokemon-card h-100 type-${pokemon.types[0]}" 
@@ -210,7 +211,7 @@ function createNoSearchResultsTemplate(query) {
         <div class="search-result-item">
             <div class="search-result-info">
                 <div class="search-result-name">No results for "${query}"</div>
-                <div style="font-size: 0.8rem; color: #666; margin-top: 0.2rem;">
+                <div class="search-result-hint card-meta">
                     Try searching in English (e.g., "pikachu", "charizard")
                 </div>
             </div>
@@ -261,7 +262,7 @@ function createProgressStatHTML(stat, percentage) {
                 <span class="progress-value">${stat.value}</span>
             </div>
             <div class="progress-bar-container">
-                <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                <div class="progress-bar-fill" data-progress="${percentage}"></div>
             </div>
         </div>
     `;

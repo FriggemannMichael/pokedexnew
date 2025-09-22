@@ -18,21 +18,28 @@
     <link rel="stylesheet" href="./assets/css/team-analyzer.css" />
     <link rel="stylesheet" href="./assets/css/team-modal.css" />
     <link rel="stylesheet" href="./assets/css/team-offcanvas.css" />
-    
+
     <!-- Font Awesome für Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </head>
   <body>
     <!-- Team Offcanvas -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="teamOffcanvas">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title">
-          <i class="fas fa-users"></i> Dein Team 
+          <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Team
           <span class="badge bg-primary ms-2" id="teamCounter">0/6</span>
         </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+        ></button>
       </div>
-      
+
       <div class="offcanvas-body">
         <!-- Drop-Zone für Drag & Drop -->
         <div class="team-drop-zone" id="teamDropZone">
@@ -41,41 +48,79 @@
             <p>Ziehe Pokemon hierher um dein Team zu erstellen</p>
             <small>Maximal 6 Pokemon erlaubt</small>
           </div>
-          
+
           <!-- Container für Mini-Cards -->
           <div class="team-cards-container" id="teamCardsContainer">
             <!-- Mini-Cards werden hier dynamisch hinzugefügt -->
+          </div>
+          <!-- Offcanvas Aktion: My Pokedex Button -->
+          <div class="offcanvas-actions mt-4">
+            <button
+              class="btn btn-filter mypokedex offcanvas-mypokedex-btn"
+              type="button"
+              onclick="showTeamModal()"
+            >
+              <img
+                class="pokeball-img"
+                src="./assets/img/9.png"
+                alt="Pokeball"
+              />
+              <span class="filter-text"> My Pokédx</span>
+              <span class="pokedex-count" id="pokedexCountOffcanvas">0</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Team Modal (für Button-Klick) -->
-    <div class="modal fade" id="teamModal" tabindex="-1">
+    <div
+      class="modal fade"
+      id="teamModal"
+      tabindex="-1"
+      aria-hidden="true"
+      aria-labelledby="teamModalLabel"
+      aria-describedby="teamOverview"
+    >
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">
-              <i class="fas fa-users"></i> Dein Pokemon Team
+            <h5 class="modal-title" id="teamModalLabel">
+              <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Pokemon Team
             </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Schließen"
+            ></button>
           </div>
-          
+
           <div class="modal-body">
-            <!-- Team-Übersicht mit größeren Cards -->
-            <div class="team-overview" id="teamOverview">
+            <!-- Team-Übersicht wird hier gerendert -->
+            <div id="teamOverview">
               <!-- Hier werden die Pokemon des Teams angezeigt -->
             </div>
-            
-            <!-- Action Buttons Section -->
-            <div class="team-actions mt-4 text-center">
-              <button class="btn btn-primary me-2" id="showTeamBtn">
-                🎯 Team anzeigen
-              </button>
-              <button class="btn btn-info" id="analyzeTeamBtn" onclick="openTeamAnalysis()">
-                🔬 Team analysieren
-              </button>
-            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              class="btn btn-filter"
+              id="showTeamBtn"
+              onclick="showDetailedTeamView()"
+            >
+              Team anzeigen
+            </button>
+            <button class="btn btn-filter" onclick="openTeamAnalysis()">
+              Team analysieren
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Schließen
+            </button>
           </div>
         </div>
       </div>
@@ -552,11 +597,6 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./script/team-offcanvas.js"></script>
-    <script src="./script/pokemon-go-features.js"></script>
-    <script src="./script/drag-drop-enhanced.js"></script>
-    <script src="./script/team-analyzer.js"></script>
-    <script src="./script/team-modal.js"></script>
     <script type="module" src="./main.js"></script>
   </body>
 </html>

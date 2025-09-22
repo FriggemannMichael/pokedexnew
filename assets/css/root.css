@@ -1,249 +1,431 @@
-
 @font-face {
-    font-family: 'Inter';
-    src: url('../fonts/Inter-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
+  font-family: "Inter";
+  src: url("../fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: 'Inter';
-    src: url('../fonts/Inter-Italic-VariableFont_opsz,wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: italic;
+  font-family: "Inter";
+  src: url("../fonts/Inter-Italic-VariableFont_opsz,wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: italic;
 }
 
 @font-face {
-    font-family: 'Outfit';
-    src: url('../fonts/Outfit-VariableFont_wght.ttf') format('truetype');
-    font-weight: 100 900;
-    font-style: normal;
+  font-family: "Outfit";
+  src: url("../fonts/Outfit-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: 'Poppins';
-    src: url('../fonts/Poppins-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
+  font-family: "Poppins";
+  src: url("../fonts/Poppins-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: 'Poppins';
-    src: url('../fonts/Poppins-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-style: normal;
+  font-family: "Poppins";
+  src: url("../fonts/Poppins-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
 }
 
 @font-face {
-    font-family: 'Poppins';
-    src: url('../fonts/Poppins-SemiBold.ttf') format('truetype');
-    font-weight: 600;
-    font-style: normal;
+  font-family: "Poppins";
+  src: url("../fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
 }
 
 /* Global Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-size: 16px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 16px;
 }
 
 /* CSS Variables */
 :root {
-    /* Main Colors */
-    --primary: #FF6B6B;
-    --secondary: #4ECDC4;
-    --accent: #FFD93D;
-    --dark: #2C3E50;
-    --light: #F8F9FA;
-    --gradient: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
-    
-    /* Legacy Type Colors */
-    --fire: #FF6B6B;
-    --water: #3498DB;
-    --grass: #2ECC71;
-    --electric: #F1C40F;
-    --psychic: #E74C3C;
-    --ice: #85C1E9;
-    --dragon: #8E44AD;
-    --fighting: #E67E22;
-    --poison: #9B59B6;
-    
-    /* Type System Colors */
-    --type-normal: #A8A878;
-    --type-fire: #F08030;
-    --type-water: #6890F0;
-    --type-electric: #F8D030;
-    --type-grass: #78C850;
-    --type-ice: #98D8D8;
-    --type-fighting: #C03028;
-    --type-poison: #A040A0;
-    --type-ground: #E0C068;
-    --type-flying: #A890F0;
-    --type-psychic: #F85888;
-    --type-bug: #A8B820;
-    --type-rock: #B8A038;
-    --type-ghost: #705898;
-    --type-dragon: #7038F8;
-    --type-dark: #705848;
-    --type-steel: #B8B8D0;
-    --type-fairy: #EE99AC;
-    
-    /* Typography */
-    --font-title: 'Outfit', sans-serif;
-    --font-ui: 'Poppins', sans-serif;
-    --font-body: 'Inter', sans-serif;
-    
-    /* Spacing */
-    --spacing-xs: 0.25rem;
-    --spacing-sm: 0.5rem;
-    --spacing-md: 1rem;
-    --spacing-lg: 1.5rem;
-    --spacing-xl: 2rem;
-    --spacing-xxl: 3rem;
-    
-    /* Border Radius */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 15px;
-    --radius-xl: 20px;
-    --radius-xxl: 25px;
-    --radius-circle: 50px;
-    
-    /* Shadows */
-    --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.2);
-    
-    /* Transitions */
-    --transition-fast: 0.2s ease;
-    --transition-base: 0.3s ease;
-    --transition-slow: 0.5s ease;
-    --transition-cubic: 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  /* Main Colors */
+  --primary: #ff6b6b;
+  /* Alias für bestehende Nutzungen */
+  --primary-color: var(--primary);
+  --primary-color-rgb: 255, 107, 107; /* passend zu #FF6B6B */
+  --secondary: #4ecdc4;
+  --accent: #ffd93d;
+  --dark: #2c3e50;
+  --light: #f8f9fa;
+  --gradient: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+  --gradient-horizontal: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--secondary) 100%
+  );
+
+  /* Legacy Type Colors */
+  --fire: #ff6b6b;
+  --water: #3498db;
+  --grass: #2ecc71;
+  --electric: #f1c40f;
+  --psychic: #e74c3c;
+  --ice: #85c1e9;
+  --dragon: #8e44ad;
+  --fighting: #e67e22;
+  --poison: #9b59b6;
+
+  /* Type System Colors */
+  --type-normal: #a8a878;
+  --type-fire: #f08030;
+  --type-water: #6890f0;
+  --type-electric: #f8d030;
+  --type-grass: #78c850;
+  --type-ice: #98d8d8;
+  --type-fighting: #c03028;
+  --type-poison: #a040a0;
+  --type-ground: #e0c068;
+  --type-flying: #a890f0;
+  --type-psychic: #f85888;
+  --type-bug: #a8b820;
+  --type-rock: #b8a038;
+  --type-ghost: #705898;
+  --type-dragon: #7038f8;
+  --type-dark: #705848;
+  --type-steel: #b8b8d0;
+  --type-fairy: #ee99ac;
+
+  /* Typography */
+  --font-title: "Outfit", sans-serif;
+  --font-ui: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 15px;
+  --radius-xl: 20px;
+  --radius-xxl: 25px;
+  --radius-circle: 50px;
+
+  /* Shadows */
+  --shadow-sm: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.2);
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  --transition-cubic: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Utility Classes */
-.text-center { text-align: center; }
-.text-capitalize { text-transform: capitalize; }
-.text-uppercase { text-transform: uppercase; }
+.text-center {
+  text-align: center;
+}
+.text-capitalize {
+  text-transform: capitalize;
+}
+.text-uppercase {
+  text-transform: uppercase;
+}
 
-.d-none { display: none !important; }
-.d-block { display: block; }
-.d-flex { display: flex; }
-.d-grid { display: grid; }
+.d-none {
+  display: none !important;
+}
+.d-block {
+  display: block;
+}
+.d-flex {
+  display: flex;
+}
+.d-grid {
+  display: grid;
+}
 
 .flex-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .flex-column {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.gap-sm { gap: var(--spacing-sm); }
-.gap-md { gap: var(--spacing-md); }
-.gap-lg { gap: var(--spacing-lg); }
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+.gap-md {
+  gap: var(--spacing-md);
+}
+.gap-lg {
+  gap: var(--spacing-lg);
+}
 
-.mt-1 { margin-top: var(--spacing-md); }
-.mt-2 { margin-top: var(--spacing-lg); }
-.mt-3 { margin-top: var(--spacing-xl); }
+.mt-1 {
+  margin-top: var(--spacing-md);
+}
+.mt-2 {
+  margin-top: var(--spacing-lg);
+}
+.mt-3 {
+  margin-top: var(--spacing-xl);
+}
 
-.mb-1 { margin-bottom: var(--spacing-md); }
-.mb-2 { margin-bottom: var(--spacing-lg); }
-.mb-3 { margin-bottom: var(--spacing-xl); }
+.mb-1 {
+  margin-bottom: var(--spacing-md);
+}
+.mb-2 {
+  margin-bottom: var(--spacing-lg);
+}
+.mb-3 {
+  margin-bottom: var(--spacing-xl);
+}
 
-.p-1 { padding: var(--spacing-md); }
-.p-2 { padding: var(--spacing-lg); }
-.p-3 { padding: var(--spacing-xl); }
+.p-1 {
+  padding: var(--spacing-md);
+}
+.p-2 {
+  padding: var(--spacing-lg);
+}
+.p-3 {
+  padding: var(--spacing-xl);
+}
 
 /* Glassmorphism Base */
 .glass {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .glass-light {
-    background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* =============================================
+     Utility Addons (Refactor Support)
+     ============================================= */
+/* Gradient Utilities */
+.gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+.gradient-horizontal {
+  background: var(--gradient-horizontal);
+}
+
+/* Elevation / Hover Utilities */
+.hover-raise {
+  transition: var(--transition-base);
+}
+.hover-raise:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Glass Variants */
+.glass-95 {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.glass-90 {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Remove Button Basis */
+.btn-remove-base {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+  color: var(--dark);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+.btn-remove-base.small {
+  width: 30px;
+  height: 30px;
+  font-size: 0.7rem;
+}
+.btn-remove-base.medium {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+.btn-remove-base:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-lg);
+  color: var(--primary);
+}
+.btn-remove-base:active {
+  transform: translateY(0) scale(0.95);
 }
 
 /* Type Gradient Classes */
-.type-gradient-fire { background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 70%, #FF6B47 100%); }
-.type-gradient-water { background: linear-gradient(135deg, #3498DB 0%, #5DADE2 70%, #2E86C1 100%); }
-.type-gradient-grass { background: linear-gradient(135deg, #2ECC71 0%, #58D68D 70%, #27AE60 100%); }
-.type-gradient-electric { background: linear-gradient(135deg, #F1C40F 0%, #F7DC6F 70%, #D4AC0D 100%); }
-.type-gradient-psychic { background: linear-gradient(135deg, #E74C3C 0%, #EC7063 70%, #CB4335 100%); }
-.type-gradient-ice { background: linear-gradient(135deg, #85C1E9 0%, #AED6F1 70%, #5DADE2 100%); }
-.type-gradient-dragon { background: linear-gradient(135deg, #8E44AD 0%, #A569BD 70%, #7D3C98 100%); }
-.type-gradient-dark { background: linear-gradient(135deg, #34495E 0%, #5D6D7E 70%, #2C3E50 100%); }
-.type-gradient-fighting { background: linear-gradient(135deg, #E67E22 0%, #F0B27A 70%, #D35400 100%); }
-.type-gradient-poison { background: linear-gradient(135deg, #9B59B6 0%, #BB8FCE 70%, #8E44AD 100%); }
-.type-gradient-normal { background: linear-gradient(135deg, #A8A878 0%, #C5C5A0 70%, #8A8A5E 100%); }
-.type-gradient-flying { background: linear-gradient(135deg, #A890F0 0%, #C8B5F7 70%, #9373E8 100%); }
-.type-gradient-ground { background: linear-gradient(135deg, #E0C068 0%, #E8D084 70%, #C9A352 100%); }
-.type-gradient-rock { background: linear-gradient(135deg, #B8A038 0%, #C9B65A 70%, #9E8A31 100%); }
-.type-gradient-bug { background: linear-gradient(135deg, #A8B820 0%, #B8C842 70%, #8FA31A 100%); }
-.type-gradient-ghost { background: linear-gradient(135deg, #705898 0%, #8A7AAD 70%, #5E4A82 100%); }
-.type-gradient-steel { background: linear-gradient(135deg, #B8B8D0 0%, #D0D0E0 70%, #A0A0B8 100%); }
-.type-gradient-fairy { background: linear-gradient(135deg, #EE99AC 0%, #F4B5C4 70%, #E67E95 100%); }
+.type-gradient-fire {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 70%, #ff6b47 100%);
+}
+.type-gradient-water {
+  background: linear-gradient(135deg, #3498db 0%, #5dade2 70%, #2e86c1 100%);
+}
+.type-gradient-grass {
+  background: linear-gradient(135deg, #2ecc71 0%, #58d68d 70%, #27ae60 100%);
+}
+.type-gradient-electric {
+  background: linear-gradient(135deg, #f1c40f 0%, #f7dc6f 70%, #d4ac0d 100%);
+}
+.type-gradient-psychic {
+  background: linear-gradient(135deg, #e74c3c 0%, #ec7063 70%, #cb4335 100%);
+}
+.type-gradient-ice {
+  background: linear-gradient(135deg, #85c1e9 0%, #aed6f1 70%, #5dade2 100%);
+}
+.type-gradient-dragon {
+  background: linear-gradient(135deg, #8e44ad 0%, #a569bd 70%, #7d3c98 100%);
+}
+.type-gradient-dark {
+  background: linear-gradient(135deg, #34495e 0%, #5d6d7e 70%, #2c3e50 100%);
+}
+.type-gradient-fighting {
+  background: linear-gradient(135deg, #e67e22 0%, #f0b27a 70%, #d35400 100%);
+}
+.type-gradient-poison {
+  background: linear-gradient(135deg, #9b59b6 0%, #bb8fce 70%, #8e44ad 100%);
+}
+.type-gradient-normal {
+  background: linear-gradient(135deg, #a8a878 0%, #c5c5a0 70%, #8a8a5e 100%);
+}
+.type-gradient-flying {
+  background: linear-gradient(135deg, #a890f0 0%, #c8b5f7 70%, #9373e8 100%);
+}
+.type-gradient-ground {
+  background: linear-gradient(135deg, #e0c068 0%, #e8d084 70%, #c9a352 100%);
+}
+.type-gradient-rock {
+  background: linear-gradient(135deg, #b8a038 0%, #c9b65a 70%, #9e8a31 100%);
+}
+.type-gradient-bug {
+  background: linear-gradient(135deg, #a8b820 0%, #b8c842 70%, #8fa31a 100%);
+}
+.type-gradient-ghost {
+  background: linear-gradient(135deg, #705898 0%, #8a7aad 70%, #5e4a82 100%);
+}
+.type-gradient-steel {
+  background: linear-gradient(135deg, #b8b8d0 0%, #d0d0e0 70%, #a0a0b8 100%);
+}
+.type-gradient-fairy {
+  background: linear-gradient(135deg, #ee99ac 0%, #f4b5c4 70%, #e67e95 100%);
+}
 
 /* Animation Keyframes */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 @keyframes rotatePokeball {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(248, 249, 250, 0);
-    border-radius: 10px;
+  background: rgba(248, 249, 250, 0);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 12px;
-    border-top:80px solid transparent;
-    border-bottom: 80px solid transparent;
-    background-clip: padding-box;
+  background: var(--primary);
+  border-radius: 12px;
+  border-top: 80px solid transparent;
+  border-bottom: 80px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary);
-    border-top:80px solid transparent;
-    border-bottom: 80px solid transparent;
-    background-clip: padding-box;
+  background: var(--secondary);
+  border-top: 80px solid transparent;
+  border-bottom: 80px solid transparent;
+  background-clip: padding-box;
 }

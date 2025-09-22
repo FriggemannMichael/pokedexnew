@@ -7,10 +7,34 @@ class TeamOffcanvas {
     this.cardsContainer = document.getElementById('teamCardsContainer');
     this.teamCounter = document.getElementById('teamCounter');
     this.pokedexCounter = document.getElementById('pokedexCount');
+  // Neuer Offcanvas My Pokedex Button Counter
+  this.pokedexCounterOffcanvas = document.getElementById('pokedexCountOffcanvas');
+    // Precompute gradients (re-usable)
+    this.typeGradients = [
+      'linear-gradient(135deg, #ff6b6b 0%, #ff8e53 70%, #ff6b47 100%)',
+      'linear-gradient(135deg, #3498db 0%, #5dade2 70%, #2e86c1 100%)',
+      'linear-gradient(135deg, #2ecc71 0%, #58d68d 70%, #27ae60 100%)',
+      'linear-gradient(135deg, #f1c40f 0%, #f7dc6f 70%, #d4ac0d 100%)',
+      'linear-gradient(135deg, #e74c3c 0%, #ec7063 70%, #cb4335 100%)',
+      'linear-gradient(135deg, #85c1e9 0%, #aed6f1 70%, #5dade2 100%)',
+      'linear-gradient(135deg, #8e44ad 0%, #a569bd 70%, #7d3c98 100%)',
+      'linear-gradient(135deg, #34495e 0%, #5d6d7e 70%, #2c3e50 100%)',
+      'linear-gradient(135deg, #e67e22 0%, #f0b27a 70%, #d35400 100%)',
+      'linear-gradient(135deg, #9b59b6 0%, #bb8fce 70%, #8e44ad 100%)',
+      'linear-gradient(135deg, #a8a878 0%, #c5c5a0 70%, #8a8a5e 100%)',
+      'linear-gradient(135deg, #a890f0 0%, #c8b5f7 70%, #9373e8 100%)',
+      'linear-gradient(135deg, #e0c068 0%, #e8d084 70%, #c9a352 100%)',
+      'linear-gradient(135deg, #b8a038 0%, #c9b65a 70%, #9e8a31 100%)',
+      'linear-gradient(135deg, #a8b820 0%, #b8c842 70%, #8fa31a 100%)',
+      'linear-gradient(135deg, #705898 0%, #8a7aad 70%, #5e4a82 100%)',
+      'linear-gradient(135deg, #b8b8d0 0%, #d0d0e0 70%, #a0a0b8 100%)',
+      'linear-gradient(135deg, #ee99ac 0%, #f4b5c4 70%, #e67e95 100%)'
+    ];
     
     this.initializeOffcanvas();
     this.setupEventListeners();
     this.loadTeamFromStorage();
+    this.setupDynamicModalHeader();
   }
   
   initializeOffcanvas() {
@@ -44,6 +68,58 @@ class TeamOffcanvas {
   hideOffcanvas() {
     if (this.offcanvas) {
       this.offcanvas.hide();
+    }
+  }
+
+  /**
+   * Wählt einen zufälligen Typ-Gradient aus der Liste.
+   * Fallback: var(--gradient)
+   */
+  getRandomTypeGradient() {
+    if (!this.typeGradients || !this.typeGradients.length) return 'var(--gradient)';
+    const idx = Math.floor(Math.random() * this.typeGradients.length);
+    return this.typeGradients[idx];
+  }
+
+  /**
+   * Initialisiert den dynamischen Modal Header (Bootstrap Modal/Ersatz)
+   * Sucht alle .modal-header innerhalb von .modal-content im Offcanvas-Kontext
+   * und färbt beim Öffnen neu ein.
+   */
+  setupDynamicModalHeader() {
+    // Unterstützt Modal oder Offcanvas? Hier: wenn separate Modals (#teamModal) existieren, dort auch anwenden.
+    const applyGradient = (header) => {
+      if (!header) return;
+      const g = this.getRandomTypeGradient();
+      header.classList.add('dynamic-gradient');
+      header.style.setProperty('--_prev-gradient', getComputedStyle(header).backgroundImage || 'none');
+      header.style.backgroundImage = g;
+      // kleine Fade Animation triggern
+      header.animate([
+        { opacity: 0.4 },
+        { opacity: 1 }
+      ], { duration: 480, easing: 'ease' });
+    };
+
+    // Falls Bootstrap Modal Events existieren
+    document.addEventListener('show.bs.modal', (ev) => {
+      const modal = ev.target;
+      const header = modal.querySelector('.modal-header');
+      applyGradient(header);
+    });
+
+    // Direkt initial auf bereits gerendertes Team Modal anwenden (falls sichtbar)
+    const existingTeamModal = document.getElementById('teamModal');
+    if (existingTeamModal && existingTeamModal.classList.contains('show')) {
+      applyGradient(existingTeamModal.querySelector('.modal-header'));
+    }
+
+    // Optional: Offcanvas spezifischer Header (falls vorhanden)
+    if (this.offcanvasElement) {
+      this.offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
+        const header = this.offcanvasElement.querySelector('.modal-header');
+        if (header) applyGradient(header);
+      });
     }
   }
   
@@ -100,7 +176,8 @@ class TeamOffcanvas {
   
   renderMiniCard(pokemon) {
     const miniCard = document.createElement('div');
-    miniCard.className = 'mini-pokemon-card new-card';
+    const primaryType = (pokemon.types && pokemon.types[0]) ? pokemon.types[0].toLowerCase() : 'normal';
+    miniCard.className = `mini-pokemon-card new-card type-${primaryType}`;
     miniCard.dataset.pokemonId = pokemon.id;
     
     // Type badges erstellen
@@ -126,11 +203,32 @@ class TeamOffcanvas {
   }
   
   removePokemonFromTeam(pokemonId) {
-    const pokemonIndex = this.team.findIndex(p => p.id === pokemonId);
-    if (pokemonIndex === -1) return;
+    // Unterstütze sowohl String-IDs als auch Objekt-IDs
+    const pokemonIndex = this.team.findIndex(p => {
+      if (typeof p === 'object' && p.id) {
+        return p.id == pokemonId; // Verwende == für flexible Typvergleich
+      }
+      return p == pokemonId; // Fall für String-Arrays
+    });
+    // Detail-Logs nur im Debug-Modus
+    if (window.POKE_DEBUG) {
+      console.debug(`Searching for pokemon ${pokemonId} in team:`, this.team);
+      console.debug(`Found at index: ${pokemonIndex}`);
+    }
     
-    const pokemonName = this.team[pokemonIndex].name;
+    if (pokemonIndex === -1) {
+      console.warn(`Pokemon ${pokemonId} not found in team`);
+      return false;
+    }
+    
+    const removedPokemon = this.team[pokemonIndex];
+    const pokemonName = typeof removedPokemon === 'object' ? removedPokemon.name : `Pokemon #${pokemonId}`;
     this.team.splice(pokemonIndex, 1);
+    
+    if (window.POKE_DEBUG) {
+      console.debug(`Successfully removed ${pokemonName} from team`);
+      console.debug(`Team after removal:`, this.team);
+    }
     
     const miniCard = this.cardsContainer.querySelector(`[data-pokemon-id="${pokemonId}"]`);
     if (miniCard) {
@@ -148,7 +246,7 @@ class TeamOffcanvas {
     try {
       const teamModal = document.getElementById('teamModal');
       if (teamModal && teamModal.classList.contains('show')) {
-        console.log('Team Modal ist offen - aktualisiere Ansicht');
+  if (window.POKE_DEBUG) console.debug('Team Modal ist offen - aktualisiere Ansicht');
         // Überprüfe ob die globale Funktion existiert
         if (typeof window.showDetailedTeamView === 'function') {
           window.showDetailedTeamView();
@@ -168,6 +266,7 @@ class TeamOffcanvas {
     }
     
     this.showToast(`${pokemonName} wurde aus dem Team entfernt.`, 'info');
+    return true; // Erfolgreiches Entfernen bestätigen
   }
   
   clearTeam() {
@@ -191,6 +290,10 @@ class TeamOffcanvas {
     // Pokedex Counter (Button)
     if (this.pokedexCounter) {
       this.pokedexCounter.textContent = count;
+    }
+    // Offcanvas Pokedex Counter
+    if (this.pokedexCounterOffcanvas) {
+      this.pokedexCounterOffcanvas.textContent = count;
     }
   }
   
@@ -225,21 +328,33 @@ class TeamOffcanvas {
     const imgElement = pokemonCard.querySelector('img');
     const image = imgElement ? imgElement.src : '';
     
-    // Typen extrahieren
-    const typeElements = pokemonCard.querySelectorAll('.type, .pokemon-type, [class*="type-"]');
-    const types = Array.from(typeElements).map(t => 
-      t.textContent.trim().toLowerCase()
-    ).filter(t => t && t !== '');
+  // Typen extrahieren (bewusst restriktiv: kein generisches [class*="type-"] mehr,
+  // da dies auch Elemente wie power-level Container mit type-${primaryType} greifen kann
+  // und dadurch zusammengesetzte Texte (cp level / ivs) als Typ fälschlich erscheinen könnten)
+  const typeElements = pokemonCard.querySelectorAll('.type-badge, .detail-type-badge, .type-badge-inline');
+    const VALID_TYPES = new Set([
+      'normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'
+    ]);
+    const types = Array.from(typeElements)
+      .map(t => (t.textContent||'').trim().toLowerCase())
+      .map(t => t.replace(/[^a-z]/g,'')) // harte Säuberung (entfernt Zahlen/Prozent)
+      .filter(t => VALID_TYPES.has(t));
     
     return {
       id: pokemonId,
       name: name,
       image: image,
-      types: types.length > 0 ? types : ['normal']
+      types: (window.sanitizeTypes ? window.sanitizeTypes(types) : (types.length > 0 ? types : ['normal']))
     };
   }
   
   getTeam() {
+    if (window.sanitizeTypes) {
+      return this.team.map(p => ({
+        ...p,
+        types: window.sanitizeTypes(p.types)
+      }));
+    }
     return [...this.team];
   }
   
@@ -286,7 +401,13 @@ class TeamOffcanvas {
   showToast(message, type = 'info') {
     // Überprüfe ob Bootstrap Toast verfügbar ist
     if (typeof bootstrap === 'undefined') {
-      console.log(`${type.toUpperCase()}: ${message}`);
+      if (type === 'error') {
+        console.error(`${type.toUpperCase()}: ${message}`);
+      } else if (type === 'warning') {
+        console.warn(`${type.toUpperCase()}: ${message}`);
+      } else if (window.POKE_DEBUG) {
+        console.debug(`${type.toUpperCase()}: ${message}`);
+      }
       return;
     }
     

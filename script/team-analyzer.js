@@ -1,4 +1,6 @@
 // Team-Analyse-System für Pokemon-Teams
+// Logging-Richtlinie: Nur console.error / console.warn dauerhaft. Zusätzliche Debug-Ausgaben
+// können über (window.POKE_DEBUG && console.debug(...)) in zukünftigen Erweiterungen ergänzt werden.
 class PokemonTeamAnalyzer {
     constructor() {
         this.typeChart = this.initializeTypeChart();
@@ -225,21 +227,41 @@ class PokemonTeamAnalyzer {
     setupTeamAnalysisModal() {
         const modalHTML = this.createTeamAnalysisModalHTML();
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Event Listeners für das Modal hinzufügen
+        this.attachModalEventListeners();
+    }
+
+    attachModalEventListeners() {
+        const modal = document.getElementById('teamAnalysisModal');
+        if (!modal) return;
+        // Bootstrap regelt aria-hidden & aria-modal selbst – wir beschränken uns auf Fokus-Verbesserung
+        modal.addEventListener('shown.bs.modal', () => {
+            const closeButton = modal.querySelector('.btn-close');
+            if (closeButton) closeButton.focus();
+        });
+
+        modal.addEventListener('hidden.bs.modal', () => {
+            // Optional: Fokus zurück auf Analyse-Button (falls vorhanden)
+            const analysisBtn = document.querySelector('.drop-point button.btn-info');
+            if (analysisBtn) analysisBtn.focus();
+        });
     }
 
     createTeamAnalysisModalHTML() {
         return `
-            <div id="teamAnalysisModal" class="modal fade" tabindex="-1">
+            <!-- aria-hidden entfernt: Bootstrap kontrolliert Sichtbarkeit & Accessibility selbst -->
+            <div id="teamAnalysisModal" class="modal fade" tabindex="-1" aria-labelledby="teamAnalysisModalLabel" aria-describedby="teamAnalysisContent">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">🔬 Team-Analyse</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title" id="teamAnalysisModalLabel">🔬 Team-Analyse</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
                         </div>
                         <div class="modal-body">
                             <div id="teamAnalysisContent">
                                 <div class="analysis-loading">
-                                    <div class="spinner-border text-primary" role="status"></div>
+                                    <div class="spinner-border text-primary" role="status" aria-label="Analysiere Team"></div>
                                     <p>Analysiere Team...</p>
                                 </div>
                             </div>
@@ -277,10 +299,36 @@ class PokemonTeamAnalyzer {
         }
 
         const modal = document.getElementById('teamAnalysisModal');
-        const bootstrap_modal = new bootstrap.Modal(modal);
+        if (!modal) {
+            console.error('Team Analysis Modal not found');
+            return;
+        }
+
+        // Korrekte Initialisierung des Bootstrap Modals
+        let bootstrap_modal = bootstrap.Modal.getInstance(modal);
+        if (!bootstrap_modal) {
+            bootstrap_modal = new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
         
+        // Team-Analyse anzeigen bevor das Modal geöffnet wird
         this.displayTeamAnalysis(pokemonTeam);
+        
+        // Modal öffnen
         bootstrap_modal.show();
+    }
+
+    closeTeamAnalysis() {
+        const modal = document.getElementById('teamAnalysisModal');
+        if (!modal) return;
+
+        const bootstrap_modal = bootstrap.Modal.getInstance(modal);
+        if (bootstrap_modal) {
+            bootstrap_modal.hide();
+        }
     }
 
     getCurrentTeam() {
@@ -306,9 +354,13 @@ class PokemonTeamAnalyzer {
             const id = parseInt(card.dataset.pokemonId || card.dataset.id);
             const name = card.querySelector('.pokemon-name')?.textContent || '';
             const typeElements = card.querySelectorAll('.type-badge, .pokemon-types span');
-            const types = Array.from(typeElements).map(el => 
-                el.textContent.toLowerCase().replace(/[^\w]/g, '')
-            );
+            const VALID_TYPES = new Set([
+                'normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'
+            ]);
+            const types = Array.from(typeElements)
+                .map(el => (el.textContent||'').toLowerCase().trim())
+                .map(t => t.replace(/[^a-z]/g,''))
+                .filter(t => VALID_TYPES.has(t));
 
             if (id && name && types.length > 0) {
                 team.push({ id, name, types });
@@ -362,7 +414,7 @@ class PokemonTeamAnalyzer {
 
         return `
             <div class="analysis-section">
-                <h6><i class="fas fa-users"></i> Team-Übersicht</h6>
+                <h6><img src="assets/img/9.png" alt="Team" class="icon-team icon-team--inline"> Team-Übersicht</h6>
                 <div class="team-overview">
                     ${teamCards}
                 </div>
@@ -470,7 +522,7 @@ class PokemonTeamAnalyzer {
                         <span class="coverage-text">Coverage (${coveredTypes}/${totalTypes} Typen)</span>
                     </div>
                     <div class="progress">
-                        <div class="progress-bar" style="width: ${coveragePercentage}%"></div>
+                        <div class="progress-bar" data-coverage="${coveragePercentage}"></div>
                     </div>
                 </div>
                 <div class="coverage-list">

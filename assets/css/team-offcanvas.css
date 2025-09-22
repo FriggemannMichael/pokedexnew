@@ -3,59 +3,56 @@
    ============================================= */
 
 /* Offcanvas Container */
-.offcanvas-end {
-  width: 420px;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: var(--shadow-xl);
-}
-
-/* =============================================
-   OFFCANVAS HEADER - Glassmorphism Design
-   ============================================= */
-.offcanvas-header {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding: var(--spacing-xl) var(--spacing-lg);
-  position: relative;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
-}
-
-.offcanvas-header::before {
-  content: "";
+/* Refactored Remove Button (nutzt Utility Basis-Klassen manuell ohne @apply) */
+.pokemon-remove-btn {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 107, 107, 0.05) 0%, 
-    rgba(78, 205, 196, 0.05) 100%);
-  z-index: -1;
-}
-
-.offcanvas-title {
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  font-family: var(--font-title);
+  justify-content: center;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-weight: 600;
-  font-size: 1.4rem;
+  cursor: pointer;
+  transition: var(--transition-base);
   color: var(--dark);
-  margin: 0;
-  letter-spacing: 0.5px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+}
+.pokemon-remove-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient);
+  opacity: 0;
+  transition: var(--transition-base);
+  z-index: -1;
+}
+.pokemon-remove-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-lg);
+  color: var(--primary);
+}
+.pokemon-remove-btn:hover::before {
+  opacity: 0.1;
+}
+.pokemon-remove-btn:active {
+  transform: translateY(0) scale(0.95);
 }
 
 .offcanvas-title i {
   color: var(--primary);
   font-size: 1.2rem;
   filter: drop-shadow(0 2px 4px rgba(255, 107, 107, 0.3));
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
 }
 
 .offcanvas-title:hover i {
@@ -65,7 +62,7 @@
 
 /* Team Counter Badge */
 .offcanvas-title .badge {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: var(--gradient);
   color: white;
   font-family: var(--font-ui);
   font-weight: 600;
@@ -74,7 +71,7 @@
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   position: relative;
   overflow: hidden;
 }
@@ -86,10 +83,12 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(255, 255, 255, 0.2), 
-    transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.6s ease;
 }
 
@@ -112,7 +111,7 @@
   border: 2px solid rgba(44, 62, 80, 0.2);
   border-radius: var(--radius-circle);
   opacity: 0.8;
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
@@ -140,11 +139,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    var(--primary) 0%, 
-    var(--secondary) 100%);
+  background: var(--gradient);
   opacity: 0;
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   z-index: 1;
 }
 
@@ -180,9 +177,34 @@
 
 .team-drop-zone.drag-over {
   border-color: var(--accent);
-  background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.15), rgba(var(--accent-rgb), 0.15));
+  background: linear-gradient(
+    135deg,
+    rgba(var(--primary-color-rgb), 0.15),
+    rgba(var(--accent-rgb), 0.15)
+  );
   transform: scale(1.02);
   box-shadow: 0 4px 20px rgba(var(--primary-color-rgb), 0.3);
+}
+
+/* Offcanvas Actions (Button Bereich unter Mini-Cards) */
+.offcanvas-actions {
+  margin-top: 1.75rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.offcanvas-actions .offcanvas-mypokedex-btn {
+  position: relative;
+  min-width: 210px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.offcanvas-actions .offcanvas-mypokedex-btn .pokedex-count {
+  margin-left: 4px;
 }
 
 /* Drop Placeholder */
@@ -229,6 +251,11 @@
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: var(--spacing-lg);
 }
+.modal-header.dynamic-gradient {
+  transition: background-image 0.8s ease, background-color 0.8s ease, opacity 0.5s ease;
+  position: relative;
+  overflow: hidden;
+}
 
 .modal-header .modal-title {
   font-family: var(--font-title);
@@ -273,7 +300,7 @@
 }
 
 .team-actions .btn-primary:hover {
-  background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
+  background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
   filter: brightness(1.1);
 }
 
@@ -328,11 +355,15 @@
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.75rem; /* reduziert, damit nichts über den Container ragt */
   font-family: var(--font-ui);
   color: var(--dark);
   opacity: 0.7;
   margin-top: var(--spacing-xs);
+  line-height: 1.15; /* kompaktere Zeilenhöhe */
+  word-break: break-word; /* lange Worte umbrechen */
+  hyphens: auto; /* Silbentrennung wo unterstützt */
+  overflow-wrap: anywhere; /* Fallback für sehr lange Strings */
 }
 
 /* Pokemon Cards im Team Modal - Übernommen aus cards.css */
@@ -427,71 +458,8 @@
   margin-top: var(--spacing-sm);
 }
 
-/* =============================================
-   POKEMON REMOVE BUTTONS - Subtiles Design-System
-   ============================================= */
-.pokemon-remove-btn {
-  position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-circle);
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  color: var(--dark);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: 0.9rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  z-index: 20;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.8;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.pokemon-remove-btn::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    var(--primary) 0%, 
-    var(--secondary) 100%);
-  opacity: 0;
-  transition: all var(--transition-base);
-  z-index: -1;
-}
-
-.pokemon-remove-btn:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-2px) scale(1.05);
-  opacity: 1;
-  border-color: var(--primary);
-  box-shadow: var(--shadow-lg);
-  color: var(--primary);
-}
-
-.pokemon-remove-btn:hover::before {
-  opacity: 0.1;
-}
-
-.pokemon-remove-btn:active {
-  transform: translateY(0) scale(0.98);
-  transition: all 0.1s ease;
-}
-
 /* Team Overview Card Container */
 .team-overview-card {
-  position: relative;
   margin-bottom: var(--spacing-md);
 }
 
@@ -511,7 +479,7 @@
   font-size: 0.8rem;
   font-weight: bold;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   z-index: 20;
   display: flex;
   align-items: center;
@@ -529,11 +497,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, 
-    var(--primary) 0%, 
-    var(--secondary) 100%);
+  background: var(--gradient);
   opacity: 0;
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   z-index: -1;
 }
 
@@ -599,29 +565,29 @@
     max-width: 95vw;
     margin: var(--spacing-md);
   }
-  
+
   .modal-body {
     padding: var(--spacing-lg);
   }
-  
+
   .team-actions .btn {
     min-width: 120px;
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .stat-card {
     padding: var(--spacing-lg);
     margin-bottom: var(--spacing-md);
   }
-  
+
   .stat-number {
     font-size: 1.8rem;
   }
-  
+
   .detailed-pokemon-card .card-img-top {
     height: 120px;
   }
-  
+
   .type-breakdown {
     justify-content: center;
   }
@@ -664,6 +630,24 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.3);
 }
+.mini-pokemon-card {
+  position: relative;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(6px) saturate(1.2);
+  -webkit-backdrop-filter: blur(6px) saturate(1.2);
+  border-radius: 14px;
+  padding: 14px 10px 12px;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.28);
+  transition: var(--transition-base);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.mini-pokemon-card:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.28);
+  border-color: rgba(255,255,255,0.55);
+}
 
 .mini-pokemon-card img {
   width: 60px;
@@ -671,6 +655,15 @@
   object-fit: contain;
   margin-bottom: 8px;
 }
+.mini-pokemon-card img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+  transition: var(--transition-base);
+}
+.mini-pokemon-card:hover img { transform: scale(1.08) translateY(-2px); }
 
 .mini-pokemon-card .pokemon-name {
   font-size: 0.8rem;
@@ -679,12 +672,28 @@
   color: var(--text);
   text-transform: capitalize;
 }
+.mini-pokemon-card .pokemon-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-top: 2px;
+  color: #fff;
+  text-transform: capitalize;
+  letter-spacing: .3px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.35);
+}
 
 .mini-pokemon-card .pokemon-types {
   display: flex;
   justify-content: center;
   gap: 3px;
   margin-top: 5px;
+}
+.mini-pokemon-card .pokemon-types {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
 }
 
 .mini-pokemon-card .pokemon-types .type-badge {
@@ -696,6 +705,21 @@
   text-transform: uppercase;
   font-weight: 500;
 }
+.mini-pokemon-card .pokemon-types .type-badge {
+  font-size: 0.55rem;
+  padding: 3px 6px 2px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #222;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: .5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  line-height: 1;
+}
+.mini-pokemon-card .pokemon-types .type-badge:not(:last-child) { margin-bottom: 2px; }
 
 .mini-pokemon-card .remove-btn {
   position: absolute;
@@ -713,9 +737,38 @@
   font-weight: bold;
   display: none;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: var(--transition-base);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   z-index: 10;
+}
+.mini-pokemon-card .remove-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: none;
+  cursor: pointer;
+  transition: var(--transition-base);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  z-index: 10;
+  padding:0;
+  line-height:1;
+}
+.mini-pokemon-card .remove-btn:hover {
+  background: rgba(255,255,255,0.35);
+  transform: translateY(-2px) scale(1.05);
+  color: #fff;
+  border-color: rgba(255,255,255,0.65);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.35);
 }
 
 .mini-pokemon-card .remove-btn:hover {
@@ -731,6 +784,7 @@
   align-items: center;
   justify-content: center;
 }
+.mini-pokemon-card:hover .remove-btn { display:flex; align-items:center; justify-content:center; }
 
 /* Team Counter Badge */
 #teamCounter {
@@ -757,52 +811,13 @@
   background: var(--card-bg);
 }
 
-.team-overview-card .card:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.3);
-}
-
-.team-overview-card .card-img-top {
-  height: 120px;
-  object-fit: contain;
-  padding: 10px;
-}
-
-.team-overview-card .card-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  text-transform: capitalize;
-  margin-bottom: 10px;
-}
-
-.team-overview-card .pokemon-types {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.team-overview-card .pokemon-types .type-badge {
+.team-overview-card .pokemon-remove-btn {
+  width: 30px;
+  height: 30px;
   font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  font-weight: 500;
-}
-
-/* Empty state für Team Overview */
-.team-overview.empty::after {
-  content: "Dein Team ist leer. Ziehe Pokemon in das Offcanvas um sie hinzuzufügen.";
-  grid-column: 1 / -1;
-  text-align: center;
-  color: var(--text-secondary);
-  font-style: italic;
-  padding: 40px 20px;
-  background: rgba(var(--primary-color-rgb), 0.05);
-  border: 2px dashed var(--primary-color);
-  border-radius: 12px;
+  opacity: 0.9;
+  box-shadow: var(--shadow-sm);
+  transform: none;
 }
 
 /* Responsive Design */
@@ -810,11 +825,11 @@
   .offcanvas-end {
     width: 320px;
   }
-  
+
   .team-cards-container {
     grid-template-columns: 1fr;
   }
-  
+
   .team-overview {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
@@ -836,6 +851,33 @@
 .mini-pokemon-card.new-card {
   animation: fadeInUp 0.5s ease;
 }
+
+/* Mini Card Typ-Varianten (gedämpfte Gradients – orientiert an großen Karten) */
+.mini-pokemon-card[class*="type-"] {
+  color: #fff;
+}
+.mini-pokemon-card.type-fire { background: linear-gradient(135deg, rgba(255,107,107,0.85) 0%, rgba(255,142,83,0.75) 70%, rgba(255,107,71,0.75) 100%); }
+.mini-pokemon-card.type-water { background: linear-gradient(135deg, rgba(52,152,219,0.85) 0%, rgba(93,173,226,0.75) 70%, rgba(46,134,193,0.75) 100%); }
+.mini-pokemon-card.type-grass { background: linear-gradient(135deg, rgba(46,204,113,0.85) 0%, rgba(88,214,141,0.75) 70%, rgba(39,174,96,0.75) 100%); }
+.mini-pokemon-card.type-electric { background: linear-gradient(135deg, rgba(241,196,15,0.85) 0%, rgba(247,220,111,0.75) 70%, rgba(212,172,13,0.75) 100%); color:#333; }
+.mini-pokemon-card.type-psychic { background: linear-gradient(135deg, rgba(231,76,60,0.85) 0%, rgba(236,112,99,0.75) 70%, rgba(203,67,53,0.75) 100%); }
+.mini-pokemon-card.type-ice { background: linear-gradient(135deg, rgba(133,193,233,0.85) 0%, rgba(174,214,241,0.75) 70%, rgba(93,173,226,0.75) 100%); }
+.mini-pokemon-card.type-dragon { background: linear-gradient(135deg, rgba(142,68,173,0.85) 0%, rgba(165,105,189,0.75) 70%, rgba(125,60,152,0.75) 100%); }
+.mini-pokemon-card.type-dark { background: linear-gradient(135deg, rgba(52,73,94,0.9) 0%, rgba(93,109,126,0.75) 70%, rgba(44,62,80,0.8) 100%); }
+.mini-pokemon-card.type-fighting { background: linear-gradient(135deg, rgba(230,126,34,0.85) 0%, rgba(240,178,122,0.75) 70%, rgba(211,84,0,0.75) 100%); }
+.mini-pokemon-card.type-poison { background: linear-gradient(135deg, rgba(155,89,182,0.85) 0%, rgba(187,143,206,0.75) 70%, rgba(142,68,173,0.75) 100%); }
+.mini-pokemon-card.type-normal { background: linear-gradient(135deg, rgba(168,168,120,0.85) 0%, rgba(197,197,160,0.75) 70%, rgba(138,138,94,0.75) 100%); }
+.mini-pokemon-card.type-flying { background: linear-gradient(135deg, rgba(168,144,240,0.85) 0%, rgba(200,181,247,0.75) 70%, rgba(147,115,232,0.75) 100%); }
+.mini-pokemon-card.type-ground { background: linear-gradient(135deg, rgba(224,192,104,0.85) 0%, rgba(232,208,132,0.75) 70%, rgba(201,163,82,0.75) 100%); }
+.mini-pokemon-card.type-rock { background: linear-gradient(135deg, rgba(184,160,56,0.85) 0%, rgba(201,182,90,0.75) 70%, rgba(158,138,49,0.75) 100%); }
+.mini-pokemon-card.type-bug { background: linear-gradient(135deg, rgba(168,184,32,0.85) 0%, rgba(184,200,66,0.75) 70%, rgba(143,163,26,0.75) 100%); }
+.mini-pokemon-card.type-ghost { background: linear-gradient(135deg, rgba(112,88,152,0.85) 0%, rgba(138,122,173,0.75) 70%, rgba(94,74,130,0.75) 100%); }
+.mini-pokemon-card.type-steel { background: linear-gradient(135deg, rgba(184,184,208,0.85) 0%, rgba(208,208,224,0.75) 70%, rgba(160,160,184,0.75) 100%); color:#222; }
+.mini-pokemon-card.type-fairy { background: linear-gradient(135deg, rgba(238,153,172,0.85) 0%, rgba(244,181,196,0.75) 70%, rgba(230,126,149,0.75) 100%); }
+
+/* Lesbarkeit auf helleren Typen */
+.mini-pokemon-card.type-electric .pokemon-name,
+.mini-pokemon-card.type-steel .pokemon-name { color:#222; text-shadow:none; }
 
 /* Drag-Feedback für Cards */
 .pokemon-card.dragging {
@@ -884,9 +926,14 @@
 
 .analysis-section .progress-bar {
   height: 100%;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--secondary) 50%,
+    var(--accent) 100%
+  );
   border-radius: var(--radius-sm);
-  transition: width 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   min-width: 2px;
   box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
@@ -930,7 +977,7 @@
   font-weight: 700;
   font-size: 1.5rem;
   color: var(--primary);
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  background: var(--gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

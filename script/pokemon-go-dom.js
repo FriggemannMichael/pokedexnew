@@ -1,0 +1,6 @@
+// DOM & visual helpers for power-level type sync
+(function(){
+  const PGF = PokemonGoFeatures.prototype;
+  PGF.syncPowerLevelTypes = function(scope=document){ const els=scope.querySelectorAll('.power-level'); els.forEach(el=>{ const card=el.closest('.pokemon-card'); let t=null; if(card){ const cls=[...card.classList].find(c=>c.startsWith('type-')); if(cls) t=cls.replace('type-',''); if(!t){ const badge=card.querySelector('.type-badge'); if(badge) t=badge.textContent.toLowerCase(); } } if(!t) t=el.getAttribute('data-primary-type')||'normal'; [...el.classList].filter(c=>c.startsWith('type-')).forEach(c=>el.classList.remove(c)); el.classList.add(`type-${t}`); el.setAttribute('data-primary-type',t); }); };
+  PGF.applyTypeClassToPowerLevels = function(scope=document){ const els=scope.querySelectorAll('.power-level:not([data-primary-type])'); els.forEach(el=>{ let t=el.getAttribute('data-primary-type'); if(!t){ const card=el.closest('.pokemon-card'); if(card){ const cls=[...card.classList].find(c=>c.startsWith('type-')); if(cls) t=cls.replace('type-',''); if(!t){ const badge=card.querySelector('.type-badge'); if(badge) t=badge.textContent.toLowerCase(); } } } if(!t) t='normal'; if(![...el.classList].some(c=>c.startsWith('type-'))) el.classList.add(`type-${t}`); el.setAttribute('data-primary-type',t); }); };
+})();

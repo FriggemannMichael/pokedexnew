@@ -2,205 +2,122 @@
 // Neue Modal-basierte Pokedex-Sektion
 
 // Globale Funktion für Team Modal anzeigen
-window.showTeamModal = function() {
-  const teamModal = document.getElementById('teamModal');
-  if (!teamModal || typeof bootstrap === 'undefined') {
-    console.warn('Team Modal oder Bootstrap nicht verfügbar');
+window.showTeamModal = function () {
+  const teamModal = document.getElementById("teamModal");
+  if (!teamModal || typeof bootstrap === "undefined") {
+    console.warn("Team Modal oder Bootstrap nicht verfügbar");
     return;
   }
-  
+
   // Team-Übersicht rendern
   renderTeamOverview();
-  
+
   // Modal anzeigen
   const modal = new bootstrap.Modal(teamModal);
   modal.show();
 };
 
+// Globale onclick-Funktion für "Team anzeigen" Button
+window.showDetailedTeamView = function () {
+  if (window.POKE_DEBUG)
+    console.debug("[Team] showDetailedTeamView via onclick");
+  showDetailedTeamViewInternal();
+};
+
 // Globale Funktion für Pokemon entfernen
-window.removePokemonFromTeam = function(pokemonId) {
-  console.log('removePokemonFromTeam aufgerufen mit ID:', pokemonId);
-  
-  if (!pokemonId) {
-    console.error('Keine Pokemon ID übergeben');
-    return;
+window.removePokemonFromTeam = function (pokemonId, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
   }
-  
-  if (!window.teamOffcanvas) {
-    console.warn('Team Offcanvas nicht verfügbar');
-    return;
-  }
-  
-  // Bestätigung anfordern
-  if (confirm('Möchtest du dieses Pokemon wirklich aus deinem Team entfernen?')) {
-    try {
-      // Pokemon aus dem Team entfernen
-      console.log('Entferne Pokemon mit ID:', pokemonId);
-      window.teamOffcanvas.removePokemonFromTeam(pokemonId);
-      
-      // Team-Ansichten aktualisieren
-      const teamModal = document.getElementById('teamModal');
-      const isModalOpen = teamModal && teamModal.classList.contains('show');
-      
-      if (isModalOpen) {
-        // Modal ist offen - detaillierte Ansicht aktualisieren
-        console.log('Aktualisiere detaillierte Team-Ansicht');
-        showDetailedTeamView();
-      }
-      
-      // Immer auch die normale Übersicht aktualisieren
-      console.log('Aktualisiere Team-Übersicht');
-      renderTeamOverview();
-      
-      // Toast-Benachrichtigung
-      if (window.teamOffcanvas.showToast) {
-        window.teamOffcanvas.showToast('Pokemon aus Team entfernt', 'warning');
-      }
-      
-      console.log(`Pokemon ${pokemonId} wurde aus dem Team entfernt`);
-    } catch (error) {
-      console.error('Fehler beim Entfernen des Pokemon:', error);
-    }
-  }
-};
 
-// Globale Funktion für Team-Analyse (onclick Handler)
-window.openTeamAnalysis = function() {
-  console.log('openTeamAnalysis aufgerufen');
-  
-  // Überprüfe ob Team Analyzer verfügbar ist
-  if (!window.pokemonTeamAnalyzer || typeof window.pokemonTeamAnalyzer.openTeamAnalysis !== 'function') {
-    console.warn('Team Analyzer nicht verfügbar');
-    alert('Team Analyzer wird noch geladen. Bitte warte einen Moment und versuche es erneut.');
-    return;
-  }
-  
-  // Prüfe ob Team vorhanden ist
+  if (window.POKE_DEBUG)
+    console.debug("[Team] removePokemonFromTeam", pokemonId);
+
   if (!window.teamOffcanvas) {
-    console.warn('Team Offcanvas nicht verfügbar');
-    alert('Team-System wird noch geladen. Bitte versuche es erneut.');
-    return;
+    console.error("window.teamOffcanvas not available");
+    alert(
+      "Team-System wird noch geladen. Bitte warte einen Moment und versuche es erneut."
+    );
+    return false;
   }
-  
-  const team = window.teamOffcanvas.getTeam();
-  if (team.length === 0) {
-    alert('Füge erst Pokemon zu deinem Team hinzu, bevor du es analysieren kannst!');
-    return;
+
+  if (typeof window.teamOffcanvas.removePokemonFromTeam !== "function") {
+    console.error("removePokemonFromTeam function not found in teamOffcanvas");
+    if (window.POKE_DEBUG)
+      console.debug(
+        "[Team] Available functions:",
+        Object.getOwnPropertyNames(window.teamOffcanvas)
+      );
+    return false;
   }
-  
+
   try {
-    // Schließe Team Modal falls offen und manage Focus korrekt
-    const teamModal = document.getElementById('teamModal');
-    const modal = bootstrap.Modal.getInstance(teamModal);
-    if (modal) {
-      // Focus vom Button entfernen vor dem Schließen
-      const analyzeBtn = document.getElementById('analyzeTeamBtn');
-      if (analyzeBtn) {
-        analyzeBtn.blur();
-      }
-      
-      // Modal schließen und Focus korrekt übergeben
-      modal.hide();
-      
-      // Event Listener für korrektes Focus Management
-      teamModal.addEventListener('hidden.bs.modal', function modalHiddenHandler() {
-        // Event Listener nur einmal ausführen
-        teamModal.removeEventListener('hidden.bs.modal', modalHiddenHandler);
-        
-        // Focus auf Body oder Main Element setzen
-        document.body.focus();
-        
-        // Team-Analyse öffnen
-        setTimeout(() => {
-          window.pokemonTeamAnalyzer.openTeamAnalysis();
-        }, 100);
-      });
-    } else {
-      // Direkt öffnen wenn kein Modal offen ist
-      window.pokemonTeamAnalyzer.openTeamAnalysis();
-    }
-    
-    console.log('Team-Analyse wird geöffnet');
+    // Debug: Team vor dem Entfernen
+    if (window.POKE_DEBUG)
+      console.debug(
+        "[Team] before removal:",
+        window.teamOffcanvas.getTeam().map((p) => p.id)
+      );
+
+    const result = window.teamOffcanvas.removePokemonFromTeam(
+      parseInt(pokemonId)
+    );
+    if (window.POKE_DEBUG) console.debug("[Team] removed result:", result);
+
+    // Debug: Team nach dem Entfernen
+    if (window.POKE_DEBUG)
+      console.debug(
+        "[Team] after removal:",
+        window.teamOffcanvas.getTeam().map((p) => p.id)
+      );
+
+    // Warte kurz und aktualisiere dann das Modal
+    setTimeout(() => {
+      const currentTeam = window.teamOffcanvas.getTeam();
+      if (window.POKE_DEBUG)
+        console.debug("[Team] current size after removal:", currentTeam.length);
+      renderTeamOverview();
+    }, 200);
+
+    return false;
   } catch (error) {
-    console.error('Fehler beim Öffnen des Team Analyzers:', error);
-    alert('Fehler beim Öffnen der Team-Analyse. Bitte versuche es erneut.');
+    console.error("Error removing pokemon:", error);
+    return false;
   }
 };
 
-// Team-Übersicht im Modal rendern
-function renderTeamOverview() {
-  const overview = document.getElementById('teamOverview');
-  if (!overview) return;
-  
-  overview.innerHTML = '';
-  
-  // Überprüfe ob TeamOffcanvas verfügbar ist
-  if (!window.teamOffcanvas) {
-    overview.innerHTML = `
-      <div class="col-12 text-center">
-        <p class="text-muted">Team-System wird geladen...</p>
-      </div>
-    `;
-    return;
-  }
-  
-  const team = window.teamOffcanvas.getTeam();
-  
-  if (team.length === 0) {
-    overview.classList.add('empty');
-    return;
-  }
-  
-  overview.classList.remove('empty');
-  
-  team.forEach((pokemon, index) => {
-    const teamCard = document.createElement('div');
-    teamCard.className = 'team-overview-card';
-    
-    // Primary type für CSS-Klassen
-    const primaryType = pokemon.types[0];
-    
-    // Type badges erstellen
-    const typeBadges = pokemon.types.map(type => 
-      `<span class="badge type-badge type-${type}">${type}</span>`
-    ).join('');
-    
-    teamCard.innerHTML = `
-      <div class="pokemon-card type-${primaryType}">
-        <button class="pokemon-remove-btn" data-pokemon-id="${pokemon.id}" title="Pokemon entfernen">
-          ✕
-        </button>
-        <img src="${pokemon.image}" class="card-img-top pokemon-image" alt="${pokemon.name}" loading="lazy">
-        <div class="card-body">
-          <h6 class="card-title pokemon-name">${pokemon.name}</h6>
-          <div class="pokemon-types">
-            ${typeBadges}
-          </div>
-          <div class="team-position">
-            <small>Position ${index + 1}</small>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    overview.appendChild(teamCard);
-  });
-}
+// Globale Funktion für Team-Analyse öffnen
+window.openTeamAnalysis = function () {
+  if (window.POKE_DEBUG) console.debug("[Team] openTeamAnalysis");
 
-// Erweiterte Team-Ansicht für detaillierte Informationen
-function showDetailedTeamView() {
-  const overview = document.getElementById('teamOverview');
+  if (
+    window.pokemonTeamAnalyzer &&
+    typeof window.pokemonTeamAnalyzer.openTeamAnalysis === "function"
+  ) {
+    window.pokemonTeamAnalyzer.openTeamAnalysis();
+  } else {
+    console.warn("Team Analyzer not available");
+    alert(
+      "Team Analyzer wird noch geladen. Bitte warte einen Moment und versuche es erneut."
+    );
+  }
+};
+
+// Team-Übersicht rendern (vereinfacht)
+function renderTeamOverview() {
+  const overview = document.getElementById("teamOverview");
   if (!overview) return;
-  
-  overview.innerHTML = '';
-  
+
+  overview.innerHTML = "";
+
   if (!window.teamOffcanvas) {
     overview.innerHTML = `<div class="alert alert-warning">Team-System wird geladen...</div>`;
     return;
   }
-  
+
   const team = window.teamOffcanvas.getTeam();
-  
+
   if (team.length === 0) {
     overview.innerHTML = `
       <div class="alert alert-info text-center">
@@ -210,85 +127,371 @@ function showDetailedTeamView() {
     `;
     return;
   }
-  
-  // Erstelle erweiterte Team-Statistiken
-  const teamStats = generateTeamStats(team);
-  
+
+  // Berechne Team-Statistiken korrekt
+  const totalPower = team.reduce((sum, pokemon) => {
+    // Berechne Stärke aus allen Stats
+    const baseStats = pokemon.stats || [];
+    const totalStats = baseStats.reduce(
+      (statSum, stat) => statSum + stat.base_stat,
+      0
+    );
+    return sum + totalStats;
+  }, 0);
+  const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
+
+  // Team Stats Overview
+  const teamStatsHTML = `
+    <div class="team-stats-overview">
+      <div class="stat-card">
+        <div class="stat-number">${team.length}</div>
+        <div class="stat-label">Pokemon</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${totalPower}</div>
+        <div class="stat-label">Gesamtstärke</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">${uniqueTypes}</div>
+        <div class="stat-label">Typen</div>
+      </div>
+    </div>
+  `;
+
+  // Team Pokemon Grid mit korrekten Pokemon-Card Styles
+  const teamCardsHTML = team
+    .map((pokemon, index) => {
+      const primaryType = pokemon.types[0];
+      return `
+  <div class="pokemon-card type-${primaryType} u-rel">
+        <button class="pokemon-remove-btn" data-pokemon-id="${
+          pokemon.id
+        }" title="Pokemon entfernen" onclick="removePokemonFromTeam(${
+        pokemon.id
+      }, event); return false;">
+          ✕
+        </button>
+  <div class="team-position-badge">#${index + 1}</div>
+    <img src="${pokemon.image}" alt="${
+        pokemon.name
+      }" loading="lazy" class="pokemon-image team-card-image team-card-image--sm">
+  <div class="pokemon-info pokemon-info-block">
+          <h6 class="pokemon-name pokemon-name--team">${pokemon.name}</h6>
+          <div class="pokemon-types types-row">
+            ${(() => {
+              const VALID_TYPES = new Set([
+                "normal",
+                "fire",
+                "water",
+                "grass",
+                "electric",
+                "ice",
+                "fighting",
+                "poison",
+                "ground",
+                "flying",
+                "psychic",
+                "bug",
+                "rock",
+                "ghost",
+                "dragon",
+                "dark",
+                "steel",
+                "fairy",
+              ]);
+              const safeTypes = window.sanitizeTypes
+                ? window.sanitizeTypes(pokemon.types)
+                : pokemon.types;
+              return safeTypes
+                .map(
+                  (type) =>
+                    `<span class="type-badge type-${type}">${type}</span>`
+                )
+                .join("");
+            })()}
+          </div>
+          <button class="btn btn-sm btn-outline-light strength-toggle-btn strength-toggle-btn--mini" type="button" aria-expanded="false">
+            <span class="st-icon">⚡</span>
+            <span class="st-label">Stärke</span>
+          </button>
+          <div class="pokemon-stats team-strength team-strength--compact team-strength--mini-card is-hidden" role="group" aria-label="Team Stärke" aria-hidden="true">
+            ${(() => {
+              try {
+                if (
+                  window.pokemonGoFeatures &&
+                  typeof window.pokemonGoFeatures.getBaseStats === "function" &&
+                  typeof window.pokemonGoFeatures.generateIVs === "function"
+                ) {
+                  const base = window.pokemonGoFeatures.getBaseStats(pokemon.id);
+                  const ivs = window.pokemonGoFeatures.generateIVs(pokemon.id);
+                  if (base && ivs) {
+                    const atk = base.attack || 0;
+                    const def = base.defense || 0;
+                    const sta = base.stamina || 0;
+                    const baseSum = atk + def + sta;
+                    const ivSum = (ivs.attack || 0) + (ivs.defense || 0) + (ivs.stamina || 0);
+                    const ivPercent = ((ivSum / 45) * 100).toFixed(0);
+                    return `
+                      <div class="ts-row">
+                        <span class="ts-label">Gesamt</span>
+                        <span class="ts-value">${baseSum}</span>
+                      </div>
+                      <div class="ts-row">
+                        <span class="ts-label">IV</span>
+                        <span class="ts-meta">${ivPercent}%</span>
+                      </div>
+                      <div class="ts-row">
+                        <span class="ts-label">ATK</span>
+                        <span class="ts-value">${atk}</span>
+                      </div>
+                      <div class="ts-row">
+                        <span class="ts-label">DEF</span>
+                        <span class="ts-value">${def}</span>
+                      </div>
+                      <div class="ts-row">
+                        <span class="ts-label">STA</span>
+                        <span class="ts-value">${sta}</span>
+                      </div>
+                      <span class="ts-sub">Basiswerte + IV Analyse</span>
+                    `;
+                  }
+                }
+                // Fallback alte Logik
+                const fallback = pokemon.stats
+                  ? pokemon.stats.reduce((sum, stat) => sum + stat.base_stat, 0)
+                  : pokemon.base_experience || 0;
+                return `
+                  <div class="ts-row">
+                    <span class="ts-label">Stärke</span>
+                    <span class="ts-value">${fallback}</span>
+                  </div>
+                  <span class="ts-sub">Basis (Fallback)</span>
+                `;
+              } catch (e) {
+                return `
+                  <div class="ts-row">
+                    <span class="ts-label">Stärke</span>
+                    <span class="ts-value">?</span>
+                  </div>
+                `;
+              }
+            })()}
+          </div>
+        </div>
+      </div>
+    `;
+    })
+    .join("");
+
   overview.innerHTML = `
-    <div class="detailed-team-view">
-      <!-- Team Statistiken -->
-      <div class="team-stats mb-4">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <div class="stat-card">
-              <div class="stat-icon">👥</div>
-              <div class="stat-content">
-                <div class="stat-number">${team.length}</div>
-                <div class="stat-label">Team-Mitglieder</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="stat-card">
-              <div class="stat-icon">⚡</div>
-              <div class="stat-content">
-                <div class="stat-number">${teamStats.uniqueTypes}</div>
-                <div class="stat-label">Verschiedene Typen</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="stat-card">
-              <div class="stat-icon">🎯</div>
-              <div class="stat-content">
-                <div class="stat-number">${teamStats.coverage}%</div>
-                <div class="stat-label">Typ-Abdeckung</div>
-              </div>
-            </div>
-          </div>
+    ${teamStatsHTML}
+    <div class="team-grid">
+      ${teamCardsHTML}
+    </div>
+  `;
+
+  // Delegierter Listener für per-Card Toggle
+  overview.addEventListener("click", (e) => {
+    const btn = e.target.closest(".strength-toggle-btn");
+    if (!btn) return;
+    const card = btn.closest(".pokemon-card");
+    if (!card) return;
+    const block = card.querySelector(".team-strength");
+    if (!block) return;
+    // Sichtbarkeit robust ermitteln (Klasse oder computed style)
+    const isCurrentlyHidden = block.classList.contains("is-hidden");
+    if (isCurrentlyHidden) {
+      block.classList.remove("is-hidden");
+      // Animation nur wenn nicht bereits sichtbar
+      block.classList.add("fade-in");
+      block.removeAttribute("style"); // Entferne evtl. alte inline styles
+      block.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
+      setTimeout(() => block.classList.remove("fade-in"), 260);
+    } else {
+      block.classList.add("is-hidden");
+      block.removeAttribute("style");
+      block.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
+    }
+  });
+}
+
+// Erweiterte Team-Ansicht für detaillierte Informationen (interne Funktion)
+function showDetailedTeamViewInternal() {
+  if (window.POKE_DEBUG) console.debug("[Team] showDetailedTeamViewInternal");
+  const overview = document.getElementById("teamOverview");
+  if (!overview) {
+    console.error("teamOverview element not found");
+    return;
+  }
+
+  overview.innerHTML = "";
+
+  if (!window.teamOffcanvas) {
+    console.warn("teamOffcanvas not available yet, retrying...");
+    overview.innerHTML = `<div class="alert alert-warning">Team-System wird geladen...</div>`;
+
+    // Retry after a short delay
+    setTimeout(() => {
+      if (window.teamOffcanvas) {
+        if (window.POKE_DEBUG)
+          console.debug("[Team] teamOffcanvas available after retry");
+        showDetailedTeamViewInternal();
+      }
+    }, 500);
+    return;
+  }
+
+  if (window.POKE_DEBUG) console.debug("[Team] fetching team data");
+  const team = window.teamOffcanvas.getTeam();
+  if (window.POKE_DEBUG) console.debug("[Team] team data:", team);
+
+  if (team.length === 0) {
+    overview.innerHTML = `
+      <div class="alert alert-info text-center">
+        <i class="fas fa-info-circle me-2"></i>
+        Dein Team ist noch leer. Ziehe Pokemon-Karten in das Offcanvas, um dein Team zusammenzustellen!
+      </div>
+    `;
+    return;
+  }
+
+  // Berechne korrekte Team-Statistiken
+  const totalPower = team.reduce((sum, pokemon) => {
+    const baseStats = pokemon.stats || [];
+    const totalStats = baseStats.reduce(
+      (statSum, stat) => statSum + stat.base_stat,
+      0
+    );
+    return sum + totalStats;
+  }, 0);
+  const averagePower = Math.round(totalPower / team.length);
+  const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
+  const coverage = Math.round((uniqueTypes / 18) * 100);
+
+  overview.innerHTML = `
+    <div class="team-modal-container">
+      <!-- Erweiterte Team-Statistiken -->
+      <div class="team-stats-overview">
+        <div class="stat-card">
+          <div class="stat-number">${team.length}</div>
+          <div class="stat-label">Team-Mitglieder</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${totalPower}</div>
+          <div class="stat-label">Gesamtstärke</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${averagePower}</div>
+          <div class="stat-label">Ø Stärke</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${uniqueTypes}</div>
+          <div class="stat-label">Verschiedene Typen</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">${coverage}%</div>
+          <div class="stat-label">Typ-Abdeckung</div>
         </div>
       </div>
       
-      <!-- Team Pokemon -->
-      <div class="team-pokemon">
-        <h6 class="mb-3"><i class="fas fa-users me-2"></i>Deine Pokemon</h6>
-        <div class="row g-3">
-          ${team.map((pokemon, index) => {
+      <!-- Team Pokemon Grid mit korrekten Pokemon-Card Styles -->
+      <div class="team-grid team-grid--wide">
+        ${team
+          .map((pokemon, index) => {
             const primaryType = pokemon.types[0];
+            // Robuste Gesamtstärke (Base Stats Summe). Preferiere getBaseStats falls verfügbar.
+            let pokemonStats = 0;
+            try {
+              if (
+                window.pokemonGoFeatures &&
+                typeof window.pokemonGoFeatures.getBaseStats === "function"
+              ) {
+                const base = window.pokemonGoFeatures.getBaseStats(pokemon.id);
+                if (base) {
+                  pokemonStats =
+                    (base.attack || 0) +
+                    (base.defense || 0) +
+                    (base.stamina || 0);
+                }
+              }
+              if (!pokemonStats && Array.isArray(pokemon.stats)) {
+                pokemonStats = pokemon.stats.reduce(
+                  (sum, stat) => sum + (stat.base_stat || 0),
+                  0
+                );
+              }
+            } catch (e) {
+              pokemonStats = 0;
+            }
             return `
-            <div class="col-md-6 col-lg-4">
-              <div class="detailed-pokemon-card pokemon-card type-${primaryType}">
-                <button class="pokemon-remove-btn" data-pokemon-id="${pokemon.id}" title="Pokemon entfernen">
-                  ✕
-                </button>
-                <img src="${pokemon.image}" class="card-img-top pokemon-image" alt="${pokemon.name}" loading="lazy">
-                <div class="card-body">
-                  <h6 class="card-title pokemon-name">${pokemon.name}</h6>
-                  <div class="pokemon-types mb-2">
-                    ${pokemon.types.map(type => `<span class="badge type-badge" style="background-color: var(--type-${type})">${type}</span>`).join('')}
-                  </div>
-                  <div class="pokemon-position">
-                    <small><i class="fas fa-map-marker-alt me-1"></i>Position ${index + 1}</small>
-                  </div>
-                </div>
+          <div class="pokemon-card type-${primaryType} u-rel min-h-300">
+            <button class="pokemon-remove-btn" data-pokemon-id="${
+              pokemon.id
+            }" title="Pokemon entfernen" onclick="removePokemonFromTeam(${
+              pokemon.id
+            }, event); return false;">
+              ✕
+            </button>
+            <div class="team-position-badge team-position-badge--large team-position-badge--primary">#${
+              index + 1
+            }</div>
+            ${pokemon.favorite ? '<div class="star-indicator">⭐</div>' : ""}
+            <img src="${pokemon.image}" alt="${
+              pokemon.name
+            }" loading="lazy" class="pokemon-image team-card-image team-card-image--spaced">
+            <div class="pokemon-info-block pokemon-info-block--wide white-text">
+              <h6 class="pokemon-name-heading pokemon-name-heading--large">${
+                pokemon.name
+              }</h6>
+              <div class="pokemon-subinfo">#${pokemon.id}</div>
+              <div class="mini-meta">
+                ${(() => {
+                  const VALID_TYPES = new Set([
+                    "normal",
+                    "fire",
+                    "water",
+                    "grass",
+                    "electric",
+                    "ice",
+                    "fighting",
+                    "poison",
+                    "ground",
+                    "flying",
+                    "psychic",
+                    "bug",
+                    "rock",
+                    "ghost",
+                    "dragon",
+                    "dark",
+                    "steel",
+                    "fairy",
+                  ]);
+                  const safeTypes = window.sanitizeTypes
+                    ? window.sanitizeTypes(pokemon.types)
+                    : pokemon.types;
+                  return safeTypes
+                    .map(
+                      (type) =>
+                        `<span class=\"type-badge-inline type-${type}\">${type}</span>`
+                    )
+                    .join("");
+                })()}
               </div>
+              <div class="pokemon-subinfo mb-12">
+                Gesamtstärke: ${pokemonStats}
+              </div>
+              <button class="btn btn-filter btn--xs" data-action="show-detail" data-pokemon-id="${
+                pokemon.id
+              }">
+                Details anzeigen
+              </button>
             </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-      
-      <!-- Typ-Verteilung -->
-      <div class="type-distribution mt-4">
-        <h6 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Typ-Verteilung</h6>
-        <div class="type-breakdown">
-          ${teamStats.typeBreakdown.map(([type, count]) => `
-            <div class="type-stat">
-              <span class="badge type-badge type-${type} me-2">${type}</span>
-              <span class="type-count">${count}x</span>
-            </div>
-          `).join('')}
-        </div>
+          </div>
+          `;
+          })
+          .join("")}
       </div>
     </div>
   `;
@@ -296,96 +499,66 @@ function showDetailedTeamView() {
 
 // Hilfsfunktion für Team-Statistiken
 function generateTeamStats(team) {
-  const allTypes = team.flatMap(pokemon => pokemon.types);
   const typeCounts = {};
-  
-  allTypes.forEach(type => {
-    typeCounts[type] = (typeCounts[type] || 0) + 1;
+
+  team.forEach((pokemon) => {
+    pokemon.types.forEach((type) => {
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
   });
-  
+
   const uniqueTypes = Object.keys(typeCounts).length;
   const totalTypes = 18; // Anzahl aller Pokemon-Typen
   const coverage = Math.round((uniqueTypes / totalTypes) * 100);
-  
+
   return {
     uniqueTypes,
     coverage,
-    typeBreakdown: Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
+    typeBreakdown: Object.entries(typeCounts).sort((a, b) => b[1] - a[1]),
   };
 }
 
-// Event Listener für Modal Events
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOM Content Loaded - Registering Team Modal Event Listeners');
-  
-  const teamModal = document.getElementById('teamModal');
+// Event Listeners
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.POKE_DEBUG)
+    console.debug("[Team] DOMContentLoaded for MyPokedex Section");
+
+  // Modal Event Listeners
+  const teamModal = document.getElementById("teamModal");
   if (teamModal) {
-    // Modal wird geöffnet - Team-Übersicht aktualisieren
-    teamModal.addEventListener('show.bs.modal', () => {
-      console.log('Team Modal opening - rendering team overview');
+    teamModal.addEventListener("show.bs.modal", () => {
+      if (window.POKE_DEBUG)
+        console.debug("[Team] Team Modal show -> render overview");
       renderTeamOverview();
     });
-    
-    // Modal geschlossen - eventuell Cleanup
-    teamModal.addEventListener('hidden.bs.modal', () => {
-      // Cleanup falls nötig
-      console.log('Team Modal closed');
+
+    teamModal.addEventListener("hidden.bs.modal", () => {
+      if (window.POKE_DEBUG) console.debug("[Team] Team Modal hidden");
     });
   }
-  
-  // Event Listener für Action Buttons mit Delegation
-  document.addEventListener('click', (event) => {
+
+  // Action Button Event Listeners
+  document.addEventListener("click", (event) => {
     // Team anzeigen Button
-    if (event.target.id === 'showTeamBtn') {
-      console.log('Show Team Button clicked');
+    if (event.target.id === "showTeamBtn") {
+      if (window.POKE_DEBUG) console.debug("[Team] Show Team Button click");
       event.preventDefault();
-      showDetailedTeamView();
+      showDetailedTeamViewInternal();
     }
-    
+
     // Team analysieren Button
-    if (event.target.id === 'analyzeTeamBtn') {
-      console.log('Analyze Team Button clicked');
+    if (event.target.id === "analyzeTeamBtn") {
+      if (window.POKE_DEBUG) console.debug("[Team] Analyze Team Button click");
       event.preventDefault();
-      
-      // Debug: Prüfe verfügbare Objekte
-      console.log('window.pokemonTeamAnalyzer:', window.pokemonTeamAnalyzer);
-      console.log('window.teamOffcanvas:', window.teamOffcanvas);
-      
-      // Überprüfe ob Team Analyzer verfügbar ist
-      if (window.pokemonTeamAnalyzer && typeof window.pokemonTeamAnalyzer.openTeamAnalysis === 'function') {
-        // Prüfe ob Team vorhanden ist
-        const team = window.teamOffcanvas ? window.teamOffcanvas.getTeam() : [];
-        if (team.length === 0) {
-          alert('Füge erst Pokemon zu deinem Team hinzu, bevor du es analysieren kannst!');
-          return;
-        }
-        
-        // Schließe Team Modal zuerst
-        const modal = bootstrap.Modal.getInstance(document.getElementById('teamModal'));
-        if (modal) {
-          modal.hide();
-        }
-        
-        // Öffne Team Analyzer mit kurzer Verzögerung
-        setTimeout(() => {
-          try {
-            window.pokemonTeamAnalyzer.openTeamAnalysis();
-          } catch (error) {
-            console.error('Fehler beim Öffnen des Team Analyzers:', error);
-            alert('Fehler beim Öffnen der Team-Analyse. Bitte versuche es erneut.');
-          }
-        }, 300);
-      } else {
-        console.warn('Team Analyzer nicht verfügbar');
-        alert('Team Analyzer wird noch geladen. Bitte warte einen Moment und versuche es erneut.');
-      }
+      openTeamAnalysis();
     }
-    
+
     // Pokemon entfernen Button
-    if (event.target.classList.contains('pokemon-remove-btn')) {
-      console.log('Remove Pokemon Button clicked');
+    if (event.target.classList.contains("pokemon-remove-btn")) {
+      if (window.POKE_DEBUG)
+        console.debug("[Team] Remove Pokemon Button click");
       event.preventDefault();
-      const pokemonId = event.target.getAttribute('data-pokemon-id');
+      const pokemonId = event.target.getAttribute("data-pokemon-id");
       if (pokemonId) {
         window.removePokemonFromTeam(parseInt(pokemonId));
       }
@@ -393,13 +566,34 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Für Backwards-Kompatibilität: Dropdown Toggle Funktion (falls woanders verwendet)
-window.toggleDropdown = function(dropdownId) {
-  console.warn('toggleDropdown is deprecated. Use showTeamModal() instead.');
+// Initialisierung nach dem Laden
+function initializeMyPokedexSection() {
+  if (window.POKE_DEBUG) console.debug("[Team] init MyPokedex Section");
+
+  // Prüfen ob alle Dependencies verfügbar sind
+  if (!window.teamOffcanvas) {
+    console.warn("teamOffcanvas not available, waiting...");
+    setTimeout(initializeMyPokedexSection, 100);
+    return;
+  }
+
+  if (window.POKE_DEBUG) console.debug("[Team] MyPokedex Section ready");
+}
+
+// Initialisierung starten
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeMyPokedexSection);
+} else {
+  initializeMyPokedexSection();
+}
+
+// Für Backwards-Kompatibilität
+window.toggleDropdown = function (dropdownId) {
+  console.warn("toggleDropdown is deprecated. Use showTeamModal() instead.");
   showTeamModal();
 };
 
-// Legacy Counter Update (falls noch verwendet)
+// Legacy Counter Update
 function updatePokedexCount() {
   const countElement = document.getElementById("pokedexCount");
   if (countElement && window.teamOffcanvas) {

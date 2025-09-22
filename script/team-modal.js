@@ -1,4 +1,6 @@
 // Erweitertes Modal-System für Team-Pokemon
+// Logging-Richtlinie: Nur console.error / console.warn dauerhaft. Zusätzliche Debug-Ausgaben
+// können über (window.POKE_DEBUG && console.debug(...)) in zukünftigen Erweiterungen ergänzt werden.
 class PokemonTeamModal {
     constructor() {
         this.currentTeam = [];
@@ -14,12 +16,13 @@ class PokemonTeamModal {
 
     createTeamModal() {
         const modalHTML = `
-            <div id="pokemonTeamModal" class="modal fade" tabindex="-1">
+            <!-- aria-hidden entfernt: Bootstrap steuert dieses Attribut dynamisch -->
+            <div id="pokemonTeamModal" class="modal fade" tabindex="-1" aria-labelledby="pokemonTeamModalLabel" aria-describedby="teamModalContent">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">🎯 Mein Pokemon-Team</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 class="modal-title" id="pokemonTeamModalLabel">🎯 Mein Pokemon-Team</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
                         </div>
                         <div class="modal-body">
                             <div id="teamModalContent">
@@ -65,6 +68,23 @@ class PokemonTeamModal {
                 this.removePokemonFromTeam(pokemonId);
             }
         });
+
+        // Event Listeners für Modal-Verwaltung
+        this.attachModalEventListeners();
+    }
+
+    attachModalEventListeners() {
+        const modal = document.getElementById('pokemonTeamModal');
+        if (!modal) return;
+
+        // Event Listener nur für Fokus-Verbesserung, ohne manuelles aria-hidden/aria-modal Handling
+        modal.addEventListener('shown.bs.modal', () => {
+            const closeButton = modal.querySelector('.btn-close');
+            if (closeButton) closeButton.focus();
+        });
+        modal.addEventListener('hidden.bs.modal', () => {
+            // Optionale Fokus-Rückgabe könnte hier implementiert werden
+        });
     }
 
     openTeamModal() {
@@ -78,7 +98,21 @@ class PokemonTeamModal {
         this.renderTeamModal();
         
         const modal = document.getElementById('pokemonTeamModal');
-        const bootstrap_modal = new bootstrap.Modal(modal);
+        if (!modal) {
+            console.error('Pokemon Team Modal not found');
+            return;
+        }
+
+        // Korrekte Initialisierung des Bootstrap Modals
+        let bootstrap_modal = bootstrap.Modal.getInstance(modal);
+        if (!bootstrap_modal) {
+            bootstrap_modal = new bootstrap.Modal(modal, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+            });
+        }
+        
         bootstrap_modal.show();
     }
 
@@ -152,19 +186,43 @@ class PokemonTeamModal {
         const uniqueTypes = new Set();
         let totalRating = 0;
         let favoritesCount = 0;
+        let totalBaseStats = 0; // Summe aller (ATK+DEF+STA) der Teammitglieder
+        let totalIVPercent = 0; // Summe der IV-% Werte (für Durchschnitt)
 
         this.currentTeam.forEach(pokemon => {
             pokemon.types.forEach(type => uniqueTypes.add(type));
             totalRating += pokemon.rating;
             if (pokemon.isFavorite) favoritesCount++;
+
+            // Gesamtstärke: Summe Base Stats
+            if (window.pokemonGoFeatures && typeof window.pokemonGoFeatures.getBaseStats === 'function') {
+                const baseStats = window.pokemonGoFeatures.getBaseStats(pokemon.id);
+                if (baseStats) {
+                    totalBaseStats += (baseStats.attack || 0) + (baseStats.defense || 0) + (baseStats.stamina || 0);
+                }
+            }
+
+            // IV Durchschnitt: neu berechnet über generateIVs()
+            if (window.pokemonGoFeatures && typeof window.pokemonGoFeatures.generateIVs === 'function') {
+                const ivs = window.pokemonGoFeatures.generateIVs(pokemon.id);
+                if (ivs) {
+                    const ivSum = (ivs.attack || 0) + (ivs.defense || 0) + (ivs.stamina || 0); // 0-45
+                    const ivPercent = (ivSum / 45) * 100;
+                    totalIVPercent += ivPercent;
+                }
+            }
         });
+
+        const averageIVPercent = totalPokemon > 0 ? (totalIVPercent / totalPokemon) : 0;
 
         return {
             totalPokemon,
             uniqueTypes: uniqueTypes.size,
             averageRating: totalPokemon > 0 ? (totalRating / totalPokemon).toFixed(1) : 0,
             favoritesCount,
-            typeDistribution: Array.from(uniqueTypes)
+            typeDistribution: Array.from(uniqueTypes),
+            totalBaseStats,
+            averageIVPercent: averageIVPercent.toFixed(1)
         };
     }
 
@@ -180,12 +238,12 @@ class PokemonTeamModal {
                     <div class="stat-label">Verschiedene Typen</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${stats.averageRating}</div>
-                    <div class="stat-label">⭐ Durchschnitt</div>
+                    <div class="stat-number">${stats.totalBaseStats}</div>
+                    <div class="stat-label">Gesamtstärke (Base)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">${stats.favoritesCount}</div>
-                    <div class="stat-label">❤️ Favoriten</div>
+                    <div class="stat-number">${stats.averageIVPercent}%</div>
+                    <div class="stat-label">Ø IV%</div>
                 </div>
             </div>
         `;
@@ -220,9 +278,10 @@ class PokemonTeamModal {
                     <h6 class="team-pokemon-name">${pokemon.name}</h6>
                     <div class="team-pokemon-number">${pokemon.number}</div>
                     <div class="team-pokemon-types">
-                        ${pokemon.types.map(type => 
-                            `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`
-                        ).join('')}
+                                                ${(() => { 
+                                                    const safeTypes = window.sanitizeTypes ? window.sanitizeTypes(pokemon.types) : pokemon.types;
+                                                    return safeTypes.map(type => `<span class=\"type-badge type-${type}\">${type.toUpperCase()}</span>`).join('');
+                                                })()}
                     </div>
                     <div class="team-pokemon-rating">${ratingStars}</div>
                     ${pokemon.note ? `<div class="team-pokemon-note">"${pokemon.note}"</div>` : ''}

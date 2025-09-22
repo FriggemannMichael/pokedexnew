@@ -244,6 +244,53 @@ async function handleEvolutionClick(item, currentPokemonId) {
     }
 }
 
+// --- Globale Kompatibilitäts-Funktion ---
+// Einige Buttons verwenden noch ein inline onclick="showPokemonDetail(id)" Pattern.
+// Damit diese weiterhin funktionieren, definieren wir einen sicheren Wrapper.
+// Er versucht zuerst das TeamModal-System zu nutzen, fällt sonst auf openPokemonDetail(pokemonObject) zurück.
+if (!window.showPokemonDetail) {
+    window.showPokemonDetail = function(pokemonId) {
+        try {
+            const id = parseInt(pokemonId);
+            if (isNaN(id)) return;
+            // Priorität: Team Modal Instanz
+            if (window.pokemonTeamModal && typeof window.pokemonTeamModal.showPokemonDetail === 'function') {
+                window.pokemonTeamModal.showPokemonDetail(id);
+                return;
+            }
+
+            // Falls wir eine globale Pokemon Liste haben
+            if (Array.isArray(appState?.pokemonList)) {
+                const pokemon = appState.pokemonList.find(p => p.id === id);
+                if (pokemon) {
+                    if (typeof openPokemonDetail === 'function') {
+                        openPokemonDetail(pokemon);
+                        return;
+                    }
+                }
+            }
+
+            // Letzter Versuch: Direkt API Daten holen und minimal Objekt bauen
+            fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    const pokemon = {
+                        id: data.id,
+                        name: data.name,
+                        image: data.sprites?.other?.['official-artwork']?.front_default || data.sprites?.front_default || '',
+                        types: data.types.map(t => t.type.name)
+                    };
+                    if (typeof openPokemonDetail === 'function') {
+                        openPokemonDetail(pokemon);
+                    }
+                })
+                .catch(e => console.warn('Fallback Detail Fetch fehlgeschlagen', e));
+        } catch (e) {
+            console.warn('showPokemonDetail Fehler', e);
+        }
+    };
+}
+
 function shouldLoadNewPokemon(pokemonId, currentPokemonId) {
     return pokemonId && pokemonId !== currentPokemonId.toString();
 }

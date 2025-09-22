@@ -1,397 +1,479 @@
 /* Team Modal Styles */
 
 #pokemonTeamModal .modal-dialog {
-    max-width: 95vw;
+  max-width: 95vw;
 }
 
 #pokemonTeamModal .modal-content {
-    border-radius: 16px;
-    border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-lg);
+  border: none;
+  box-shadow: var(--shadow-xl);
 }
 
 #pokemonTeamModal .modal-header {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent));
-    color: white;
-    border-radius: 16px 16px 0 0;
-    border-bottom: none;
-    padding: 20px 24px;
+  background: var(--gradient);
+  color: white;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-bottom: none;
+  padding: var(--spacing-xl) var(--spacing-xl);
 }
 
 #pokemonTeamModal .modal-title {
-    font-weight: 700;
-    font-size: 1.5rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+  font-family: var(--font-title);
 }
 
 #pokemonTeamModal .btn-close {
-    filter: invert(1);
+  filter: invert(1);
 }
 
 .team-modal-container {
-    padding: 20px;
+  padding: 20px;
 }
 
 /* Team Stats Overview */
 .team-stats-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-    border-radius: 12px;
-    border: 1px solid rgba(102, 126, 234, 0.2);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.1),
+    rgba(118, 75, 162, 0.1)
+  );
+  border-radius: 12px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .stat-card {
-    text-align: center;
-    padding: 16px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
-    transition: transform 0.3s ease;
+  text-align: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  transition: transform 0.3s ease;
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .stat-number {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    line-height: 1;
-    margin-bottom: 4px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1;
+  margin-bottom: 4px;
 }
 
 .stat-label {
-    font-size: 0.875rem;
-    color: #666;
-    font-weight: 500;
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
 }
 
 /* Team Pokemon Grid */
 .team-pokemon-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .team-pokemon-card {
-    background: linear-gradient(145deg, #ffffff, #f8f9fa);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .team-pokemon-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent));
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent));
 }
 
 .team-pokemon-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
 }
 
 .team-pokemon-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
 }
 
 .team-position {
-    background: var(--primary-color);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
+  background: var(--primary-color);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .favorite-indicator {
-    font-size: 1.2rem;
+  font-size: 1.2rem;
 }
 
 .team-pokemon-image {
-    text-align: center;
-    margin-bottom: 16px;
+  text-align: center;
+  margin-bottom: 16px;
 }
 
 .team-pokemon-image img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
 }
 
 .team-pokemon-info {
-    text-align: center;
+  text-align: center;
 }
 
 .team-pokemon-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 4px;
 }
 
 .team-pokemon-number {
-    font-size: 0.875rem;
-    color: #666;
-    margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 8px;
 }
 
 .team-pokemon-types {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .team-pokemon-types .type-badge {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 10px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .team-pokemon-rating {
-    font-size: 0.875rem;
-    margin-bottom: 8px;
+  font-size: 0.875rem;
+  margin-bottom: 8px;
 }
 
 .team-pokemon-note {
-    font-size: 0.75rem;
-    color: #666;
-    font-style: italic;
-    margin-bottom: 12px;
-    padding: 6px;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 6px;
+  font-size: 0.75rem;
+  color: #666;
+  font-style: italic;
+  margin-bottom: 12px;
+  padding: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
 }
 
 .team-pokemon-actions {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
 }
 
 .team-pokemon-actions .btn {
-    border-radius: 20px;
-    font-size: 0.75rem;
-    padding: 4px 12px;
-    transition: all 0.3s ease;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  transition: all 0.3s ease;
 }
 
 .team-pokemon-actions .btn:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* Team Actions Section */
 .team-actions-section {
-    background: rgba(248, 249, 250, 0.8);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 20px;
+  background: rgba(248, 249, 250, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
 }
 
 .team-actions-section h6 {
-    color: var(--text-color);
-    font-weight: 600;
-    margin-bottom: 16px;
-    text-align: center;
+  color: var(--text-color);
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .team-actions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
 }
 
 .team-actions-grid .btn {
-    border-radius: 25px;
-    font-weight: 500;
-    padding: 10px 16px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+  border-radius: 25px;
+  font-weight: 500;
+  padding: 10px 16px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .team-actions-grid .btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
 
 .team-actions-grid .btn:hover::before {
-    left: 100%;
+  left: 100%;
 }
 
 .team-actions-grid .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Modal Footer */
 #pokemonTeamModal .modal-footer {
-    background: rgba(248, 249, 250, 0.8);
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0 0 16px 16px;
-    padding: 16px 24px;
+  background: rgba(248, 249, 250, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 16px 16px;
+  padding: 16px 24px;
 }
 
 #pokemonTeamModal .modal-footer .btn {
-    border-radius: 25px;
-    font-weight: 500;
-    padding: 8px 20px;
-    transition: all 0.3s ease;
+  border-radius: 25px;
+  font-weight: 500;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
 }
 
 #pokemonTeamModal .modal-footer .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    #pokemonTeamModal .modal-dialog {
-        max-width: 95vw;
-        margin: 1rem auto;
-    }
-    
-    .team-stats-overview {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-        padding: 16px;
-    }
-    
-    .stat-number {
-        font-size: 1.5rem;
-    }
-    
-    .team-pokemon-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .team-pokemon-card {
-        padding: 16px;
-    }
-    
-    .team-actions-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-    }
-    
-    .team-modal-container {
-        padding: 12px;
-    }
+  #pokemonTeamModal .modal-dialog {
+    max-width: 95vw;
+    margin: 1rem auto;
+  }
+
+  .team-stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .team-pokemon-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .team-pokemon-card {
+    padding: 16px;
+  }
+
+  .team-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .team-modal-container {
+    padding: 12px;
+  }
 }
 
 @media (max-width: 480px) {
-    .team-stats-overview {
-        grid-template-columns: 1fr;
-    }
-    
-    .team-pokemon-actions {
-        flex-direction: column;
-    }
-    
-    .team-pokemon-actions .btn {
-        width: 100%;
-    }
+  .team-stats-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .team-pokemon-actions {
+    flex-direction: column;
+  }
+
+  .team-pokemon-actions .btn {
+    width: 100%;
+  }
 }
 
 /* Animation für Cards beim Laden */
 @keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .team-pokemon-card {
-    animation: slideInUp 0.3s ease-out;
+  animation: slideInUp 0.3s ease-out;
 }
 
-.team-pokemon-card:nth-child(1) { animation-delay: 0.1s; }
-.team-pokemon-card:nth-child(2) { animation-delay: 0.2s; }
-.team-pokemon-card:nth-child(3) { animation-delay: 0.3s; }
-.team-pokemon-card:nth-child(4) { animation-delay: 0.4s; }
-.team-pokemon-card:nth-child(5) { animation-delay: 0.5s; }
-.team-pokemon-card:nth-child(6) { animation-delay: 0.6s; }
+.team-pokemon-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.team-pokemon-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.team-pokemon-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.team-pokemon-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.team-pokemon-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.team-pokemon-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 /* Team View Button im Droppoint */
 .drop-point .btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent));
-    border: none;
-    border-radius: 25px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent));
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .drop-point .btn-primary::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-    transition: left 0.5s ease;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
 }
 
 .drop-point .btn-primary:hover::before {
-    left: 100%;
+  left: 100%;
 }
 
 .drop-point .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.4);
 }
 
 /* Leeres Team */
 .empty-team-message {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
 }
 
 .empty-team-message img {
-    width: 120px;
-    height: 120px;
-    opacity: 0.3;
-    margin-bottom: 20px;
+  width: 120px;
+  height: 120px;
+  opacity: 0.3;
+  margin-bottom: 20px;
 }
 
 .empty-team-message h6 {
-    font-size: 1.2rem;
-    margin-bottom: 8px;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
 }
 
 .empty-team-message p {
-    font-size: 0.9rem;
-    opacity: 0.8;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* =============================================
+   POKEMON REMOVE BUTTONS - Team Modal Styles
+   ============================================= */
+
+/* Pokemon Card Container - Position relative für absolute positioning */
+.pokemon-card {
+  position: relative;
+}
+
+/* Remove Button INNERHALB der Pokemon Card */
+.pokemon-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #333;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+.pokemon-remove-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px) scale(1.05);
+  opacity: 1;
+  border-color: #dc3545;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: #dc3545;
+}
+
+.pokemon-remove-btn:active {
+  transform: translateY(0) scale(0.95);
+  transition: all 0.1s ease;
+}
+
+/* Überschreibe die team-overview-card Styles */
+.team-overview-card .pokemon-card {
+  position: relative;
+  overflow: visible;
 }
