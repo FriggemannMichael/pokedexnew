@@ -35,6 +35,16 @@ class TeamOffcanvas {
     this.setupEventListeners();
     this.loadTeamFromStorage();
     this.setupDynamicModalHeader();
+
+    // Edge Activation Konfiguration (öffnen bei Mausnähe rechter Rand)
+    this._edgeListener = null;
+    this._edgeOpenTimer = null;
+    this._edgeCloseTimer = null;
+    this.edgeRem = 4;          // Abstand vom rechten Rand
+    this.edgeOpenDelay = 120;  // ms Verzögerung bevor geöffnet wird
+    this.edgeCloseDelay = 280; // ms Verzögerung bevor geschlossen wird
+    this._rootFontSize = null;
+    this.enableEdgeActivation();
   }
   
   initializeOffcanvas() {
@@ -68,6 +78,81 @@ class TeamOffcanvas {
   hideOffcanvas() {
     if (this.offcanvas) {
       this.offcanvas.hide();
+    }
+  }
+
+  // --- Edge Activation Logic ---
+  enableEdgeActivation() {
+    if (this._edgeListener) return; // schon aktiv
+    this._edgeListener = (ev) => {
+      // Root font-size (für rem -> px) nur einmal berechnen
+      if (!this._rootFontSize) {
+        const fs = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        this._rootFontSize = isNaN(fs) ? 16 : fs;
+      }
+      const thresholdPx = this.edgeRem * this._rootFontSize;
+      const distanceFromRight = window.innerWidth - ev.clientX;
+      if (distanceFromRight <= thresholdPx) {
+        this._scheduleEdgeOpen();
+      } else if (!this.isOpen()) {
+        // Maus wieder weg bevor geöffnet => Öffnen abbrechen
+        this._cancelEdgeOpen();
+      } else {
+        // Falls bereits offen & Maus weit weg + nicht über Offcanvas => Schließen planen
+        if (this.offcanvasElement && !this.offcanvasElement.matches(':hover')) {
+          this._scheduleEdgeClose();
+        }
+      }
+    };
+    document.addEventListener('mousemove', this._edgeListener, { passive: true });
+
+    // Mausverlassen des Offcanvas gezielt behandeln
+    if (this.offcanvasElement) {
+      this.offcanvasElement.addEventListener('mouseleave', () => {
+        this._scheduleEdgeClose();
+      });
+      this.offcanvasElement.addEventListener('mouseenter', () => {
+        this._cancelEdgeClose();
+      });
+    }
+  }
+
+  isOpen() {
+    return this.offcanvasElement && this.offcanvasElement.classList.contains('show');
+  }
+
+  _scheduleEdgeOpen() {
+    if (this.isOpen()) return;
+    if (this._edgeOpenTimer) return;
+    this._edgeOpenTimer = setTimeout(() => {
+      this._edgeOpenTimer = null;
+      this.showOffcanvas();
+    }, this.edgeOpenDelay);
+  }
+
+  _cancelEdgeOpen() {
+    if (this._edgeOpenTimer) {
+      clearTimeout(this._edgeOpenTimer);
+      this._edgeOpenTimer = null;
+    }
+  }
+
+  _scheduleEdgeClose() {
+    if (!this.isOpen()) return;
+    if (this._edgeCloseTimer) clearTimeout(this._edgeCloseTimer);
+    this._edgeCloseTimer = setTimeout(() => {
+      // Sicherheit: nur schließen wenn Maus nicht über Offcanvas liegt
+      if (this.offcanvasElement && !this.offcanvasElement.matches(':hover')) {
+        this.hideOffcanvas();
+      }
+      this._edgeCloseTimer = null;
+    }, this.edgeCloseDelay);
+  }
+
+  _cancelEdgeClose() {
+    if (this._edgeCloseTimer) {
+      clearTimeout(this._edgeCloseTimer);
+      this._edgeCloseTimer = null;
     }
   }
 
