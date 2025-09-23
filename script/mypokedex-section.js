@@ -162,6 +162,7 @@ function renderTeamOverview() {
   const teamCardsHTML = team
     .map((pokemon, index) => {
       const primaryType = pokemon.types[0];
+      const panelId = `team-strength-${pokemon.id}`;
       return `
   <div class="pokemon-card type-${primaryType} u-rel">
         <button class="pokemon-remove-btn" data-pokemon-id="${
@@ -205,16 +206,16 @@ function renderTeamOverview() {
               return safeTypes
                 .map(
                   (type) =>
-                    `<span class="type-badge type-${type}">${type}</span>`
+                    `<span class=\"type-badge type-${type}\">${type}</span>`
                 )
                 .join("");
             })()}
           </div>
-          <button class="btn btn-sm btn-outline-light strength-toggle-btn strength-toggle-btn--mini" type="button" aria-expanded="false">
+          <button class="btn btn-sm btn-outline-light strength-toggle-btn strength-toggle-btn--mini" type="button" aria-expanded="false" aria-controls="${panelId}">
             <span class="st-icon">⚡</span>
             <span class="st-label">Stärke</span>
           </button>
-          <div class="pokemon-stats team-strength team-strength--compact team-strength--mini-card is-hidden" role="group" aria-label="Team Stärke" aria-hidden="true">
+          <div id="${panelId}" class="pokemon-stats team-strength team-strength--compact team-strength--mini-card is-hidden" role="group" aria-label="Team Stärke" aria-hidden="true">
             ${(() => {
               try {
                 if (
@@ -222,37 +223,42 @@ function renderTeamOverview() {
                   typeof window.pokemonGoFeatures.getBaseStats === "function" &&
                   typeof window.pokemonGoFeatures.generateIVs === "function"
                 ) {
-                  const base = window.pokemonGoFeatures.getBaseStats(pokemon.id);
+                  const base = window.pokemonGoFeatures.getBaseStats(
+                    pokemon.id
+                  );
                   const ivs = window.pokemonGoFeatures.generateIVs(pokemon.id);
                   if (base && ivs) {
                     const atk = base.attack || 0;
                     const def = base.defense || 0;
                     const sta = base.stamina || 0;
                     const baseSum = atk + def + sta;
-                    const ivSum = (ivs.attack || 0) + (ivs.defense || 0) + (ivs.stamina || 0);
+                    const ivSum =
+                      (ivs.attack || 0) +
+                      (ivs.defense || 0) +
+                      (ivs.stamina || 0);
                     const ivPercent = ((ivSum / 45) * 100).toFixed(0);
                     return `
-                      <div class="ts-row">
-                        <span class="ts-label">Gesamt</span>
-                        <span class="ts-value">${baseSum}</span>
+                      <div class=\"ts-row\">
+                        <span class=\"ts-label\">Gesamt</span>
+                        <span class=\"ts-value\">${baseSum}</span>
                       </div>
-                      <div class="ts-row">
-                        <span class="ts-label">IV</span>
-                        <span class="ts-meta">${ivPercent}%</span>
+                      <div class=\"ts-row\">
+                        <span class=\"ts-label\">IV</span>
+                        <span class=\"ts-meta\">${ivPercent}%</span>
                       </div>
-                      <div class="ts-row">
-                        <span class="ts-label">ATK</span>
-                        <span class="ts-value">${atk}</span>
+                      <div class=\"ts-row\">
+                        <span class=\"ts-label\">ATK</span>
+                        <span class=\"ts-value\">${atk}</span>
                       </div>
-                      <div class="ts-row">
-                        <span class="ts-label">DEF</span>
-                        <span class="ts-value">${def}</span>
+                      <div class=\"ts-row\">
+                        <span class=\"ts-label\">DEF</span>
+                        <span class=\"ts-value\">${def}</span>
                       </div>
-                      <div class="ts-row">
-                        <span class="ts-label">STA</span>
-                        <span class="ts-value">${sta}</span>
+                      <div class=\"ts-row\">
+                        <span class=\"ts-label\">STA</span>
+                        <span class=\"ts-value\">${sta}</span>
                       </div>
-                      <span class="ts-sub">Basiswerte + IV Analyse</span>
+                      <span class=\"ts-sub\">Basiswerte + IV Analyse</span>
                     `;
                   }
                 }
@@ -261,17 +267,17 @@ function renderTeamOverview() {
                   ? pokemon.stats.reduce((sum, stat) => sum + stat.base_stat, 0)
                   : pokemon.base_experience || 0;
                 return `
-                  <div class="ts-row">
-                    <span class="ts-label">Stärke</span>
-                    <span class="ts-value">${fallback}</span>
+                  <div class=\"ts-row\">
+                    <span class=\"ts-label\">Stärke</span>
+                    <span class=\"ts-value\">${fallback}</span>
                   </div>
-                  <span class="ts-sub">Basis (Fallback)</span>
+                  <span class=\"ts-sub\">Basis (Fallback)</span>
                 `;
               } catch (e) {
                 return `
-                  <div class="ts-row">
-                    <span class="ts-label">Stärke</span>
-                    <span class="ts-value">?</span>
+                  <div class=\"ts-row\">
+                    <span class=\"ts-label\">Stärke</span>
+                    <span class=\"ts-value\">?</span>
                   </div>
                 `;
               }
@@ -290,51 +296,116 @@ function renderTeamOverview() {
     </div>
   `;
 
-  // Strength Toggle Setup (einmalig pro Render)
-  setupStrengthToggle(overview);
+  setupStrengthToggle(overview, { exclusive: true });
 }
 
-function setupStrengthToggle(container){
-  if(!container) return;
-  // Falls bereits gesetzt -> nicht doppelt binden
-  if(container.__strengthToggleBound) return;
+function setupStrengthToggle(container, { exclusive = true } = {}) {
+  if (!container || container.__strengthToggleBound) return;
   container.__strengthToggleBound = true;
+  const openState = new Map();
 
-  function toggleStrength(btn){
-    if(!btn) return;
-    const card = btn.closest('.pokemon-card');
-    if(!card) return;
-    const block = card.querySelector('.team-strength');
-    if(!block) return;
-    const hidden = block.classList.contains('is-hidden');
-    if(hidden){
-      block.classList.remove('is-hidden');
-      block.classList.add('fade-in');
-      block.setAttribute('aria-hidden','false');
-      btn.setAttribute('aria-expanded','true');
-      setTimeout(()=> block.classList.remove('fade-in'),260);
+  // Debounce Map pro Button (verhindert echten Spam, erlaubt aber sofortiges Schließen)
+  const debounceMap = new WeakMap();
+  const DEBOUNCE_MS = 90; // sehr kurz, nur für wirklich extrem schnelles Doppelfeuern
+
+  function now() {
+    return performance.now();
+  }
+
+  function recently(btn) {
+    const t = debounceMap.get(btn) || 0;
+    return now() - t < DEBOUNCE_MS;
+  }
+  function stamp(btn) {
+    debounceMap.set(btn, now());
+  }
+
+  function applyState(panel, btn, expand) {
+    if (!panel || !btn) return;
+    if (expand) {
+      panel.classList.remove("is-hidden");
+      panel.setAttribute("aria-hidden", "false");
+      btn.setAttribute("aria-expanded", "true");
     } else {
-      block.classList.add('is-hidden');
-      block.setAttribute('aria-hidden','true');
-      btn.setAttribute('aria-expanded','false');
+      panel.classList.add("is-hidden");
+      panel.setAttribute("aria-hidden", "true");
+      btn.setAttribute("aria-expanded", "false");
     }
   }
 
-  // Click Delegation
-  container.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.strength-toggle-btn');
-    if(!btn) return;
-    toggleStrength(btn);
+  function getPanel(btn) {
+    const panelId = btn.getAttribute("aria-controls");
+    if (!panelId) return null;
+    // IDs kontrolliert ("team-strength-<id>") -> keine Escapes notwendig
+    return container.querySelector("#" + panelId);
+  }
+
+  function toggle(btn) {
+    const panel = getPanel(btn);
+    if (!panel) return;
+
+    // Debounce nur wenn unterschiedlicher Button & sehr schneller Wechsel
+    if (recently(btn)) {
+      // Bei sofortigem zweiten Klick (z.B. Öffnen->Schließen) trotzdem toggeln -> kein Return
+    }
+    stamp(btn);
+
+    const expanding = panel.classList.contains("is-hidden");
+
+    if (expanding && exclusive) {
+      // Schließe alle anderen offenen Panels
+      container
+        .querySelectorAll(".team-strength:not(.is-hidden)")
+        .forEach((openP) => {
+          if (openP === panel) return;
+          const linked = container.querySelector(
+            `.strength-toggle-btn[aria-controls="${openP.id}"]`
+          );
+          applyState(openP, linked, false);
+          const logicalId = openP.id.startsWith("team-strength-")
+            ? openP.id.substring(14)
+            : openP.id;
+          openState.set(logicalId, false);
+        });
+    }
+
+    applyState(panel, btn, expanding);
+
+    const logicalId = panel.id.startsWith("team-strength-")
+      ? panel.id.substring(14)
+      : panel.id;
+    openState.set(logicalId, expanding);
+  }
+
+  function restore() {
+    openState.forEach((expanded, logicalId) => {
+      const pid = "team-strength-" + logicalId;
+      const panel = container.querySelector("#" + pid);
+      const btn = container.querySelector(
+        `.strength-toggle-btn[aria-controls="${pid}"]`
+      );
+      if (panel && btn) applyState(panel, btn, expanded);
+    });
+  }
+
+  container.addEventListener("click", (e) => {
+    const btn = e.target.closest(".strength-toggle-btn");
+    if (!btn) return;
+    toggle(btn);
   });
 
-  // Keyboard Support (Enter / Space)
-  container.addEventListener('keydown',(e)=>{
-    if(e.key!=="Enter" && e.key!==" ") return;
-    const btn = e.target.closest('.strength-toggle-btn');
-    if(!btn) return;
+  container.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const btn = e.target.closest(".strength-toggle-btn");
+    if (!btn) return;
     e.preventDefault();
-    toggleStrength(btn);
+    toggle(btn);
   });
+
+  container.restoreStrengthPanels = restore;
+  // Für Debugging optional bereitstellen
+  if (!window.setupStrengthToggle)
+    window.setupStrengthToggle = setupStrengthToggle;
 }
 
 // Erweiterte Team-Ansicht für detaillierte Informationen (interne Funktion)
