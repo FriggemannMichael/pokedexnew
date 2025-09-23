@@ -290,30 +290,50 @@ function renderTeamOverview() {
     </div>
   `;
 
-  // Delegierter Listener für per-Card Toggle
-  overview.addEventListener("click", (e) => {
-    const btn = e.target.closest(".strength-toggle-btn");
-    if (!btn) return;
-    const card = btn.closest(".pokemon-card");
-    if (!card) return;
-    const block = card.querySelector(".team-strength");
-    if (!block) return;
-    // Sichtbarkeit robust ermitteln (Klasse oder computed style)
-    const isCurrentlyHidden = block.classList.contains("is-hidden");
-    if (isCurrentlyHidden) {
-      block.classList.remove("is-hidden");
-      // Animation nur wenn nicht bereits sichtbar
-      block.classList.add("fade-in");
-      block.removeAttribute("style"); // Entferne evtl. alte inline styles
-      block.setAttribute("aria-hidden", "false");
-      btn.setAttribute("aria-expanded", "true");
-      setTimeout(() => block.classList.remove("fade-in"), 260);
+  // Strength Toggle Setup (einmalig pro Render)
+  setupStrengthToggle(overview);
+}
+
+function setupStrengthToggle(container){
+  if(!container) return;
+  // Falls bereits gesetzt -> nicht doppelt binden
+  if(container.__strengthToggleBound) return;
+  container.__strengthToggleBound = true;
+
+  function toggleStrength(btn){
+    if(!btn) return;
+    const card = btn.closest('.pokemon-card');
+    if(!card) return;
+    const block = card.querySelector('.team-strength');
+    if(!block) return;
+    const hidden = block.classList.contains('is-hidden');
+    if(hidden){
+      block.classList.remove('is-hidden');
+      block.classList.add('fade-in');
+      block.setAttribute('aria-hidden','false');
+      btn.setAttribute('aria-expanded','true');
+      setTimeout(()=> block.classList.remove('fade-in'),260);
     } else {
-      block.classList.add("is-hidden");
-      block.removeAttribute("style");
-      block.setAttribute("aria-hidden", "true");
-      btn.setAttribute("aria-expanded", "false");
+      block.classList.add('is-hidden');
+      block.setAttribute('aria-hidden','true');
+      btn.setAttribute('aria-expanded','false');
     }
+  }
+
+  // Click Delegation
+  container.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.strength-toggle-btn');
+    if(!btn) return;
+    toggleStrength(btn);
+  });
+
+  // Keyboard Support (Enter / Space)
+  container.addEventListener('keydown',(e)=>{
+    if(e.key!=="Enter" && e.key!==" ") return;
+    const btn = e.target.closest('.strength-toggle-btn');
+    if(!btn) return;
+    e.preventDefault();
+    toggleStrength(btn);
   });
 }
 
