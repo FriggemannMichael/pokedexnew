@@ -142,9 +142,9 @@ function getPokemonCardTemplate(pokemon) {
 
     
     return `
-        <div class="pokemon-card h-100 type-${pokemon.types[0]}" 
-             data-pokemon-id="${pokemon.id}" 
-             draggable="true" 
+        <div class="pokemon-card h-100 type-${pokemon.types[0]}"
+             data-pokemon-id="${pokemon.id}"
+             draggable="true"
              ondragstart="handlePokemonDragStart(event)">
             <div class="pokemon-image-wrapper">
                 ${favoriteBtn}
@@ -156,6 +156,11 @@ function getPokemonCardTemplate(pokemon) {
                 <div class="pokemon-types">${typeBadges}</div>
                 ${ratingStars}
                 ${powerLevel}
+                <div class="card-actions">
+                    <button class="compare-btn" data-pokemon-id="${pokemon.id}" title="Compare Pokemon">
+                        <i class="fas fa-exchange-alt"></i> Compare
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -262,7 +267,7 @@ function createProgressStatHTML(stat, percentage) {
                 <span class="progress-value">${stat.value}</span>
             </div>
             <div class="progress-bar-container">
-                <div class="progress-bar-fill" data-progress="${percentage}"></div>
+                <div class="progress-bar-fill" data-progress="${percentage}" style="width: ${percentage}%"></div>
             </div>
         </div>
     `;

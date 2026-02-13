@@ -129,15 +129,10 @@ function renderTeamOverview() {
   }
 
   // Berechne Team-Statistiken korrekt
-  const totalPower = team.reduce((sum, pokemon) => {
-    // Berechne Stärke aus allen Stats
-    const baseStats = pokemon.stats || [];
-    const totalStats = baseStats.reduce(
-      (statSum, stat) => statSum + stat.base_stat,
-      0
-    );
-    return sum + totalStats;
-  }, 0);
+  const totalPower = team.reduce(
+    (sum, pokemon) => sum + calculatePokemonStrengthValue(pokemon),
+    0
+  );
   const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
 
   // Team Stats Overview
@@ -299,6 +294,30 @@ function renderTeamOverview() {
   setupStrengthToggle(overview, { exclusive: true });
 }
 
+function calculatePokemonStrengthValue(pokemon) {
+  if (!pokemon || !pokemon.id) return 0;
+
+  try {
+    if (
+      window.pokemonGoFeatures &&
+      typeof window.pokemonGoFeatures.getBaseStats === "function"
+    ) {
+      const base = window.pokemonGoFeatures.getBaseStats(pokemon.id);
+      if (base) {
+        return (base.attack || 0) + (base.defense || 0) + (base.stamina || 0);
+      }
+    }
+  } catch (error) {
+    // Fallback below
+  }
+
+  if (Array.isArray(pokemon.stats) && pokemon.stats.length) {
+    return pokemon.stats.reduce((sum, stat) => sum + (stat.base_stat || 0), 0);
+  }
+
+  return Number(pokemon.base_experience || 0);
+}
+
 function setupStrengthToggle(container, { exclusive = true } = {}) {
   if (!container || container.__strengthToggleBound) return;
   container.__strengthToggleBound = true;
@@ -449,14 +468,10 @@ function showDetailedTeamViewInternal() {
   }
 
   // Berechne korrekte Team-Statistiken
-  const totalPower = team.reduce((sum, pokemon) => {
-    const baseStats = pokemon.stats || [];
-    const totalStats = baseStats.reduce(
-      (statSum, stat) => statSum + stat.base_stat,
-      0
-    );
-    return sum + totalStats;
-  }, 0);
+  const totalPower = team.reduce(
+    (sum, pokemon) => sum + calculatePokemonStrengthValue(pokemon),
+    0
+  );
   const averagePower = Math.round(totalPower / team.length);
   const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
   const coverage = Math.round((uniqueTypes / 18) * 100);
@@ -493,29 +508,7 @@ function showDetailedTeamViewInternal() {
           .map((pokemon, index) => {
             const primaryType = pokemon.types[0];
             // Robuste Gesamtstärke (Base Stats Summe). Preferiere getBaseStats falls verfügbar.
-            let pokemonStats = 0;
-            try {
-              if (
-                window.pokemonGoFeatures &&
-                typeof window.pokemonGoFeatures.getBaseStats === "function"
-              ) {
-                const base = window.pokemonGoFeatures.getBaseStats(pokemon.id);
-                if (base) {
-                  pokemonStats =
-                    (base.attack || 0) +
-                    (base.defense || 0) +
-                    (base.stamina || 0);
-                }
-              }
-              if (!pokemonStats && Array.isArray(pokemon.stats)) {
-                pokemonStats = pokemon.stats.reduce(
-                  (sum, stat) => sum + (stat.base_stat || 0),
-                  0
-                );
-              }
-            } catch (e) {
-              pokemonStats = 0;
-            }
+            const pokemonStats = calculatePokemonStrengthValue(pokemon);
             return `
           <div class="pokemon-card type-${primaryType} u-rel min-h-300">
             <button class="pokemon-remove-btn" data-pokemon-id="${

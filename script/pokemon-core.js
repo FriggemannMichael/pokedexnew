@@ -159,10 +159,12 @@ function createPokemonCard(pokemon) {
   cardElement.innerHTML = getPokemonCardTemplate(pokemon);
 
   cardElement.addEventListener("click", (event) => {
-    // Verhindere das Öffnen der Detail-Ansicht wenn auf Favorite-Button geklickt wird
+    // Verhindere das Öffnen der Detail-Ansicht wenn auf Favorite-Button oder Compare-Button geklickt wird
     if (
       event.target.classList.contains("favorite-btn") ||
-      event.target.closest(".favorite-btn")
+      event.target.closest(".favorite-btn") ||
+      event.target.classList.contains("compare-btn") ||
+      event.target.closest(".compare-btn")
     ) {
       return;
     }

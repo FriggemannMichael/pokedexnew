@@ -38,6 +38,16 @@ yarn-error.log*
 .env
 .env.local
 .env.development.local
+
+# Claude und ENEV
+# Claude und ENEV
+.claude/
+enev/
+
+# Markdown-Dokumente (nicht versionieren)
+AI_Coding_Guidlines.md
+REFACTORING_GUIDE.md
+LIVING_README.md
 .env.test.local
 .env.production.local
 

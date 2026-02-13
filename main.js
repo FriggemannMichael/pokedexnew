@@ -96,6 +96,24 @@ function startApp() {
         window.pokemonGoFeatures.init();
         if (window.POKE_DEBUG) console.debug('[Init] PokemonGoFeatures init aufgerufen');
       }
+
+      // Compare System initialisieren
+      if (window.pokemonCompare && typeof window.pokemonCompare.init === 'function') {
+        window.pokemonCompare.init();
+        console.log('[Init] PokemonCompare initialisiert');
+      }
+
+      // Battle Simulator initialisieren
+      if (window.battleSimulator && typeof window.battleSimulator.init === 'function') {
+        window.battleSimulator.init();
+        console.log('[Init] BattleSimulator initialisiert');
+      }
+
+      // Team Battle System initialisieren
+      if (window.teamBattle && typeof window.teamBattle.init === 'function') {
+        window.teamBattle.init();
+        console.log('[Init] TeamBattle initialisiert');
+      }
     } catch(e){ console.warn('Team Komponenten Init fehlgeschlagen', e); }
 
     // Dynamische Balken initialisieren (Progress & Coverage)
@@ -163,6 +181,7 @@ function startPokemonApp() {
     // 4. Team System (Order matters for dependencies)
     "./script/team-offcanvas.js",      // Base team system - MUSS ZUERST sein
     "./script/drag-drop-enhanced.js",  // Drag & drop functionality
+    "./script/team-builder.js",        // Central 6-slot team builder
   // Team modal modular
   "./script/team-modal-core.js",
   "./script/team-modal-render.js",
@@ -183,6 +202,11 @@ function startPokemonApp() {
     "./script/pokemon-go-favorites.js",
     "./script/pokemon-go-filters.js",
     "./script/pokemon-go-observer.js",
+
+    // 6. Compare & Battle Features
+    "./script/pokemon-compare.js",
+    "./script/battle-simulator.js",
+    "./script/team-battle.js",
   ];
 
   loadAllScripts(scripts)

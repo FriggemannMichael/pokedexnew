@@ -18,6 +18,10 @@
     <link rel="stylesheet" href="./assets/css/team-analyzer.css" />
     <link rel="stylesheet" href="./assets/css/team-modal.css" />
     <link rel="stylesheet" href="./assets/css/team-offcanvas.css" />
+    <link rel="stylesheet" href="./assets/css/team-builder.css" />
+    <link rel="stylesheet" href="./assets/css/pokemon-compare.css" />
+    <link rel="stylesheet" href="./assets/css/battle-simulator.css" />
+    <link rel="stylesheet" href="./assets/css/team-battle.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -113,6 +117,9 @@
             </button>
             <button class="btn btn-filter" onclick="openTeamAnalysis()">
               Team analysieren
+            </button>
+            <button class="btn btn-filter" onclick="window.teamBattle.startChallenge(window.teamOffcanvas?.getTeam() || [])" style="background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%); color: white; font-weight: 700;">
+              🏆 Challenge Gym
             </button>
             <button
               type="button"
@@ -289,11 +296,11 @@
                   style="width: auto; display: inline-block"
                 >
                   <option value="">All Ratings</option>
-                  <option value="5">5 Stars</option>
-                  <option value="4">4+ Stars</option>
-                  <option value="3">3+ Stars</option>
-                  <option value="2">2+ Stars</option>
-                  <option value="1">1+ Stars</option>
+                  <option value="4">4* (Perfect)</option>
+                  <option value="3">3*</option>
+                  <option value="2">2*</option>
+                  <option value="1">1*</option>
+                  <option value="0">0*</option>
                 </select>
               </div>
 
@@ -451,6 +458,40 @@
         </div>
       </div>
     </section>
+    <!-- Central Team Builder -->
+    <section class="team-builder-section" aria-label="Active Team Builder">
+      <div class="container">
+        <div class="team-builder-panel" id="activeTeamBuilder">
+          <div class="team-builder-header">
+            <div class="team-builder-title-wrap">
+              <h2 class="team-builder-title">Active Team</h2>
+              <p class="team-builder-subtitle">
+                Drag Pokemon cards into the six team slots.
+              </p>
+            </div>
+            <div
+              class="team-builder-counter"
+              id="activeTeamCounter"
+              aria-live="polite"
+            >
+              0/6
+            </div>
+          </div>
+
+          <div
+            class="active-team-grid"
+            id="activeTeamGrid"
+            role="list"
+            aria-label="Active Team Slots"
+          ></div>
+          <p class="team-builder-hint">
+            Tip: Drop on a filled slot to replace it instantly.
+          </p>
+          <div class="visually-hidden" id="teamBuilderLiveRegion" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- Pokemon Grid -->
     <section class="pokemon-grid py-5">
       <div class="container">

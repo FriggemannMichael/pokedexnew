@@ -2,6 +2,7 @@ class TeamOffcanvas {
   constructor() {
     this.maxTeamSize = 6;
     this.team = [];
+    this.useCentralTeamBuilder = Boolean(document.getElementById('activeTeamGrid'));
     this.offcanvasElement = document.getElementById('teamOffcanvas');
     this.dropZone = document.getElementById('teamDropZone');
     this.cardsContainer = document.getElementById('teamCardsContainer');
@@ -36,15 +37,17 @@ class TeamOffcanvas {
     this.loadTeamFromStorage();
     this.setupDynamicModalHeader();
 
-    // Edge Activation Konfiguration (öffnen bei Mausnähe rechter Rand)
+    // Edge Activation Konfiguration (Ã¶ffnen bei MausnÃ¤he rechter Rand)
     this._edgeListener = null;
     this._edgeOpenTimer = null;
     this._edgeCloseTimer = null;
     this.edgeRem = 4;          // Abstand vom rechten Rand
-    this.edgeOpenDelay = 120;  // ms Verzögerung bevor geöffnet wird
-    this.edgeCloseDelay = 280; // ms Verzögerung bevor geschlossen wird
+    this.edgeOpenDelay = 120;  // ms VerzÃ¶gerung bevor geÃ¶ffnet wird
+    this.edgeCloseDelay = 280; // ms VerzÃ¶gerung bevor geschlossen wird
     this._rootFontSize = null;
-    this.enableEdgeActivation();
+    if (!this.useCentralTeamBuilder) {
+      this.enableEdgeActivation();
+    }
   }
   
   initializeOffcanvas() {
@@ -54,12 +57,24 @@ class TeamOffcanvas {
   }
   
   setupEventListeners() {
-    if (!this.dropZone) return;
-    
-    // Drop-Zone Events
-    this.dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
-    this.dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
-    this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
+    if (this.dropZone && !this.useCentralTeamBuilder) {
+      // Drop-Zone Events
+      this.dropZone.addEventListener('dragover', this.handleDragOver.bind(this));
+      this.dropZone.addEventListener('dragleave', this.handleDragLeave.bind(this));
+      this.dropZone.addEventListener('drop', this.handleDrop.bind(this));
+    }
+
+    if (this.dropZone && this.useCentralTeamBuilder) {
+      this.dropZone.classList.add('central-team-builder-active');
+      const placeholder = this.dropZone.querySelector('.drop-placeholder');
+      if (placeholder) {
+        placeholder.innerHTML = `
+          <i class="fas fa-compass"></i>
+          <p>Drag-and-Drop wurde in den zentralen Bereich verschoben.</p>
+          <small>Nutze das "Active Team" Grid Ã¼ber den Pokemon-Karten.</small>
+        `;
+      }
+    }
     
     // Offcanvas Events
     if (this.offcanvasElement) {
@@ -85,7 +100,7 @@ class TeamOffcanvas {
   enableEdgeActivation() {
     if (this._edgeListener) return; // schon aktiv
     this._edgeListener = (ev) => {
-      // Root font-size (für rem -> px) nur einmal berechnen
+      // Root font-size (fÃ¼r rem -> px) nur einmal berechnen
       if (!this._rootFontSize) {
         const fs = parseFloat(getComputedStyle(document.documentElement).fontSize);
         this._rootFontSize = isNaN(fs) ? 16 : fs;
@@ -95,10 +110,10 @@ class TeamOffcanvas {
       if (distanceFromRight <= thresholdPx) {
         this._scheduleEdgeOpen();
       } else if (!this.isOpen()) {
-        // Maus wieder weg bevor geöffnet => Öffnen abbrechen
+        // Maus wieder weg bevor geÃ¶ffnet => Ã–ffnen abbrechen
         this._cancelEdgeOpen();
       } else {
-        // Falls bereits offen & Maus weit weg + nicht über Offcanvas => Schließen planen
+        // Falls bereits offen & Maus weit weg + nicht Ã¼ber Offcanvas => SchlieÃŸen planen
         if (this.offcanvasElement && !this.offcanvasElement.matches(':hover')) {
           this._scheduleEdgeClose();
         }
@@ -141,7 +156,7 @@ class TeamOffcanvas {
     if (!this.isOpen()) return;
     if (this._edgeCloseTimer) clearTimeout(this._edgeCloseTimer);
     this._edgeCloseTimer = setTimeout(() => {
-      // Sicherheit: nur schließen wenn Maus nicht über Offcanvas liegt
+      // Sicherheit: nur schlieÃŸen wenn Maus nicht Ã¼ber Offcanvas liegt
       if (this.offcanvasElement && !this.offcanvasElement.matches(':hover')) {
         this.hideOffcanvas();
       }
@@ -157,7 +172,7 @@ class TeamOffcanvas {
   }
 
   /**
-   * Wählt einen zufälligen Typ-Gradient aus der Liste.
+   * WÃ¤hlt einen zufÃ¤lligen Typ-Gradient aus der Liste.
    * Fallback: var(--gradient)
    */
   getRandomTypeGradient() {
@@ -169,10 +184,10 @@ class TeamOffcanvas {
   /**
    * Initialisiert den dynamischen Modal Header (Bootstrap Modal/Ersatz)
    * Sucht alle .modal-header innerhalb von .modal-content im Offcanvas-Kontext
-   * und färbt beim Öffnen neu ein.
+   * und fÃ¤rbt beim Ã–ffnen neu ein.
    */
   setupDynamicModalHeader() {
-    // Unterstützt Modal oder Offcanvas? Hier: wenn separate Modals (#teamModal) existieren, dort auch anwenden.
+    // UnterstÃ¼tzt Modal oder Offcanvas? Hier: wenn separate Modals (#teamModal) existieren, dort auch anwenden.
     const applyGradient = (header) => {
       if (!header) return;
       const g = this.getRandomTypeGradient();
@@ -209,17 +224,20 @@ class TeamOffcanvas {
   }
   
   handleDragOver(e) {
+    if (this.useCentralTeamBuilder) return;
     e.preventDefault();
     this.dropZone.classList.add('drag-over');
   }
   
   handleDragLeave(e) {
+    if (this.useCentralTeamBuilder) return;
     if (!this.dropZone.contains(e.relatedTarget)) {
       this.dropZone.classList.remove('drag-over');
     }
   }
   
   handleDrop(e) {
+    if (this.useCentralTeamBuilder) return;
     e.preventDefault();
     this.dropZone.classList.remove('drag-over');
     
@@ -248,14 +266,20 @@ class TeamOffcanvas {
       return false;
     }
     
-    // Zum Team hinzufügen
-    this.team.push(pokemonData);
-    this.renderMiniCard(pokemonData);
+    // Zum Team hinzufÃ¼gen
+    const normalizedPokemon = this.normalizeTeamPokemon(pokemonData);
+    if (!normalizedPokemon) {
+      this.showToast('Pokemon-Daten konnten nicht verarbeitet werden.', 'error');
+      return false;
+    }
+    this.team.push(normalizedPokemon);
+    this.renderMiniCard(normalizedPokemon);
     this.updateCounters();
     this.updateDropPlaceholder();
     this.saveTeamToStorage();
+    this.notifyTeamChanged('offcanvas-drop');
     
-    this.showToast(`${pokemonData.name} wurde zum Team hinzugefügt!`, 'success');
+    this.showToast(`${normalizedPokemon.name} wurde zum Team hinzugefuegt!`, 'success');
     return true;
   }
   
@@ -288,12 +312,12 @@ class TeamOffcanvas {
   }
   
   removePokemonFromTeam(pokemonId) {
-    // Unterstütze sowohl String-IDs als auch Objekt-IDs
+    // UnterstÃ¼tze sowohl String-IDs als auch Objekt-IDs
     const pokemonIndex = this.team.findIndex(p => {
       if (typeof p === 'object' && p.id) {
-        return p.id == pokemonId; // Verwende == für flexible Typvergleich
+        return p.id == pokemonId; // Verwende == fÃ¼r flexible Typvergleich
       }
-      return p == pokemonId; // Fall für String-Arrays
+      return p == pokemonId; // Fall fÃ¼r String-Arrays
     });
     // Detail-Logs nur im Debug-Modus
     if (window.POKE_DEBUG) {
@@ -326,13 +350,14 @@ class TeamOffcanvas {
     this.updateCounters();
     this.updateDropPlaceholder();
     this.saveTeamToStorage();
+    this.notifyTeamChanged('offcanvas-remove');
     
     // Team Modal auch aktualisieren falls es offen ist
     try {
       const teamModal = document.getElementById('teamModal');
       if (teamModal && teamModal.classList.contains('show')) {
   if (window.POKE_DEBUG) console.debug('Team Modal ist offen - aktualisiere Ansicht');
-        // Überprüfe ob die globale Funktion existiert
+        // ÃœberprÃ¼fe ob die globale Funktion existiert
         if (typeof window.showDetailedTeamView === 'function') {
           window.showDetailedTeamView();
         } else if (typeof showDetailedTeamView === 'function') {
@@ -340,7 +365,7 @@ class TeamOffcanvas {
         }
       }
       
-      // Normale Team-Übersicht auch aktualisieren
+      // Normale Team-Ãœbersicht auch aktualisieren
       if (typeof window.renderTeamOverview === 'function') {
         window.renderTeamOverview();
       } else if (typeof renderTeamOverview === 'function') {
@@ -351,7 +376,7 @@ class TeamOffcanvas {
     }
     
     this.showToast(`${pokemonName} wurde aus dem Team entfernt.`, 'info');
-    return true; // Erfolgreiches Entfernen bestätigen
+    return true; // Erfolgreiches Entfernen bestÃ¤tigen
   }
   
   clearTeam() {
@@ -360,6 +385,7 @@ class TeamOffcanvas {
     this.updateCounters();
     this.updateDropPlaceholder();
     this.saveTeamToStorage();
+    this.notifyTeamChanged('offcanvas-clear');
     this.showToast('Team wurde geleert.', 'info');
   }
   
@@ -390,7 +416,8 @@ class TeamOffcanvas {
   }
   
   isPokemonInTeam(pokemonId) {
-    return this.team.some(p => p.id === pokemonId);
+    const numericId = Number(pokemonId);
+    return this.team.some(p => Number(p.id) === numericId);
   }
   
   getPokemonData(pokemonId) {
@@ -412,35 +439,97 @@ class TeamOffcanvas {
     // Bild extrahieren
     const imgElement = pokemonCard.querySelector('img');
     const image = imgElement ? imgElement.src : '';
+    const sourcePokemon = this.findPokemonSourceById(pokemonId);
     
   // Typen extrahieren (bewusst restriktiv: kein generisches [class*="type-"] mehr,
   // da dies auch Elemente wie power-level Container mit type-${primaryType} greifen kann
-  // und dadurch zusammengesetzte Texte (cp level / ivs) als Typ fälschlich erscheinen könnten)
+  // und dadurch zusammengesetzte Texte (cp level / ivs) als Typ fÃ¤lschlich erscheinen kÃ¶nnten)
   const typeElements = pokemonCard.querySelectorAll('.type-badge, .detail-type-badge, .type-badge-inline');
     const VALID_TYPES = new Set([
       'normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'
     ]);
     const types = Array.from(typeElements)
       .map(t => (t.textContent||'').trim().toLowerCase())
-      .map(t => t.replace(/[^a-z]/g,'')) // harte Säuberung (entfernt Zahlen/Prozent)
+      .map(t => t.replace(/[^a-z]/g,'')) // harte SÃ¤uberung (entfernt Zahlen/Prozent)
       .filter(t => VALID_TYPES.has(t));
     
     return {
-      id: pokemonId,
+      id: Number(pokemonId),
       name: name,
       image: image,
-      types: (window.sanitizeTypes ? window.sanitizeTypes(types) : (types.length > 0 ? types : ['normal']))
+      spriteUrl: image,
+      types: (window.sanitizeTypes ? window.sanitizeTypes(types) : (types.length > 0 ? types : ['normal'])),
+      stats: Array.isArray(sourcePokemon?.stats) ? sourcePokemon.stats : [],
+      base_experience: Number(sourcePokemon?.base_experience || 0),
+    };
+  }
+
+  findPokemonSourceById(pokemonId) {
+    const numericId = Number(pokemonId);
+    if (!numericId) return null;
+
+    const pools = [];
+    if (typeof appState !== 'undefined') {
+      if (Array.isArray(appState.pokemonList)) pools.push(appState.pokemonList);
+      if (Array.isArray(appState.allPokemonList)) pools.push(appState.allPokemonList);
+    }
+    if (window.appState) {
+      if (Array.isArray(window.appState.pokemonList)) pools.push(window.appState.pokemonList);
+      if (Array.isArray(window.appState.allPokemonList)) pools.push(window.appState.allPokemonList);
+    }
+
+    for (const pool of pools) {
+      const found = pool.find((pokemon) => Number(pokemon.id) === numericId);
+      if (found) return found;
+    }
+
+    if (window.services?.pokemon?.getPokemonById) {
+      try {
+        return window.services.pokemon.getPokemonById(numericId) || null;
+      } catch (error) {
+        console.warn('Could not resolve pokemon source data:', error);
+      }
+    }
+
+    return null;
+  }
+
+  normalizeTeamPokemon(pokemon) {
+    if (!pokemon) return null;
+
+    const normalizedId = Number(pokemon.id);
+    if (!normalizedId) return null;
+
+    const sourcePokemon = this.findPokemonSourceById(normalizedId);
+    const sourceTypes = Array.isArray(sourcePokemon?.types) ? sourcePokemon.types : [];
+    const rawTypes = Array.isArray(pokemon.types) && pokemon.types.length
+      ? pokemon.types
+      : sourceTypes;
+    const safeTypes = window.sanitizeTypes
+      ? window.sanitizeTypes(rawTypes)
+      : (rawTypes.length ? rawTypes : ['normal']);
+
+    return {
+      ...pokemon,
+      id: normalizedId,
+      image: pokemon.image || pokemon.spriteUrl || sourcePokemon?.image || sourcePokemon?.spriteUrl || '',
+      spriteUrl: pokemon.spriteUrl || pokemon.image || sourcePokemon?.spriteUrl || sourcePokemon?.image || '',
+      types: safeTypes,
+      stats: Array.isArray(pokemon.stats) && pokemon.stats.length
+        ? pokemon.stats
+        : (Array.isArray(sourcePokemon?.stats) ? sourcePokemon.stats : []),
+      base_experience: Number(
+        Number.isFinite(Number(pokemon.base_experience))
+          ? Number(pokemon.base_experience)
+          : Number(sourcePokemon?.base_experience || 0)
+      ),
     };
   }
   
   getTeam() {
-    if (window.sanitizeTypes) {
-      return this.team.map(p => ({
-        ...p,
-        types: window.sanitizeTypes(p.types)
-      }));
-    }
-    return [...this.team];
+    return this.team
+      .map((pokemon) => this.normalizeTeamPokemon(pokemon))
+      .filter(Boolean);
   }
   
   getTeamSize() {
@@ -464,15 +553,53 @@ class TeamOffcanvas {
     try {
       const savedTeam = localStorage.getItem('pokemonTeam');
       if (savedTeam) {
-        this.team = JSON.parse(savedTeam);
+        const parsed = JSON.parse(savedTeam);
+        this.team = Array.isArray(parsed)
+          ? parsed.map((pokemon) => this.normalizeTeamPokemon(pokemon)).filter(Boolean)
+          : [];
         this.renderAllMiniCards();
         this.updateCounters();
         this.updateDropPlaceholder();
+        this.notifyTeamChanged('offcanvas-storage-load');
       }
     } catch (e) {
       console.warn('Could not load team from localStorage:', e);
       this.team = [];
     }
+  }
+
+  notifyTeamChanged(source = 'offcanvas') {
+    window.dispatchEvent(
+      new CustomEvent('pokemon-team-updated', {
+        detail: {
+          source,
+          team: this.getTeam(),
+        },
+      })
+    );
+  }
+
+  syncExternalTeam(team, source = 'external-sync') {
+    if (!Array.isArray(team)) return;
+
+    this.team = team.slice(0, this.maxTeamSize).map((pokemon) => {
+      const safeTypes = window.sanitizeTypes
+        ? window.sanitizeTypes(pokemon.types)
+        : (Array.isArray(pokemon.types) && pokemon.types.length
+            ? pokemon.types
+            : ['normal']);
+
+      return this.normalizeTeamPokemon({
+        ...pokemon,
+        types: safeTypes,
+      });
+    }).filter(Boolean);
+
+    this.renderAllMiniCards();
+    this.updateCounters();
+    this.updateDropPlaceholder();
+    this.saveTeamToStorage();
+    this.notifyTeamChanged(source);
   }
   
   renderAllMiniCards() {
@@ -484,7 +611,7 @@ class TeamOffcanvas {
   
   // Toast-Benachrichtigungen
   showToast(message, type = 'info') {
-    // Überprüfe ob Bootstrap Toast verfügbar ist
+    // ÃœberprÃ¼fe ob Bootstrap Toast verfÃ¼gbar ist
     if (typeof bootstrap === 'undefined') {
       if (type === 'error') {
         console.error(`${type.toUpperCase()}: ${message}`);
@@ -511,7 +638,7 @@ class TeamOffcanvas {
     toastEl.innerHTML = `
       <div class="toast-header">
         <strong class="me-auto">
-          ${type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️'} 
+          ${type === 'success' ? 'âœ…' : type === 'warning' ? 'âš ï¸' : type === 'error' ? 'âŒ' : 'â„¹ï¸'} 
           Pokemon Team
         </strong>
         <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
@@ -544,11 +671,11 @@ let teamOffcanvas;
 document.addEventListener('DOMContentLoaded', () => {
   teamOffcanvas = new TeamOffcanvas();
   
-  // Global verfügbar machen für onclick Handler
+  // Global verfÃ¼gbar machen fÃ¼r onclick Handler
   window.teamOffcanvas = teamOffcanvas;
 });
 
-// Für den Fall, dass das Skript nach DOM-Load eingebunden wird
+// FÃ¼r den Fall, dass das Skript nach DOM-Load eingebunden wird
 if (document.readyState === 'loading') {
   // Do nothing, DOMContentLoaded will fire
 } else {
@@ -558,3 +685,5 @@ if (document.readyState === 'loading') {
     window.teamOffcanvas = teamOffcanvas;
   }
 }
+
+

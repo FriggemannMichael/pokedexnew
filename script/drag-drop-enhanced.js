@@ -1,4 +1,4 @@
-// Erweiterte Drag & Drop Funktionalität
+// Enhanced drag-and-drop behavior for Pokemon cards
 function handlePokemonDragStart(event) {
   const pokemonCard = event.target.closest(".pokemon-card");
   if (!pokemonCard) return;
@@ -7,42 +7,33 @@ function handlePokemonDragStart(event) {
   event.dataTransfer.setData("pokedex-card-id", pokemonId);
   event.dataTransfer.setData("text/plain", pokemonId);
 
-  // Visuelles Feedback
   pokemonCard.style.opacity = "0.7";
   pokemonCard.classList.add("dragging");
+  document.body.classList.add("team-builder-drag-active");
+  document.dispatchEvent(
+    new CustomEvent("pokemon-card-drag-start", { detail: { pokemonId } })
+  );
 
-  // WICHTIG: Offcanvas automatisch öffnen
-  setTimeout(() => {
-    if (window.teamOffcanvas) {
-      window.teamOffcanvas.showOffcanvas();
-    }
-  }, 100);
-
-  // Verwende das Original-Element als Drag-Image
   const rect = pokemonCard.getBoundingClientRect();
-  const centerX = rect.width / 2;
-  const centerY = rect.height / 2;
-
-  event.dataTransfer.setDragImage(pokemonCard, centerX, centerY);
+  event.dataTransfer.setDragImage(pokemonCard, rect.width / 2, rect.height / 2);
 }
 
-// Event Listener für Drag End
 function handlePokemonDragEnd(event) {
   const pokemonCard = event.target.closest(".pokemon-card");
   if (pokemonCard) {
     pokemonCard.style.opacity = "1";
     pokemonCard.classList.remove("dragging");
   }
+
+  document.body.classList.remove("team-builder-drag-active");
+  document.dispatchEvent(new CustomEvent("pokemon-card-drag-end"));
 }
 
 document.addEventListener("dragend", handlePokemonDragEnd);
 
-// Drag & Drop für Pokemon Cards aktivieren
 document.addEventListener("DOMContentLoaded", () => {
-  // Aktiviere Drag für alle bestehenden Pokemon Cards
   enableDragForPokemonCards();
 
-  // Observer für dynamisch hinzugefügte Cards
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -54,13 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  observer.observe(
-    document.getElementById("pokemonContainer") || document.body,
-    {
-      childList: true,
-      subtree: true,
-    }
-  );
+  observer.observe(document.getElementById("pokemonContainer") || document.body, {
+    childList: true,
+    subtree: true,
+  });
 });
 
 function enableDragForPokemonCards() {

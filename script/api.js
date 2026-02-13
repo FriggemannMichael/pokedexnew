@@ -34,7 +34,9 @@ function createPokemonData(rawApiPokemon) {
         id: rawApiPokemon.id,
         name: rawApiPokemon.name,
         image: rawApiPokemon.sprites.other['official-artwork'].front_default,
-        types: rawApiPokemon.types.map(typeObj => typeObj.type.name)
+        types: rawApiPokemon.types.map(typeObj => typeObj.type.name),
+        stats: Array.isArray(rawApiPokemon.stats) ? rawApiPokemon.stats : [],
+        base_experience: rawApiPokemon.base_experience ?? 0
     };
 }
 

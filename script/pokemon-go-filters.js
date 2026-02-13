@@ -15,36 +15,44 @@
   PGF.addFilterToggles = function () {
     const favT = document.getElementById("favoritesToggle");
     const rating = document.getElementById("ratingFilter");
+    this.favoritesOnlyActive = !!this.favoritesOnlyActive;
     if (favT) favT.addEventListener("click", () => this.filterFavorites());
     if (rating)
       rating.addEventListener("change", (e) =>
         this.filterByRating(e.target.value)
       );
+    this.updateFavoritesToggleUI();
   };
   PGF.filterFavorites = function () {
-    document.querySelectorAll(".pokemon-card").forEach((card) => {
-      const id = parseInt(card.dataset.pokemonId);
-      const vis = this.isFavorite(id);
-      if (card.parentElement)
-        card.parentElement.style.display = vis ? "block" : "none";
-    });
+    this.favoritesOnlyActive = !this.favoritesOnlyActive;
+    this.updateFavoritesToggleUI();
+    this.applyCombinedFilters();
   };
   PGF.filterByRating = function (min) {
-    if (!min) {
-      document.querySelectorAll(".pokemon-card").forEach((c) => {
-        if (c.parentElement) c.parentElement.style.display = "block";
-      });
-      return;
-    }
+    this.activeRatingFilter = min;
+    this.applyCombinedFilters();
+  };
+  PGF.applyCombinedFilters = function () {
+    const selected = parseInt(this.activeRatingFilter, 10);
+    const hasRatingFilter = !Number.isNaN(selected);
     const cards = document.querySelectorAll(".pokemon-card");
+
     cards.forEach((card) => {
       const id = parseInt(card.dataset.pokemonId);
-      const data = this.getPokemonDataFromCard(card);
-      const auto = this.calculateAutoRating(data);
-      const show = auto >= parseInt(min);
-      if (card.parentElement)
+      const matchesFavorite = !this.favoritesOnlyActive || this.isFavorite(id);
+      const matchesRating = !hasRatingFilter || this.getRating(id) === selected;
+      const show = matchesFavorite && matchesRating;
+
+      if (card.parentElement) {
         card.parentElement.style.display = show ? "block" : "none";
+      }
     });
+  };
+  PGF.updateFavoritesToggleUI = function () {
+    const favT = document.getElementById("favoritesToggle");
+    if (!favT) return;
+    favT.classList.toggle("active", !!this.favoritesOnlyActive);
+    favT.textContent = this.favoritesOnlyActive ? "Nur Favoriten (An)" : "Nur Favoriten";
   };
   PGF.getPokemonDataFromCard = function (card) {
     const id = parseInt(card.dataset.pokemonId);

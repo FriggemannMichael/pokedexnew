@@ -175,6 +175,17 @@
   background: rgba(var(--primary-color-rgb), 0.05);
 }
 
+.team-drop-zone.central-team-builder-active {
+  border-style: solid;
+  border-color: rgba(44, 62, 80, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.team-drop-zone.central-team-builder-active .drop-placeholder i {
+  color: var(--secondary);
+  opacity: 0.9;
+}
+
 .team-drop-zone.drag-over {
   border-color: var(--accent);
   background: linear-gradient(
@@ -998,4 +1009,28 @@
   100% {
     transform: translateX(100%);
   }
+}
+
+/* Team Stats Labels: keine Worttrennung mitten im Wort */
+.team-stats-overview .stat-label {
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: manual;
+  text-wrap: balance;
+}
+
+/* Team stats cards: keep number/text inside card bounds */
+.team-stats-overview {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.team-stats-overview .stat-card {
+  min-width: 0;
+  padding: 12px 10px;
+}
+
+.team-stats-overview .stat-number {
+  font-size: clamp(1.35rem, 2.3vw, 1.95rem);
+  line-height: 1.1;
+  white-space: nowrap;
 }
