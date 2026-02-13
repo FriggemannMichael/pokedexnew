@@ -10,29 +10,61 @@ class TeamBattleSystem {
     this.totalDamageDealt = 0;
     this.totalTurns = 0;
     this.mvpPokemon = null;
+    this.aiGymStrategy = null;
+    this.aiAutoPilotEnabled = true;
+    this.pendingAutoContinue = false;
     this.overviewModal = null;
     this.arenaModal = null;
+    this.gymLeader = null;
+    this.strongestGymPokemonId = null;
+    this.gymLeaderDialogRequestId = 0;
+    this.gymLeaders = {
+      Rocko: { type: "rock", style: "hart und unnachgiebig", initials: "RO" },
+      Misty: {
+        type: "water",
+        style: "temperamentvoll und direkt",
+        initials: "MI",
+      },
+      LtSurge: {
+        type: "electric",
+        style: "laut und aggressiv",
+        initials: "LS",
+      },
+      Erika: { type: "grass", style: "ruhig und praezise", initials: "ER" },
+      Koga: { type: "poison", style: "listig und distanziert", initials: "KO" },
+      Sabrina: {
+        type: "psychic",
+        style: "kalt und kontrolliert",
+        initials: "SA",
+      },
+      Blaine: { type: "fire", style: "dramatisch und stolz", initials: "BL" },
+      Giovanni: {
+        type: "ground",
+        style: "dominant und einschuechternd",
+        initials: "GI",
+      },
+    };
   }
 
   init() {
     if (this.initialized) return;
 
-    if (typeof bootstrap === 'undefined') {
-      console.warn('[TeamBattle] Bootstrap not loaded yet, retrying...');
+    if (typeof bootstrap === "undefined") {
+      console.warn("[TeamBattle] Bootstrap not loaded yet, retrying...");
       setTimeout(() => this.init(), 500);
       return;
     }
 
     this.createOverviewModal();
     this.initialized = true;
-    console.log('[TeamBattle] Team Battle System initialized');
+    console.log("[TeamBattle] Team Battle System initialized");
   }
 
   // ===== MODAL CREATION =====
   createOverviewModal() {
-    if (document.getElementById('teamBattleOverviewModal')) {
+    if (document.getElementById("teamBattleOverviewModal")) {
       this.overviewModal = bootstrap.Modal.getOrCreateInstance(
-        document.getElementById('teamBattleOverviewModal')
+        document.getElementById("teamBattleOverviewModal"),
       );
       return;
     }
@@ -56,16 +88,16 @@ class TeamBattleSystem {
       </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
     this.overviewModal = new bootstrap.Modal(
-      document.getElementById('teamBattleOverviewModal')
+      document.getElementById("teamBattleOverviewModal"),
     );
   }
 
   createArenaModal() {
-    if (document.getElementById('teamBattleArenaModal')) {
+    if (document.getElementById("teamBattleArenaModal")) {
       this.arenaModal = bootstrap.Modal.getOrCreateInstance(
-        document.getElementById('teamBattleArenaModal')
+        document.getElementById("teamBattleArenaModal"),
       );
       return;
     }
@@ -89,26 +121,26 @@ class TeamBattleSystem {
       </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
     this.arenaModal = new bootstrap.Modal(
-      document.getElementById('teamBattleArenaModal')
+      document.getElementById("teamBattleArenaModal"),
     );
   }
 
   // ===== START CHALLENGE =====
   async startChallenge(playerTeam) {
-    console.log('[TeamBattle] startChallenge called with team:', playerTeam);
+    console.log("[TeamBattle] startChallenge called with team:", playerTeam);
 
     if (!playerTeam || playerTeam.length === 0) {
-      alert('❌ Du hast kein Team! Erstelle zuerst ein Team mit 6 Pokemon.');
+      alert("❌ Du hast kein Team! Erstelle zuerst ein Team mit 6 Pokemon.");
       return;
     }
 
     if (playerTeam.length < 6) {
       const confirm = window.confirm(
         `⚠️ Dein Team hat nur ${playerTeam.length} Pokemon!\n\n` +
-        `Für eine faire Challenge brauchst du 6 Pokemon.\n\n` +
-        `Möchtest du trotzdem weitermachen? (Du wirst wahrscheinlich verlieren)`
+          `Für eine faire Challenge brauchst du 6 Pokemon.\n\n` +
+          `Möchtest du trotzdem weitermachen? (Du wirst wahrscheinlich verlieren)`,
       );
 
       if (!confirm) {
@@ -116,7 +148,7 @@ class TeamBattleSystem {
       }
     }
 
-    console.log('[TeamBattle] Starting Gym Challenge with team:', playerTeam);
+    console.log("[TeamBattle] Starting Gym Challenge with team:", playerTeam);
 
     // Reset state
     this.playerTeam = playerTeam;
@@ -127,6 +159,11 @@ class TeamBattleSystem {
     this.totalDamageDealt = 0;
     this.totalTurns = 0;
     this.mvpPokemon = null;
+    this.aiGymStrategy = null;
+    this.pendingAutoContinue = false;
+    this.gymLeader = null;
+    this.strongestGymPokemonId = null;
+    this.gymLeaderDialogRequestId = 0;
 
     // Load detailed stats for player team
     this.playerTeam = await Promise.all(
@@ -138,9 +175,9 @@ class TeamBattleSystem {
           stats: this.extractStats(details),
           maxHp: this.extractStats(details).hp,
           currentHp: this.extractStats(details).hp,
-          damageDealt: 0
+          damageDealt: 0,
         };
-      })
+      }),
     );
 
     // Show loading
@@ -149,14 +186,19 @@ class TeamBattleSystem {
 
     // Generate gym team
     await this.generateGymTeam();
+    await this.prepareAIChallengeAssistant();
 
-    // Show overview
+    // Show overview (Kampf NICHT automatisch starten!)
     this.renderOverview();
+    this.requestLeaderDialogue(
+      "Der Spieler fordert deine Arena zum Kampf heraus.",
+    );
+    // Hinweis: KEIN automatischer Start des Kampfes!
   }
 
   // ===== GYM TEAM GENERATOR =====
   async generateGymTeam() {
-    console.log('[TeamBattle] Generating random gym team...');
+    console.log("[TeamBattle] Generating random gym team...");
 
     // Generate 6 random Pokemon IDs (1-151 for Gen 1)
     const randomIds = [];
@@ -176,48 +218,248 @@ class TeamBattleSystem {
         return {
           id: details.id,
           name: details.name,
-          image: details.sprites.other['official-artwork'].front_default,
-          types: details.types.map(t => t.type.name),
+          image: details.sprites.other["official-artwork"].front_default,
+          types: details.types.map((t) => t.type.name),
           details,
           stats,
           maxHp: stats.hp,
           currentHp: stats.hp,
-          damageDealt: 0
+          damageDealt: 0,
         };
-      })
+      }),
     );
 
-    console.log('[TeamBattle] Gym team generated:', this.gymTeam);
+    this.assignGymLeaderProfile();
+    this.strongestGymPokemonId = this.findStrongestPokemonId(this.gymTeam);
+
+    console.log("[TeamBattle] Gym team generated:", this.gymTeam);
   }
 
   async fetchPokemonDetails(pokemonId) {
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
+      const response = await fetch(
+        `https://pokeapi.co/api/v2/pokemon/${pokemonId}`,
+      );
       return await response.json();
     } catch (error) {
-      console.error('[TeamBattle] Failed to fetch Pokemon details:', error);
+      console.error("[TeamBattle] Failed to fetch Pokemon details:", error);
       return null;
     }
   }
 
   extractStats(pokemonDetails) {
-    if (!pokemonDetails?.stats) return { hp: 100, attack: 50, defense: 50, speed: 50 };
+    if (!pokemonDetails?.stats)
+      return { hp: 100, attack: 50, defense: 50, speed: 50 };
 
     const stats = {};
-    pokemonDetails.stats.forEach(stat => {
+    pokemonDetails.stats.forEach((stat) => {
       const name = stat.stat.name;
-      if (name === 'hp') stats.hp = stat.base_stat;
-      if (name === 'attack') stats.attack = stat.base_stat;
-      if (name === 'defense') stats.defense = stat.base_stat;
-      if (name === 'speed') stats.speed = stat.base_stat;
+      if (name === "hp") stats.hp = stat.base_stat;
+      if (name === "attack") stats.attack = stat.base_stat;
+      if (name === "defense") stats.defense = stat.base_stat;
+      if (name === "speed") stats.speed = stat.base_stat;
     });
 
     return stats;
   }
 
+  assignGymLeaderProfile() {
+    const dominantType = this.getDominantGymType();
+    const entries = Object.entries(this.gymLeaders);
+    const matching = entries.filter(
+      ([, profile]) => profile.type === dominantType,
+    );
+    const pool = matching.length ? matching : entries;
+    const [leaderName, profile] = pool[Math.floor(Math.random() * pool.length)];
+
+    this.gymLeader = {
+      name: leaderName,
+      type: profile.type,
+      style: profile.style,
+    };
+  }
+
+  getDominantGymType() {
+    const counts = {};
+    this.gymTeam.forEach((pokemon) => {
+      const primaryType = pokemon?.types?.[0];
+      if (!primaryType) return;
+      counts[primaryType] = (counts[primaryType] || 0) + 1;
+    });
+
+    let bestType = null;
+    let bestCount = -1;
+    Object.entries(counts).forEach(([type, count]) => {
+      if (count > bestCount) {
+        bestType = type;
+        bestCount = count;
+      }
+    });
+
+    return bestType || "normal";
+  }
+
+  getTypeLabel(type) {
+    const map = {
+      normal: "Normal",
+      fire: "Feuer",
+      water: "Wasser",
+      grass: "Pflanze",
+      electric: "Elektro",
+      ice: "Eis",
+      fighting: "Kampf",
+      poison: "Gift",
+      ground: "Boden",
+      flying: "Flug",
+      psychic: "Psycho",
+      bug: "Kaefer",
+      rock: "Gestein",
+      ghost: "Geist",
+      dragon: "Drache",
+      dark: "Unlicht",
+      steel: "Stahl",
+      fairy: "Fee",
+    };
+    return map[type] || "Unbekannt";
+  }
+
+  findStrongestPokemonId(team) {
+    if (!Array.isArray(team) || !team.length) return null;
+    const strongest = [...team].sort((left, right) => {
+      const leftPower =
+        Number(left?.stats?.hp || 0) +
+        Number(left?.stats?.attack || 0) +
+        Number(left?.stats?.defense || 0) +
+        Number(left?.stats?.speed || 0);
+      const rightPower =
+        Number(right?.stats?.hp || 0) +
+        Number(right?.stats?.attack || 0) +
+        Number(right?.stats?.defense || 0) +
+        Number(right?.stats?.speed || 0);
+      return rightPower - leftPower;
+    })[0];
+    return strongest?.id || null;
+  }
+
+  renderLeaderDialogueCard() {
+    const leaderName = this.gymLeader?.name || "Gym Leader";
+    const leaderType = this.getTypeLabel(this.gymLeader?.type || "normal");
+    const leaderTypeEng = this.gymLeader?.type || "normal";
+    const initials =
+      this.gymLeaders[leaderName]?.initials ||
+      leaderName.slice(0, 2).toUpperCase();
+    return `
+      <div class="gym-leader-dialog-card" data-gym-leader-dialog>
+        <div class="gym-leader-dialog-head">
+          <div class="gym-leader-avatar type-gradient-${leaderTypeEng}">
+            <span class="gym-leader-initials">${initials}</span>
+          </div>
+          <div class="gym-leader-head-text">
+            <div class="gym-leader-name">${leaderName}</div>
+            <div class="gym-leader-type">${leaderType}-Arena</div>
+          </div>
+        </div>
+        <p class="gym-leader-line" data-gym-leader-line>Die Arena ist bereit. Zeig, was dein Team kann.</p>
+      </div>
+    `;
+  }
+
+  setGymLeaderDialogue(text, { typewriter = true } = {}) {
+    const lines = document.querySelectorAll("[data-gym-leader-line]");
+    if (!lines.length) return;
+
+    const safeText = String(text || "").trim();
+    lines.forEach((line) => {
+      if (
+        !typewriter ||
+        !window.aiService ||
+        typeof window.aiService.typewriterToElement !== "function"
+      ) {
+        line.textContent = safeText;
+        return;
+      }
+      window.aiService.typewriterToElement(line, safeText, { speed: 16 });
+    });
+  }
+
+  renderLeaderThinkingState() {
+    document.querySelectorAll("[data-gym-leader-dialog]").forEach((card) => {
+      card.classList.add("is-thinking");
+    });
+    this.setGymLeaderDialogue("...");
+  }
+
+  clearLeaderThinkingState() {
+    document.querySelectorAll("[data-gym-leader-dialog]").forEach((card) => {
+      card.classList.remove("is-thinking");
+    });
+  }
+
+  async requestLeaderDialogue(eventText) {
+    const requestId = ++this.gymLeaderDialogRequestId;
+    const fallback = this.createLocalLeaderLine(eventText);
+    const aiService = window.aiService;
+
+    this.renderLeaderThinkingState();
+
+    // Ensure proxy detection has completed
+    if (aiService && typeof aiService.detectProxy === "function") {
+      await aiService.detectProxy();
+    }
+
+    if (
+      !aiService ||
+      typeof aiService.requestGymLeaderDialogue !== "function" ||
+      typeof aiService.hasGroqKey !== "function" ||
+      !aiService.hasGroqKey()
+    ) {
+      if (requestId !== this.gymLeaderDialogRequestId) return;
+      this.clearLeaderThinkingState();
+      this.setGymLeaderDialogue(fallback);
+      return;
+    }
+
+    try {
+      const line = await aiService.requestGymLeaderDialogue({
+        leaderName: this.gymLeader?.name || "Gym Leader",
+        leaderType: this.getTypeLabel(this.gymLeader?.type || "normal"),
+        leaderStyle: this.gymLeader?.style || "fokussiert",
+        eventText,
+      });
+
+      if (requestId !== this.gymLeaderDialogRequestId) return;
+      this.clearLeaderThinkingState();
+      this.setGymLeaderDialogue(line || fallback);
+    } catch (error) {
+      console.warn(
+        "[TeamBattle] Leader dialogue failed, using local fallback",
+        error,
+      );
+      if (requestId !== this.gymLeaderDialogRequestId) return;
+      this.clearLeaderThinkingState();
+      this.setGymLeaderDialogue(fallback);
+    }
+  }
+
+  createLocalLeaderLine(eventText) {
+    const text = String(eventText || "").toLowerCase();
+    const leaderName = this.gymLeader?.name || "Gym Leader";
+
+    if (text.includes("staerkstes")) {
+      return `${leaderName}: Das war nur der Anfang, ich habe noch Reserven!`;
+    }
+    if (text.includes("besiegt")) {
+      return `${leaderName}: Du triffst hart, aber meine Arena faellt nicht!`;
+    }
+    if (text.includes("spieler")) {
+      return `${leaderName}: Deine Offensive stockt, jetzt uebernehme ich!`;
+    }
+    return `${leaderName}: Willkommen in meiner Arena. Kaempfe entschlossen!`;
+  }
+
   // ===== RENDER OVERVIEW =====
   renderOverviewLoading() {
-    const body = document.getElementById('teamBattleOverviewBody');
+    const body = document.getElementById("teamBattleOverviewBody");
     if (!body) return;
 
     body.innerHTML = `
@@ -229,30 +471,32 @@ class TeamBattleSystem {
   }
 
   renderOverview() {
-    const body = document.getElementById('teamBattleOverviewBody');
+    const body = document.getElementById("teamBattleOverviewBody");
     if (!body) return;
 
     // Calculate average stats
     const playerAvgStats = this.calculateAverageStats(this.playerTeam);
     const gymAvgStats = this.calculateAverageStats(this.gymTeam);
+    const leaderName = this.gymLeader?.name || "Gym Leader";
+    const leaderTypeLabel = this.getTypeLabel(this.gymLeader?.type || "normal");
 
     body.innerHTML = `
       <div class="team-battle-preview">
         <!-- Player Team -->
         <div class="team-side player-side">
           <div class="team-side-header">
-            <div class="team-side-title">🎮 YOUR TEAM</div>
+            <div class="team-side-title">YOUR TEAM</div>
             <div class="team-side-subtitle">
               <span>Average Stats</span>
             </div>
           </div>
-          ${this.playerTeam.map(pokemon => this.renderMiniCard(pokemon)).join('')}
+          ${this.playerTeam.map((pokemon) => this.renderMiniCard(pokemon)).join("")}
         </div>
 
         <!-- VS Divider -->
         <div class="team-vs-divider">
           <div class="vs-badge">VS</div>
-          <div class="vs-icon">⚔️</div>
+          <div class="vs-icon">BATTLE</div>
 
           <div class="team-stats-comparison">
             <h6>Team Stats</h6>
@@ -260,7 +504,7 @@ class TeamBattleSystem {
               <span class="team-stat-label">HP</span>
               <div class="team-stat-values">
                 <span class="player">${playerAvgStats.hp}</span>
-                <span>—</span>
+                <span>-</span>
                 <span class="gym">${gymAvgStats.hp}</span>
               </div>
             </div>
@@ -268,7 +512,7 @@ class TeamBattleSystem {
               <span class="team-stat-label">ATK</span>
               <div class="team-stat-values">
                 <span class="player">${playerAvgStats.attack}</span>
-                <span>—</span>
+                <span>-</span>
                 <span class="gym">${gymAvgStats.attack}</span>
               </div>
             </div>
@@ -276,7 +520,7 @@ class TeamBattleSystem {
               <span class="team-stat-label">DEF</span>
               <div class="team-stat-values">
                 <span class="player">${playerAvgStats.defense}</span>
-                <span>—</span>
+                <span>-</span>
                 <span class="gym">${gymAvgStats.defense}</span>
               </div>
             </div>
@@ -284,32 +528,159 @@ class TeamBattleSystem {
               <span class="team-stat-label">SPD</span>
               <div class="team-stat-values">
                 <span class="player">${playerAvgStats.speed}</span>
-                <span>—</span>
+                <span>-</span>
                 <span class="gym">${gymAvgStats.speed}</span>
               </div>
             </div>
           </div>
+
+          ${this.renderLeaderDialogueCard()}
         </div>
 
         <!-- Gym Team -->
         <div class="team-side gym-side">
           <div class="team-side-header">
-            <div class="team-side-title">🏛️ GYM LEADER</div>
+            <div class="gym-leader-avatar-lg type-gradient-${this.gymLeader?.type || "normal"}">
+              <span class="gym-leader-initials">${this.gymLeaders[leaderName]?.initials || leaderName.slice(0, 2).toUpperCase()}</span>
+            </div>
+            <div class="team-side-title">${leaderName}</div>
             <div class="team-side-subtitle">
-              <span>Random Champion</span>
+              <span>${leaderTypeLabel}-Arena</span>
             </div>
           </div>
-          ${this.gymTeam.map(pokemon => this.renderMiniCard(pokemon)).join('')}
+          ${this.gymTeam.map((pokemon) => this.renderMiniCard(pokemon)).join("")}
         </div>
 
         <!-- Start Battle Button -->
         <button class="start-battle-btn" onclick="window.teamBattle.startBattle()">
-          <span>⚔️</span>
           <span>START BATTLE</span>
-          <span>⚔️</span>
         </button>
       </div>
     `;
+  }
+
+  async prepareAIChallengeAssistant() {
+    const aiService = window.teamAIService;
+    const localStrategy = this.buildLocalFallbackStrategy();
+
+    // Ensure proxy detection has completed
+    if (aiService && typeof aiService.detectProxy === "function") {
+      await aiService.detectProxy();
+    }
+
+    if (!aiService || !aiService.hasAnyKey()) {
+      this.aiGymStrategy = {
+        provider: "local-fallback",
+        providerLabel: "Local Fallback",
+        parsed: localStrategy,
+      };
+      this.applyAIChallengeStrategy(localStrategy);
+      return;
+    }
+
+    try {
+      const playerAvgStats = this.calculateAverageStats(this.playerTeam);
+      const gymAvgStats = this.calculateAverageStats(this.gymTeam);
+
+      this.aiGymStrategy = await aiService.requestGymStrategy({
+        playerTeam: this.playerTeam,
+        gymTeam: this.gymTeam,
+        playerAvgStats,
+        gymAvgStats,
+      });
+      this.applyAIChallengeStrategy(this.aiGymStrategy.parsed || {});
+    } catch (error) {
+      console.warn(
+        "[TeamBattle] AI strategy failed, using local fallback",
+        error,
+      );
+      this.aiGymStrategy = {
+        provider: "local-fallback",
+        providerLabel: "Local Fallback",
+        parsed: localStrategy,
+      };
+      this.applyAIChallengeStrategy(localStrategy);
+    }
+  }
+
+  buildLocalFallbackStrategy() {
+    const battleSimulator = window.battleSimulator;
+    const typeChart =
+      typeof battleSimulator?.getTypeChart === "function"
+        ? battleSimulator.getTypeChart()
+        : {};
+
+    const scoreForPokemon = (attacker, defenders) => {
+      return defenders.reduce((sum, defender) => {
+        const pressure = (attacker.types || []).reduce((best, attackType) => {
+          const attackData = typeChart[attackType];
+          if (!attackData) return Math.max(best, 1);
+          let effectiveness = 1;
+          (defender.types || []).forEach((defType) => {
+            if (attackData.superEffective?.includes(defType))
+              effectiveness *= 2;
+            else if (attackData.notVeryEffective?.includes(defType))
+              effectiveness *= 0.5;
+            else if (attackData.noEffect?.includes(defType)) effectiveness = 0;
+          });
+          return Math.max(best, effectiveness);
+        }, 1);
+
+        return sum + pressure;
+      }, 0);
+    };
+
+    const rankedTeam = [...this.playerTeam]
+      .map((pokemon) => ({
+        name: pokemon.name,
+        score: scoreForPokemon(pokemon, this.gymTeam),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    return {
+      strategySummary:
+        "Lokale Heuristik aktiv: Team nach offensiver Typen-Pressure gegen das Gym sortiert.",
+      recommendedLead: rankedTeam[0]?.name || "",
+      swapPriorities: rankedTeam.slice(1, 4).map((entry) => entry.name),
+      targetFocus: this.gymTeam.slice(0, 3).map((pokemon) => pokemon.name),
+      riskAlerts: [],
+    };
+  }
+
+  applyAIChallengeStrategy(strategy) {
+    const orderHints = [];
+    if (strategy?.recommendedLead) orderHints.push(strategy.recommendedLead);
+    if (Array.isArray(strategy?.swapPriorities)) {
+      orderHints.push(...strategy.swapPriorities);
+    }
+
+    const normalizedHints = orderHints
+      .map((name) =>
+        String(name || "")
+          .toLowerCase()
+          .trim(),
+      )
+      .filter(Boolean);
+
+    if (!normalizedHints.length) return;
+
+    const prioritized = [];
+    const remaining = [...this.playerTeam];
+
+    normalizedHints.forEach((hint) => {
+      const index = remaining.findIndex(
+        (pokemon) => pokemon?.name && pokemon.name.toLowerCase().includes(hint),
+      );
+      if (index >= 0) prioritized.push(...remaining.splice(index, 1));
+    });
+
+    if (prioritized.length) {
+      this.playerTeam = [...prioritized, ...remaining];
+      console.log(
+        "[TeamBattle] AI strategy order applied:",
+        this.playerTeam.map((p) => p.name),
+      );
+    }
   }
 
   renderMiniCard(pokemon) {
@@ -318,7 +689,7 @@ class TeamBattleSystem {
         <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-pokemon-image">
         <div class="mini-pokemon-name">${pokemon.name}</div>
         <div class="mini-pokemon-types">
-          ${pokemon.types.map(type => `<span class="type-badge type-${type}">${type}</span>`).join('')}
+          ${pokemon.types.map((type) => `<span class="type-badge type-${type}">${type}</span>`).join("")}
         </div>
         <div class="mini-pokemon-stats">
           <div class="mini-stat">
@@ -339,25 +710,28 @@ class TeamBattleSystem {
   }
 
   calculateAverageStats(team) {
-    const sum = team.reduce((acc, pokemon) => {
-      acc.hp += pokemon.stats.hp;
-      acc.attack += pokemon.stats.attack;
-      acc.defense += pokemon.stats.defense;
-      acc.speed += pokemon.stats.speed;
-      return acc;
-    }, { hp: 0, attack: 0, defense: 0, speed: 0 });
+    const sum = team.reduce(
+      (acc, pokemon) => {
+        acc.hp += pokemon.stats.hp;
+        acc.attack += pokemon.stats.attack;
+        acc.defense += pokemon.stats.defense;
+        acc.speed += pokemon.stats.speed;
+        return acc;
+      },
+      { hp: 0, attack: 0, defense: 0, speed: 0 },
+    );
 
     return {
       hp: Math.round(sum.hp / team.length),
       attack: Math.round(sum.attack / team.length),
       defense: Math.round(sum.defense / team.length),
-      speed: Math.round(sum.speed / team.length)
+      speed: Math.round(sum.speed / team.length),
     };
   }
 
   // ===== START BATTLE =====
   startBattle() {
-    console.log('[TeamBattle] Starting battle...');
+    console.log("[TeamBattle] Starting battle...");
 
     // Close overview modal
     this.overviewModal.hide();
@@ -372,11 +746,11 @@ class TeamBattleSystem {
     this.totalTurns = 0;
 
     // Reset all HP
-    this.playerTeam.forEach(p => {
+    this.playerTeam.forEach((p) => {
       p.currentHp = p.maxHp;
       p.damageDealt = 0;
     });
-    this.gymTeam.forEach(p => {
+    this.gymTeam.forEach((p) => {
       p.currentHp = p.maxHp;
       p.damageDealt = 0;
     });
@@ -384,6 +758,7 @@ class TeamBattleSystem {
     // Show arena
     this.renderArena();
     this.arenaModal.show();
+    this.requestLeaderDialogue("Der Kampf beginnt jetzt in meiner Arena.");
 
     // Start first 1v1
     this.startNextBattle();
@@ -391,8 +766,9 @@ class TeamBattleSystem {
 
   // ===== RENDER ARENA =====
   renderArena() {
-    const body = document.getElementById('teamBattleArenaBody');
+    const body = document.getElementById("teamBattleArenaBody");
     if (!body) return;
+    const leaderName = this.gymLeader?.name || "Gym Leader";
 
     body.innerHTML = `
       <div class="team-battle-arena">
@@ -401,19 +777,21 @@ class TeamBattleSystem {
           <div class="team-status-side player">
             <div class="team-status-name">YOUR TEAM</div>
             <div class="team-status-icons" id="playerStatusIcons">
-              ${this.renderStatusIcons(this.playerTeam, 'player')}
+              ${this.renderStatusIcons(this.playerTeam, "player")}
             </div>
           </div>
 
           <div class="team-status-divider">VS</div>
 
           <div class="team-status-side gym">
-            <div class="team-status-name">GYM LEADER</div>
+            <div class="team-status-name">${leaderName}</div>
             <div class="team-status-icons" id="gymStatusIcons">
-              ${this.renderStatusIcons(this.gymTeam, 'gym')}
+              ${this.renderStatusIcons(this.gymTeam, "gym")}
             </div>
           </div>
         </div>
+
+        ${this.renderLeaderDialogueCard()}
 
         <!-- Progress Bar -->
         <div class="battle-progress">
@@ -435,38 +813,41 @@ class TeamBattleSystem {
   }
 
   renderStatusIcons(team, side) {
-    return team.map((pokemon, index) => {
-      const isActive = (side === 'player' && index === this.currentPlayerIndex) ||
-                       (side === 'gym' && index === this.currentGymIndex);
-      const isFainted = pokemon.currentHp <= 0;
-      const classes = `team-pokemon-icon ${isActive ? 'active' : ''} ${isFainted ? 'fainted' : ''}`;
+    return team
+      .map((pokemon, index) => {
+        const isActive =
+          (side === "player" && index === this.currentPlayerIndex) ||
+          (side === "gym" && index === this.currentGymIndex);
+        const isFainted = pokemon.currentHp <= 0;
+        const classes = `team-pokemon-icon ${isActive ? "active" : ""} ${isFainted ? "fainted" : ""}`;
 
-      return `
+        return `
         <div class="${classes}" data-index="${index}">
           <img src="${pokemon.image}" alt="${pokemon.name}">
         </div>
       `;
-    }).join('');
+      })
+      .join("");
   }
 
   updateStatusIcons() {
-    const playerIcons = document.getElementById('playerStatusIcons');
-    const gymIcons = document.getElementById('gymStatusIcons');
+    const playerIcons = document.getElementById("playerStatusIcons");
+    const gymIcons = document.getElementById("gymStatusIcons");
 
     if (playerIcons) {
-      playerIcons.innerHTML = this.renderStatusIcons(this.playerTeam, 'player');
+      playerIcons.innerHTML = this.renderStatusIcons(this.playerTeam, "player");
     }
 
     if (gymIcons) {
-      gymIcons.innerHTML = this.renderStatusIcons(this.gymTeam, 'gym');
+      gymIcons.innerHTML = this.renderStatusIcons(this.gymTeam, "gym");
     }
   }
 
   updateProgress() {
-    const defeatedCount = this.gymTeam.filter(p => p.currentHp <= 0).length;
+    const defeatedCount = this.gymTeam.filter((p) => p.currentHp <= 0).length;
     const totalGymPokemon = this.gymTeam.length;
-    const progressText = document.getElementById('progressText');
-    const progressBarFill = document.getElementById('progressBarFill');
+    const progressText = document.getElementById("progressText");
+    const progressBarFill = document.getElementById("progressBarFill");
 
     if (progressText) {
       progressText.textContent = `${defeatedCount}/${totalGymPokemon} Gym Pokemon Defeated`;
@@ -483,25 +864,56 @@ class TeamBattleSystem {
   startNextBattle() {
     const playerPokemon = this.playerTeam[this.currentPlayerIndex];
     const gymPokemon = this.gymTeam[this.currentGymIndex];
+    this.pendingAutoContinue = false;
 
-    console.log('[TeamBattle] Starting battle:', playerPokemon.name, 'vs', gymPokemon.name);
+    console.log(
+      "[TeamBattle] Starting battle:",
+      playerPokemon.name,
+      "vs",
+      gymPokemon.name,
+    );
 
     // Update status icons
     this.updateStatusIcons();
 
     // Use existing BattleSimulator
     if (!window.battleSimulator) {
-      console.error('[TeamBattle] BattleSimulator not found!');
+      console.error("[TeamBattle] BattleSimulator not found!");
       return;
     }
 
     // Override the battle simulator's modal to render in our container
-    const originalRender = window.battleSimulator.renderBattle.bind(window.battleSimulator);
+    const originalRender = window.battleSimulator.renderBattle.bind(
+      window.battleSimulator,
+    );
     window.battleSimulator.renderBattle = () => {
-      const container = document.getElementById('mainBattleContainer');
+      const container = document.getElementById("mainBattleContainer");
       if (!container) return;
 
       const { fighter1, fighter2 } = window.battleSimulator.currentBattle;
+      const controlsHtml = this.aiAutoPilotEnabled
+        ? `
+            <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${window.battleSimulator.currentBattle.isFinished ? "disabled" : ""}>
+              ${window.battleSimulator.isAutoPlaying ? "Pause AI" : "Resume AI"}
+            </button>
+          `
+        : `
+            <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${window.battleSimulator.currentBattle.isFinished ? "disabled" : ""}>
+              Next Round
+            </button>
+            <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${window.battleSimulator.currentBattle.isFinished ? "disabled" : ""}>
+              ${window.battleSimulator.isAutoPlaying ? "Pause" : "Auto Play"}
+            </button>
+            ${
+              window.battleSimulator.currentBattle.isFinished
+                ? `
+              <button class="battle-btn success" onclick="window.teamBattle.handleBattleEnd()">
+                Continue
+              </button>
+            `
+                : ""
+            }
+          `;
 
       container.innerHTML = `
         <div class="battle-arena">
@@ -510,36 +922,31 @@ class TeamBattleSystem {
           </div>
 
           <div class="battle-fighters">
-            ${this.renderBattleFighter(fighter1, 'fighter1')}
-            ${this.renderBattleFighter(fighter2, 'fighter2')}
+            ${this.renderBattleFighter(fighter1, "fighter1")}
+            ${this.renderBattleFighter(fighter2, "fighter2")}
           </div>
 
           <div class="battle-log">
-            <div class="battle-log-title">📜 Battle Log</div>
+            <div class="battle-log-title">
+              Battle Log
+              <button class="battle-log-export-btn" onclick="window.teamBattle.exportBattleLog()" title="Log exportieren">Export</button>
+            </div>
             <div id="battleLogEntries">
-              ${window.battleSimulator.battleLog.length === 0 ? '<p class="text-muted">Battle hasn\'t started yet...</p>' : window.battleSimulator.battleLog.map(entry => `<div class="log-entry ${entry.type}">${entry.message}</div>`).join('')}
+              ${window.battleSimulator.battleLog.length === 0 ? '<p class="text-muted">Battle has not started yet...</p>' : window.battleSimulator.battleLog.map((entry) => `<div class="log-entry ${entry.type}">${entry.message}</div>`).join("")}
             </div>
           </div>
 
           <div class="battle-controls">
-            <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${window.battleSimulator.currentBattle.isFinished ? 'disabled' : ''}>
-              ⚡ Next Round
-            </button>
-            <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${window.battleSimulator.currentBattle.isFinished ? 'disabled' : ''}>
-              ${window.battleSimulator.isAutoPlaying ? '⏸️ Pause' : '▶️ Auto Play'}
-            </button>
-            ${window.battleSimulator.currentBattle.isFinished ? `
-              <button class="battle-btn success" onclick="window.teamBattle.handleBattleEnd()">
-                ✅ Continue
-              </button>
-            ` : ''}
+            ${controlsHtml}
           </div>
         </div>
       `;
     };
 
     // Patch checkWinner to call our handler
-    const originalCheckWinner = window.battleSimulator.checkWinner.bind(window.battleSimulator);
+    const originalCheckWinner = window.battleSimulator.checkWinner.bind(
+      window.battleSimulator,
+    );
     window.battleSimulator.checkWinner = () => {
       originalCheckWinner();
 
@@ -554,17 +961,27 @@ class TeamBattleSystem {
 
         // Update damage dealt
         const winner = window.battleSimulator.currentBattle.winner;
-        if (winner === 'fighter1') {
-          playerPokemon.damageDealt += (gymPokemon.maxHp - gymPokemon.currentHp);
-          this.totalDamageDealt += (gymPokemon.maxHp - gymPokemon.currentHp);
+        if (winner === "fighter1") {
+          playerPokemon.damageDealt += gymPokemon.maxHp - gymPokemon.currentHp;
+          this.totalDamageDealt += gymPokemon.maxHp - gymPokemon.currentHp;
         } else {
-          gymPokemon.damageDealt += (playerPokemon.maxHp - playerPokemon.currentHp);
-          this.totalDamageDealt += (playerPokemon.maxHp - playerPokemon.currentHp);
+          gymPokemon.damageDealt +=
+            playerPokemon.maxHp - playerPokemon.currentHp;
+          this.totalDamageDealt +=
+            playerPokemon.maxHp - playerPokemon.currentHp;
         }
 
         // Update status
         this.updateStatusIcons();
         this.updateProgress();
+
+        if (this.aiAutoPilotEnabled && !this.pendingAutoContinue) {
+          this.pendingAutoContinue = true;
+          setTimeout(() => {
+            this.pendingAutoContinue = false;
+            this.handleBattleEnd();
+          }, 900);
+        }
       }
     };
 
@@ -575,10 +992,14 @@ class TeamBattleSystem {
   async startBattleWithMoves(playerPokemon, gymPokemon) {
     // Load moves if not already loaded
     if (!playerPokemon.moves) {
-      playerPokemon.moves = await window.battleSimulator.fetchPokemonMoves(playerPokemon.details);
+      playerPokemon.moves = await window.battleSimulator.fetchPokemonMoves(
+        playerPokemon.details,
+      );
     }
     if (!gymPokemon.moves) {
-      gymPokemon.moves = await window.battleSimulator.fetchPokemonMoves(gymPokemon.details);
+      gymPokemon.moves = await window.battleSimulator.fetchPokemonMoves(
+        gymPokemon.details,
+      );
     }
 
     // Create deep copies with all necessary properties including moves
@@ -592,7 +1013,7 @@ class TeamBattleSystem {
       currentHp: playerPokemon.currentHp,
       details: playerPokemon.details,
       moves: playerPokemon.moves,
-      level: 50
+      level: 50,
     };
 
     const fighter2 = {
@@ -605,7 +1026,7 @@ class TeamBattleSystem {
       currentHp: gymPokemon.currentHp,
       details: gymPokemon.details,
       moves: gymPokemon.moves,
-      level: 50
+      level: 50,
     };
 
     // Start the battle (without showing modal)
@@ -613,19 +1034,35 @@ class TeamBattleSystem {
       fighter1: fighter1,
       fighter2: fighter2,
       winner: null,
-      isFinished: false
+      isFinished: false,
     };
     window.battleSimulator.battleLog = [];
     window.battleSimulator.roundCounter = 0;
     window.battleSimulator.isAutoPlaying = false;
     window.battleSimulator.renderBattle();
+
+    if (
+      this.aiAutoPilotEnabled &&
+      !window.battleSimulator.currentBattle.isFinished
+    ) {
+      setTimeout(() => {
+        if (!window.battleSimulator.isAutoPlaying) {
+          window.battleSimulator.toggleAutoPlay();
+        }
+      }, 250);
+    }
   }
 
   renderBattleFighter(fighter, fighterId) {
     const hpPercentage = (fighter.currentHp / fighter.maxHp) * 100;
-    const hpClass = hpPercentage <= 20 ? 'critical' : hpPercentage <= 50 ? 'low' : '';
-    const fighterClass = window.battleSimulator.currentBattle.winner === fighterId ? 'winner' :
-                         fighter.currentHp <= 0 ? 'defeated' : '';
+    const hpClass =
+      hpPercentage <= 20 ? "critical" : hpPercentage <= 50 ? "low" : "";
+    const fighterClass =
+      window.battleSimulator.currentBattle.winner === fighterId
+        ? "winner"
+        : fighter.currentHp <= 0
+          ? "defeated"
+          : "";
 
     return `
       <div class="battle-fighter ${fighterClass}" id="${fighterId}">
@@ -634,7 +1071,7 @@ class TeamBattleSystem {
         </div>
         <div class="fighter-name">${fighter.name}</div>
         <div class="fighter-types">
-          ${fighter.types.map(type => `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`).join('')}
+          ${fighter.types.map((type) => `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`).join("")}
         </div>
 
         <div class="hp-bar-container">
@@ -652,10 +1089,13 @@ class TeamBattleSystem {
 
   handleBattleEnd() {
     const winner = window.battleSimulator.currentBattle.winner;
-    console.log('[TeamBattle] Battle ended, winner:', winner);
+    console.log("[TeamBattle] Battle ended, winner:", winner);
 
-    if (winner === 'fighter2') {
+    if (winner === "fighter2") {
       // Gym Pokemon won - Player Pokemon fainted
+      this.requestLeaderDialogue(
+        "Der Spieler hat gerade ein eigenes Pokemon verloren.",
+      );
       this.playerTeam[this.currentPlayerIndex].currentHp = 0;
       this.currentPlayerIndex++;
 
@@ -669,6 +1109,20 @@ class TeamBattleSystem {
       this.startNextBattle();
     } else {
       // Player Pokemon won - Gym Pokemon fainted
+      const defeatedGymPokemon = this.gymTeam[this.currentGymIndex];
+      const strongestDefeated =
+        Number(defeatedGymPokemon?.id) === Number(this.strongestGymPokemonId);
+
+      if (strongestDefeated) {
+        this.requestLeaderDialogue(
+          "Der Spieler hat gerade dein staerkstes Pokemon besiegt.",
+        );
+      } else {
+        this.requestLeaderDialogue(
+          "Der Spieler hat gerade eines deiner Pokemon besiegt.",
+        );
+      }
+
       this.gymTeam[this.currentGymIndex].currentHp = 0;
       this.currentGymIndex++;
 
@@ -685,37 +1139,55 @@ class TeamBattleSystem {
 
   // ===== VICTORY/DEFEAT SCREENS =====
   showVictoryScreen() {
-    console.log('[TeamBattle] Player victory!');
+    console.log("[TeamBattle] Player victory!");
+    this.requestLeaderDialogue("Der Spieler hat die Arena besiegt.");
 
     // Calculate MVP
-    this.mvpPokemon = this.playerTeam.reduce((max, p) =>
-      (p.damageDealt || 0) > (max.damageDealt || 0) ? p : max
-    , this.playerTeam[0]);
+    this.mvpPokemon = this.playerTeam.reduce(
+      (max, p) => ((p.damageDealt || 0) > (max.damageDealt || 0) ? p : max),
+      this.playerTeam[0],
+    );
 
     this.showResultScreen(true);
   }
 
   showDefeatScreen() {
-    console.log('[TeamBattle] Player defeat!');
+    console.log("[TeamBattle] Player defeat!");
+    this.requestLeaderDialogue(
+      "Der Spieler ist geschlagen und die Arena bleibt bestehen.",
+    );
 
     // Calculate MVP (Gym Team)
-    this.mvpPokemon = this.gymTeam.reduce((max, p) =>
-      (p.damageDealt || 0) > (max.damageDealt || 0) ? p : max
-    , this.gymTeam[0]);
+    this.mvpPokemon = this.gymTeam.reduce(
+      (max, p) => ((p.damageDealt || 0) > (max.damageDealt || 0) ? p : max),
+      this.gymTeam[0],
+    );
 
     this.showResultScreen(false);
   }
 
   showResultScreen(isVictory) {
+    if (window.battleHistory) {
+      window.battleHistory.addEntry({
+        playerTeam: this.playerTeam,
+        gymLeader: this.gymLeader,
+        result: isVictory ? "win" : "loss",
+        totalDamageDealt: this.totalDamageDealt,
+        totalTurns: this.totalTurns,
+        mvpPokemon: this.mvpPokemon,
+        pokemonUsed: this.currentPlayerIndex + 1,
+      });
+    }
+
     const resultHTML = `
       <div class="battle-result-screen">
-        ${isVictory ? this.createConfetti() : ''}
+        ${isVictory ? this.createConfetti() : ""}
         <div class="battle-result-content">
-          <div class="result-title ${isVictory ? 'victory' : 'defeat'}">
-            ${isVictory ? '🏆 VICTORY!' : '💀 DEFEAT'}
+          <div class="result-title ${isVictory ? "victory" : "defeat"}">
+            ${isVictory ? "🏆 VICTORY!" : "💀 DEFEAT"}
           </div>
           <div class="result-subtitle">
-            ${isVictory ? 'You defeated the Gym Leader!' : 'The Gym Leader defeated you!'}
+            ${isVictory ? "You defeated the Gym Leader!" : "The Gym Leader defeated you!"}
           </div>
 
           <div class="result-stats">
@@ -743,22 +1215,32 @@ class TeamBattleSystem {
 
           <div class="result-actions">
             <button class="result-btn primary" onclick="window.teamBattle.restartChallenge()">
-              🔄 Try Again
+              Nochmal
+            </button>
+            <button class="result-btn secondary" onclick="window.teamBattle.showBattleHistory()">
+              Kampfhistorie
             </button>
             <button class="result-btn secondary" onclick="window.teamBattle.closeAll()">
-              ✖️ Close
+              Schliessen
             </button>
           </div>
         </div>
       </div>
     `;
 
-    document.body.insertAdjacentHTML('beforeend', resultHTML);
+    document.body.insertAdjacentHTML("beforeend", resultHTML);
   }
 
   createConfetti() {
     let confettiHTML = '<div class="confetti-container">';
-    const colors = ['#ff6b6b', '#4ecdc4', '#ffd93d', '#2ecc71', '#3498db', '#9b59b6'];
+    const colors = [
+      "#ff6b6b",
+      "#4ecdc4",
+      "#ffd93d",
+      "#2ecc71",
+      "#3498db",
+      "#9b59b6",
+    ];
 
     for (let i = 0; i < 50; i++) {
       const color = colors[Math.floor(Math.random() * colors.length)];
@@ -776,13 +1258,165 @@ class TeamBattleSystem {
       `;
     }
 
-    confettiHTML += '</div>';
+    confettiHTML += "</div>";
     return confettiHTML;
+  }
+
+  exportBattleLog() {
+    const log = window.battleSimulator?.battleLog || [];
+    const exportData = {
+      metadata: {
+        exportDate: new Date().toISOString(),
+        gymLeader: this.gymLeader,
+        playerTeam: this.playerTeam.map((p) => ({
+          id: p.id,
+          name: p.name,
+          types: p.types,
+        })),
+        gymTeam: this.gymTeam.map((p) => ({
+          id: p.id,
+          name: p.name,
+          types: p.types,
+        })),
+        totalTurns: this.totalTurns,
+        totalDamageDealt: this.totalDamageDealt,
+        mvpPokemon: this.mvpPokemon
+          ? { id: this.mvpPokemon.id, name: this.mvpPokemon.name }
+          : null,
+      },
+      battleLog: log.map((entry) => ({
+        type: entry.type,
+        message: entry.message,
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `battle-log-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  showBattleHistory() {
+    this.closeAll();
+
+    if (!window.battleHistory) return;
+
+    const history = window.battleHistory.getHistory();
+    const stats = window.battleHistory.getStats();
+
+    const modalId = "battleHistoryModal";
+    const existing = document.getElementById(modalId);
+    if (existing) existing.remove();
+
+    const historyRows = history
+      .slice(0, 20)
+      .map((entry) => {
+        const date = new Date(entry.date).toLocaleDateString("de-DE");
+        const resultClass =
+          entry.result === "win" ? "history-win" : "history-loss";
+        const resultText = entry.result === "win" ? "Sieg" : "Niederlage";
+        const leader = entry.gymLeader?.name || "Unbekannt";
+        const mvp = entry.mvpPokemon?.name || "-";
+        return `
+        <tr class="${resultClass}">
+          <td>${date}</td>
+          <td>${leader}</td>
+          <td>${resultText}</td>
+          <td>${entry.totalDamageDealt}</td>
+          <td>${entry.totalTurns}</td>
+          <td style="text-transform:capitalize">${mvp}</td>
+        </tr>
+      `;
+      })
+      .join("");
+
+    const modalHTML = `
+      <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+          <div class="modal-content" style="background:var(--glass-95,#f8f9fa);border-radius:var(--radius-xxl);">
+            <div class="modal-header" style="border-bottom:1px solid rgba(0,0,0,0.08);">
+              <h5 class="modal-title" style="font-family:var(--font-title);font-weight:700;">Kampfhistorie</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="battle-history-stats">
+                <div class="history-stat-card">
+                  <div class="history-stat-value">${stats.totalBattles}</div>
+                  <div class="history-stat-label">Kaempfe</div>
+                </div>
+                <div class="history-stat-card">
+                  <div class="history-stat-value">${stats.wins}</div>
+                  <div class="history-stat-label">Siege</div>
+                </div>
+                <div class="history-stat-card">
+                  <div class="history-stat-value">${stats.losses}</div>
+                  <div class="history-stat-label">Niederlagen</div>
+                </div>
+                <div class="history-stat-card">
+                  <div class="history-stat-value">${stats.winRate}%</div>
+                  <div class="history-stat-label">Siegrate</div>
+                </div>
+                <div class="history-stat-card">
+                  <div class="history-stat-value">${stats.highestDamage}</div>
+                  <div class="history-stat-label">Max. Schaden</div>
+                </div>
+                <div class="history-stat-card">
+                  <div class="history-stat-value" style="text-transform:capitalize">${stats.topMvp?.name || "-"}</div>
+                  <div class="history-stat-label">Top MVP</div>
+                </div>
+              </div>
+
+              ${
+                stats.mostUsed.length
+                  ? `
+                <div class="history-most-used">
+                  <h6>Meistgenutzte Pokemon</h6>
+                  <div class="most-used-list">
+                    ${stats.mostUsed.map((p) => `<span class="most-used-badge" style="text-transform:capitalize">${p.name} (${p.count}x)</span>`).join("")}
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+
+              <div class="battle-history-table-wrapper">
+                <table class="battle-history-table">
+                  <thead>
+                    <tr>
+                      <th>Datum</th>
+                      <th>Arenaleiter</th>
+                      <th>Ergebnis</th>
+                      <th>Schaden</th>
+                      <th>Runden</th>
+                      <th>MVP</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${historyRows || '<tr><td colspan="6">Keine Kaempfe bisher.</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML("beforeend", modalHTML);
+    const bsModal = new bootstrap.Modal(document.getElementById(modalId));
+    bsModal.show();
   }
 
   restartChallenge() {
     // Remove result screen
-    const resultScreen = document.querySelector('.battle-result-screen');
+    const resultScreen = document.querySelector(".battle-result-screen");
     if (resultScreen) resultScreen.remove();
 
     // Close arena modal
@@ -794,7 +1428,7 @@ class TeamBattleSystem {
 
   closeAll() {
     // Remove result screen
-    const resultScreen = document.querySelector('.battle-result-screen');
+    const resultScreen = document.querySelector(".battle-result-screen");
     if (resultScreen) resultScreen.remove();
 
     // Close modals
@@ -808,4 +1442,4 @@ if (!window.teamBattle) {
   window.teamBattle = new TeamBattleSystem();
 }
 
-console.log('[TeamBattle] Team Battle Module loaded');
+console.log("[TeamBattle] Team Battle Module loaded");

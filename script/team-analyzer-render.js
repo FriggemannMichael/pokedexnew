@@ -1,11 +1,160 @@
-// Team Analyzer Render – HTML Erzeugung
-(function(){
-  const Core = window.PokemonTeamAnalyzerCore; if(!Core){ console.error('Core not loaded'); return; }
-  Core.prototype.createAnalysisHTML = function(team,a){ return `\n  <div class="team-analysis-results">\n    ${this.createTeamOverviewHTML(team)}\n    ${this.createWeaknessesHTML(a.weaknesses)}\n    ${this.createStrengthsHTML(a.resistances,a.immunities)}\n    ${this.createCoverageHTML(a.coverage)}\n    ${this.createRecommendationsHTML(a.recommendations)}\n  </div>`; };
-  Core.prototype.createTeamOverviewHTML = function(team){ const cards=team.map((p,i)=>{ const t=p.types[0]||'normal'; const num=p.id?`#${p.id.toString().padStart(3,'0')}`:''; const img=this.getPokemonImageUrl(p); return `\n    <div class="team-member type-${t}">\n      <div class="team-position">#${i+1}</div>\n      <div class="team-member-image"><img src="${img}" alt="${p.name}" loading="lazy"></div>\n      <div class="team-member-info">\n        <div class="team-member-number">${num}</div>\n        <div class="team-member-name">${p.name}</div>\n        <div class="team-member-types">${p.types.map(x=>`<span class=\"type-badge type-${x}\">${x.toUpperCase()}</span>`).join('')}</div>\n      </div>\n    </div>`; }).join(''); return `\n  <div class="analysis-section">\n    <h6><img src="assets/img/9.png" alt="Team" class="icon-team icon-team--inline"> Team-Übersicht</h6>\n    <div class="team-overview">${cards}</div>\n  </div>`; };
-  Core.prototype.getPokemonImageUrl = function(p){ if(p.image) return p.image; if(p.id) return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${p.id}.png`; return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png'; };
-  Core.prototype.createWeaknessesHTML = function(weak){ if(!Object.keys(weak).length) return `\n  <div class="analysis-section">\n    <h6><i class="fas fa-shield-alt text-success"></i> Schwächen</h6><p class="text-success">Keine kritischen Schwächen gefunden!</p>\n  </div>`; const items=Object.entries(weak).sort(([,a],[,b])=> b.score-a.score).map(([t,d])=>`\n  <div class="weakness-item severity-${d.severity.level}">\n    <div class="weakness-header"><span class="type-badge type-${t}">${t.toUpperCase()}</span><span class="severity-badge ${d.severity.level}">${d.severity.text}</span></div>\n    <div class="affected-pokemon">Betroffene Pokemon: ${d.affected.map(p=>`${p.name} (${p.effectiveness}x)`).join(', ')}</div>\n  </div>`).join(''); return `\n  <div class="analysis-section">\n    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Team-Schwächen</h6><div class="weaknesses-list">${items}</div></div>`; };
-  Core.prototype.createStrengthsHTML = function(res,imm){ const rItems=Object.entries(res).map(([t,d])=>`<div class="strength-item"><span class="type-badge type-${t}">${t.toUpperCase()}</span><span class="strength-count">${d.count}x Resistenz</span></div>`).join(''); const iItems=Object.entries(imm).map(([t,d])=>`<div class="strength-item immunity"><span class="type-badge type-${t}">${t.toUpperCase()}</span><span class="strength-count">${d.count}x Immunität</span></div>`).join(''); return `\n  <div class="analysis-section"><h6><i class="fas fa-shield-alt text-success"></i> Team-Stärken</h6><div class="strengths-list">${rItems}${iItems}</div></div>`; };
-  Core.prototype.createCoverageHTML = function(cov){ const covered=Object.entries(cov).filter(([,d])=>d.covered).length; const total=Object.keys(cov).length; const pct=Math.round((covered/total)*100); const items=Object.entries(cov).filter(([,d])=>d.covered).map(([t,d])=>`<div class="coverage-item"><span class="type-badge type-${t}">${t.toUpperCase()}</span><span class="effectiveness">${d.effectiveness}x</span></div>`).join(''); return `\n  <div class="analysis-section"><h6><i class="fas fa-crosshairs text-info"></i> Offensive Coverage</h6><div class="coverage-stats"><div class="coverage-percentage"><span class="percentage">${pct}%</span><span class="coverage-text">Coverage (${covered}/${total} Typen)</span></div><div class="progress"><div class="progress-bar" data-coverage="${pct}"></div></div></div><div class="coverage-list">${items}</div></div>`; };
-  Core.prototype.createRecommendationsHTML = function(rec){ if(!rec.length) return `\n  <div class="analysis-section"><h6><i class="fas fa-lightbulb text-success"></i> Empfehlungen</h6><p class="text-success">Dein Team ist gut ausbalanciert!</p></div>`; const items=rec.map(r=>`<div class="recommendation-item priority-${r.priority}"><div class="recommendation-icon">${r.type==='weakness'?'⚠️':r.type==='coverage'?'🎯':'🔄'}</div><div class="recommendation-text">${r.message}</div></div>`).join(''); return `\n  <div class="analysis-section"><h6><i class="fas fa-lightbulb text-warning"></i> Verbesserungsvorschläge</h6><div class="recommendations-list">${items}</div></div>`; };
+// Team Analyzer Render - HTML creation
+(function () {
+  const Core = window.PokemonTeamAnalyzerCore;
+  if (!Core) {
+    console.error('Core not loaded');
+    return;
+  }
+
+  Core.prototype.createAnalysisHTML = function (team, analysis) {
+    return `
+  <div class="team-analysis-results">
+    ${this.createTeamOverviewHTML(team)}
+    ${this.createWeaknessesHTML(analysis.weaknesses)}
+    ${this.createStrengthsHTML(analysis.resistances, analysis.immunities)}
+    ${this.createCoverageHTML(analysis.coverage)}
+    ${this.createRecommendationsHTML(analysis.recommendations)}
+  </div>`;
+  };
+
+  Core.prototype.createTeamOverviewHTML = function (team) {
+    const cards = team
+      .map((pokemon, index) => {
+        const primaryType = pokemon.types[0] || 'normal';
+        const pokemonNumber = pokemon.id ? `#${pokemon.id.toString().padStart(3, '0')}` : '';
+        const imageUrl = this.getPokemonImageUrl(pokemon);
+
+        return `
+    <div class="team-member type-${primaryType}">
+      <div class="team-position">#${index + 1}</div>
+      <div class="team-member-image"><img src="${imageUrl}" alt="${pokemon.name}" loading="lazy"></div>
+      <div class="team-member-info">
+        <div class="team-member-number">${pokemonNumber}</div>
+        <div class="team-member-name">${pokemon.name}</div>
+        <div class="team-member-types">
+          ${pokemon.types.map((type) => `<span class=\"type-badge type-${type}\">${type.toUpperCase()}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+      })
+      .join('');
+
+    return `
+  <div class="analysis-section">
+    <h6><img src="assets/img/9.png" alt="Team" class="icon-team icon-team--inline"> Team-Uebersicht</h6>
+    <div class="team-overview">${cards}</div>
+  </div>`;
+  };
+
+  Core.prototype.getPokemonImageUrl = function (pokemon) {
+    if (pokemon.image) return pokemon.image;
+    if (pokemon.id) {
+      return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png`;
+    }
+    return 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png';
+  };
+
+  Core.prototype.createWeaknessesHTML = function (weaknesses) {
+    if (!Object.keys(weaknesses).length) {
+      return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-shield-alt text-success"></i> Schwaechen</h6>
+    <p class="text-success">Keine kritischen Schwaechen gefunden.</p>
+  </div>`;
+    }
+
+    const weaknessItems = Object.entries(weaknesses)
+      .sort(([, a], [, b]) => b.score - a.score)
+      .map(
+        ([type, details]) => `
+  <div class="weakness-item severity-${details.severity.level}">
+    <div class="weakness-header">
+      <span class="type-badge type-${type}">${type.toUpperCase()}</span>
+      <span class="severity-badge ${details.severity.level}">${details.severity.text}</span>
+    </div>
+    <div class="affected-pokemon">
+      Betroffene Pokemon: ${details.affected.map((pokemon) => `${pokemon.name} (${pokemon.effectiveness}x)`).join(', ')}
+    </div>
+  </div>`
+      )
+      .join('');
+
+    return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Team-Schwaechen</h6>
+    <div class="weaknesses-list">${weaknessItems}</div>
+  </div>`;
+  };
+
+  Core.prototype.createStrengthsHTML = function (resistances, immunities) {
+    const resistanceItems = Object.entries(resistances)
+      .map(
+        ([type, details]) =>
+          `<div class="strength-item"><span class="type-badge type-${type}">${type.toUpperCase()}</span><span class="strength-count">${details.count}x Resistenz</span></div>`
+      )
+      .join('');
+
+    const immunityItems = Object.entries(immunities)
+      .map(
+        ([type, details]) =>
+          `<div class="strength-item immunity"><span class="type-badge type-${type}">${type.toUpperCase()}</span><span class="strength-count">${details.count}x Immunitaet</span></div>`
+      )
+      .join('');
+
+    return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-shield-alt text-success"></i> Team-Staerken</h6>
+    <div class="strengths-list">${resistanceItems}${immunityItems}</div>
+  </div>`;
+  };
+
+  Core.prototype.createCoverageHTML = function (coverage) {
+    const coveredCount = Object.entries(coverage).filter(([, details]) => details.covered).length;
+    const totalTypes = Object.keys(coverage).length;
+    const coveragePercent = Math.round((coveredCount / totalTypes) * 100);
+
+    const coverageItems = Object.entries(coverage)
+      .filter(([, details]) => details.covered)
+      .map(
+        ([type, details]) =>
+          `<div class="coverage-item"><span class="type-badge type-${type}">${type.toUpperCase()}</span><span class="effectiveness">${details.effectiveness}x</span></div>`
+      )
+      .join('');
+
+    return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-crosshairs text-info"></i> Offensive Coverage</h6>
+    <div class="coverage-stats">
+      <div class="coverage-percentage">
+        <span class="percentage">${coveragePercent}%</span>
+        <span class="coverage-text">Coverage (${coveredCount}/${totalTypes} Typen)</span>
+      </div>
+      <div class="progress"><div class="progress-bar" data-coverage="${coveragePercent}" style="width:${coveragePercent}%"></div></div>
+    </div>
+    <div class="coverage-list">${coverageItems}</div>
+  </div>`;
+  };
+
+  Core.prototype.createRecommendationsHTML = function (recommendations) {
+    if (!recommendations.length) {
+      return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-lightbulb text-success"></i> Empfehlungen</h6>
+    <p class="text-success">Dein Team ist bereits gut ausbalanciert.</p>
+  </div>`;
+    }
+
+    const recommendationItems = recommendations
+      .map((item) => {
+        const icon = item.type === 'weakness' ? '!' : item.type === 'coverage' ? 'TARGET' : 'SYNC';
+        return `<div class="recommendation-item priority-${item.priority}"><div class="recommendation-icon">${icon}</div><div class="recommendation-text">${item.message}</div></div>`;
+      })
+      .join('');
+
+    return `
+  <div class="analysis-section">
+    <h6><i class="fas fa-lightbulb text-warning"></i> Verbesserungsvorschlaege</h6>
+    <div class="recommendations-list">${recommendationItems}</div>
+  </div>`;
+  };
 })();

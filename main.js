@@ -181,7 +181,9 @@ function startPokemonApp() {
     // 4. Team System (Order matters for dependencies)
     "./script/team-offcanvas.js",      // Base team system - MUSS ZUERST sein
     "./script/drag-drop-enhanced.js",  // Drag & drop functionality
+    "./js/ai-service.js",              // Central Groq helper + typewriter/caching
     "./script/team-builder.js",        // Central 6-slot team builder
+  "./script/team-ai-service.js",     // AI provider integration (Mistral -> Groq fallback)
   // Team modal modular
   "./script/team-modal-core.js",
   "./script/team-modal-render.js",
@@ -205,6 +207,7 @@ function startPokemonApp() {
 
     // 6. Compare & Battle Features
     "./script/pokemon-compare.js",
+    "./script/battle-history.js",
     "./script/battle-simulator.js",
     "./script/team-battle.js",
   ];

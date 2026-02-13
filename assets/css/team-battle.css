@@ -262,6 +262,70 @@
   color: var(--secondary);
 }
 
+/* ===== GYM LEADER DIALOG ===== */
+.gym-leader-dialog-card {
+  width: 230px;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(78, 205, 196, 0.36);
+  background: linear-gradient(
+    130deg,
+    rgba(78, 205, 196, 0.2) 0%,
+    rgba(52, 152, 219, 0.12) 55%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  box-shadow: var(--shadow-sm);
+}
+
+.gym-leader-dialog-card.is-thinking {
+  animation: gymLeaderThink 0.6s ease-in-out infinite;
+}
+
+.gym-leader-dialog-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.gym-leader-name {
+  font-family: var(--font-title);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.gym-leader-type {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #1f6fb2;
+  text-transform: uppercase;
+}
+
+.gym-leader-line {
+  margin: 0;
+  min-height: 2.3rem;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #124469;
+  line-height: 1.35;
+}
+
+@keyframes gymLeaderThink {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-1px);
+  }
+  75% {
+    transform: translateX(1px);
+  }
+}
+
 /* ===== BATTLE BUTTON ===== */
 .start-battle-btn {
   grid-column: 1 / -1;
@@ -769,12 +833,24 @@
     width: 100%;
   }
 
+  .gym-leader-dialog-card {
+    width: min(100%, 360px);
+  }
+
   .team-side {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
+  .team-vs-divider {
+    flex-direction: column;
+  }
+
+  .gym-leader-dialog-card {
+    width: 100%;
+  }
+
   .team-status-bar {
     flex-direction: column;
     gap: var(--spacing-md);
@@ -857,4 +933,157 @@
   font-size: 1.1rem;
   color: #666;
   font-weight: 500;
+}
+
+/* ===== GYM LEADER AVATARS ===== */
+.gym-leader-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.gym-leader-avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  border: 3px solid rgba(255, 255, 255, 0.7);
+}
+
+.gym-leader-initials {
+  font-family: var(--font-title);
+  font-weight: 900;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+  user-select: none;
+}
+
+.gym-leader-avatar .gym-leader-initials {
+  font-size: 0.8rem;
+}
+
+.gym-leader-avatar-lg .gym-leader-initials {
+  font-size: 1.4rem;
+}
+
+.gym-leader-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ===== BATTLE HISTORY ===== */
+.battle-history-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.history-stat-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.history-stat-value {
+  font-family: var(--font-title);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.history-stat-label {
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #999;
+  text-transform: uppercase;
+  margin-top: var(--spacing-xs);
+}
+
+.history-most-used {
+  margin-bottom: var(--spacing-xl);
+}
+
+.history-most-used h6 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: var(--spacing-md);
+}
+
+.most-used-list {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.most-used-badge {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--gradient);
+  color: white;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.battle-history-table-wrapper {
+  overflow-x: auto;
+}
+
+.battle-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.battle-history-table th {
+  background: var(--dark);
+  color: white;
+  padding: var(--spacing-md);
+  text-align: left;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.battle-history-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid #eee;
+}
+
+.battle-history-table tr.history-win td:nth-child(3) {
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.battle-history-table tr.history-loss td:nth-child(3) {
+  color: #e74c3c;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .battle-history-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .history-stat-value {
+    font-size: 1.4rem;
+  }
 }
