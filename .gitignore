@@ -45,9 +45,7 @@ yarn-error.log*
 enev/
 
 # Markdown-Dokumente (nicht versionieren)
-AI_Coding_Guidlines.md
-REFACTORING_GUIDE.md
-LIVING_README.md
+pushLIVING_README.md
 .env.test.local
 .env.production.local
 
