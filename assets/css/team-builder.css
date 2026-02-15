@@ -72,9 +72,9 @@
   padding: 8px 12px;
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.32);
-  background: var(--gradient);
+  background: rgba(255, 255, 255, 0.153);
   box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-  color: #fff;
+  color: #1c1b1b;
   text-align: center;
   font-family: var(--font-ui);
   font-size: 0.9rem;

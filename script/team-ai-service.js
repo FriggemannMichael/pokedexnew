@@ -2,25 +2,25 @@ class TeamAIService {
   constructor() {
     this.providers = {
       mistral: {
-        name: 'mistral',
-        label: 'Mistral',
-        endpoint: 'https://api.mistral.ai/v1/chat/completions',
-        model: 'mistral-small-latest'
+        name: "mistral",
+        label: "Mistral",
+        endpoint: "https://api.mistral.ai/v1/chat/completions",
+        model: "mistral-small-latest",
       },
       groq: {
-        name: 'groq',
-        label: 'Groq',
-        endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-        model: 'llama-3.1-8b-instant'
-      }
+        name: "groq",
+        label: "Groq",
+        endpoint: "https://api.groq.com/openai/v1/chat/completions",
+        model: "llama-3.1-8b-instant",
+      },
     };
 
     this.storageKeys = {
-      mistralApiKey: 'pokedex_ai_mistral_api_key',
-      groqApiKey: 'pokedex_ai_groq_api_key'
+      mistralApiKey: "pokedex_ai_mistral_api_key",
+      groqApiKey: "pokedex_ai_groq_api_key",
     };
 
-    this.proxyEndpoint = '/api/ai';
+    this.proxyEndpoint = "/api/ai";
     this.useProxy = false;
     this._proxyChecked = false;
     this._lastRequestTime = 0;
@@ -29,19 +29,19 @@ class TeamAIService {
 
   getConfig() {
     const runtimeConfig = window.POKE_AI_CONFIG || {};
-    const runtimeMistral = String(runtimeConfig.mistralApiKey || '').trim();
-    const runtimeGroq = String(runtimeConfig.groqApiKey || '').trim();
+    const runtimeMistral = String(runtimeConfig.mistralApiKey || "").trim();
+    const runtimeGroq = String(runtimeConfig.groqApiKey || "").trim();
 
     if (runtimeMistral || runtimeGroq) {
       return {
         mistralApiKey: runtimeMistral,
-        groqApiKey: runtimeGroq
+        groqApiKey: runtimeGroq,
       };
     }
 
     return {
-      mistralApiKey: localStorage.getItem(this.storageKeys.mistralApiKey) || '',
-      groqApiKey: localStorage.getItem(this.storageKeys.groqApiKey) || ''
+      mistralApiKey: localStorage.getItem(this.storageKeys.mistralApiKey) || "",
+      groqApiKey: localStorage.getItem(this.storageKeys.groqApiKey) || "",
     };
   }
 
@@ -69,7 +69,7 @@ class TeamAIService {
     const cfg = this.getConfig();
     return {
       mistralConfigured: Boolean(cfg.mistralApiKey),
-      groqConfigured: Boolean(cfg.groqApiKey)
+      groqConfigured: Boolean(cfg.groqApiKey),
     };
   }
 
@@ -77,7 +77,7 @@ class TeamAIService {
     if (this._proxyChecked) return this.useProxy;
     this._proxyChecked = true;
     try {
-      const resp = await fetch(this.proxyEndpoint + '/ping');
+      const resp = await fetch(this.proxyEndpoint + "/ping");
       this.useProxy = resp.ok;
     } catch {
       this.useProxy = false;
@@ -92,30 +92,37 @@ class TeamAIService {
         const response = await fetch(url, options);
         if (response.status >= 500 && attempt < maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
-          console.warn(`[AI] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.warn(
+            `[AI] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
         return response;
       } catch (error) {
         lastError = error;
-        if (error.name === 'AbortError') throw error;
+        if (error.name === "AbortError") throw error;
         if (attempt < maxRetries) {
           const delay = Math.pow(2, attempt) * 1000;
-          console.warn(`[AI] Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, error.message);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          console.warn(
+            `[AI] Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+            error.message,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
           continue;
         }
       }
     }
-    throw lastError || new Error('Request failed after retries');
+    throw lastError || new Error("Request failed after retries");
   }
 
   async _throttle() {
     const now = Date.now();
     const elapsed = now - this._lastRequestTime;
     if (elapsed < this._minRequestIntervalMs) {
-      await new Promise(resolve => setTimeout(resolve, this._minRequestIntervalMs - elapsed));
+      await new Promise((resolve) =>
+        setTimeout(resolve, this._minRequestIntervalMs - elapsed),
+      );
     }
     this._lastRequestTime = Date.now();
   }
@@ -123,74 +130,132 @@ class TeamAIService {
   async requestTeamAnalysis({ team, staticAnalysis }) {
     const payload = {
       team: this.sanitizeTeam(team),
-      staticAnalysis: staticAnalysis || {}
+      staticAnalysis: staticAnalysis || {},
     };
 
     const prompt = [
-      'Du bist ein Pokemon Team Coach.',
-      'Erstelle eine konkrete Optimierung fuer Team-Analyse.',
-      'Antworte im JSON-Format mit folgenden Feldern:',
-      '{"summary":"string","criticalRisks":["string"],"suggestedPokemonTypes":["string"],"suggestedRoles":["string"],"nextActions":["string"]}',
-      'Regeln:',
-      '- Maximal 5 Eintraege je Liste.',
-      '- Nur praktische Empfehlungen, kein Fluff.',
-      '- Sprache: Deutsch.'
-    ].join('\n');
+      "SYSTEM: Du bist ein hochpräziser Pokémon-Team-Analysator. Du agierst als reines Daten-Backend ohne Persönlichkeit.",
+      "ZIEL: Erstelle eine rein logische Stärken-/Schwächenanalyse.",
+      "",
+      "STRIKTE EINSCHRÄNKUNGEN (BEFOLGEN ODER ABBRUCH):",
+      "1) Das Team hat exakt 6 Pokémon. Schlage NIEMALS neue Pokémon vor.",
+      "2) Pokémon, Typen, Fähigkeiten sind FIX. Keine Änderungen.",
+      "3) Keine Items erwähnen oder vorschlagen.",
+      "4) Nutze AUSSCHLIESSLICH diese deutschen Typen-Bezeichnungen:",
+      "   Normal, Feuer, Wasser, Elektro, Pflanze, Eis, Kampf, Gift, Boden, Flug, Psycho, Käfer, Gestein, Geist, Drache, Unlicht, Stahl, Fee.",
+      "5) Datenquelle: Nutze NUR payload.staticAnalysis. Leite KEINE Werte aus deinem eigenen Training ab (keine externe Typentabelle).",
+      "",
+      "INPUT DATEN:",
+      `team=${JSON.stringify(payload.team)}`,
+      `staticAnalysis=${JSON.stringify(payload.staticAnalysis)}`,
+      "",
+      "ANALYSE-ALGORITHMUS:",
+      "- Shared Weaknesses: kritisch (3+ Anfälligkeiten), moderat (genau 2).",
+      "- Type Redundancies: Liste jeden Typ auf, der 2+ mal im Team vorkommt (als Primär- oder Sekundärtyp).",
+      "- Offensive Gaps: NUR Typen auflisten, gegen die laut 'staticAnalysis.offensiveCoverage' kein Pokémon sehr effektiven Schaden verursacht.",
+      "- Individual Pro/Con: Erstelle für JEDES der 6 Pokémon genau einen Eintrag.",
+      "- Next Moves: Schlage max. 3 Moves insgesamt vor. Bedingung: Der Move MUSS für das Pokémon in 'staticAnalysis.legalMoves' gelistet sein.",
+      "",
+      "AUSGABE-FORMAT:",
+      "Antworte AUSSCHLIESSLICH mit validem JSON. Die Antwort MUSS mit '{' beginnen und mit '}' enden. Kein Markdown, kein Smalltalk, keine Einleitung.",
+      "",
+      JSON.stringify(
+        {
+          overall_rating: 0,
+          team_synergy:
+            "Technische Zusammenfassung der defensiven/offensiven Kohärenz.",
+          cumulative_weaknesses: { critical: [], moderate: [] },
+          type_redundancies: [
+            { type: "", count: 0, impact: "Vorteil/Nachteil-Bewertung" },
+          ],
+          offensive_gaps: [],
+          individual_pro_con: [{ name: "", strength: "", weakness: "" }], // Genau 6 Einträge
+          next_moves: [],
+        },
+        null,
+        2,
+      ),
+    ].join("\n");
 
-    return this.requestWithFallback({ prompt, payload, temperature: 0.3, maxTokens: 700 });
+    return this.requestWithFallback({
+      prompt,
+      payload,
+      temperature: 0.3,
+      maxTokens: 700,
+    });
   }
 
   async requestTeamBuilderAssessment({ team, staticAnalysis }) {
     const payload = {
       team: this.sanitizeTeam(team),
-      staticAnalysis: staticAnalysis || {}
+      staticAnalysis: staticAnalysis || {},
     };
 
     const prompt = [
-      'Du bist ein Pokemon Team Advisor fuer ein 6er Team.',
-      'Bewerte nur den aktuellen Team-Zustand und gib klare, kurze Empfehlungen.',
-      'Nenne konkrete Team-Luecken gegen Trainer- oder Typen-Matchups.',
-      'Antworte im JSON-Format mit folgenden Feldern:',
+      "Du bist ein Pokemon Team Advisor fuer ein 6er Team.",
+      "Bewerte nur den aktuellen Team-Zustand und gib klare, kurze Empfehlungen.",
+      "Nenne konkrete Team-Luecken gegen Trainer- oder Typen-Matchups.",
+      "Antworte im JSON-Format mit folgenden Feldern:",
       '{"shortAssessment":"string","winningChancePercent":number,"keyRisks":["string"],"priorityFixes":["string"]}',
-      'Regeln:',
-      '- winningChancePercent muss zwischen 1 und 99 liegen.',
-      '- Maximal 3 Punkte fuer keyRisks und priorityFixes.',
-      '- Sprache: Deutsch.'
-    ].join('\n');
+      "Regeln:",
+      "- winningChancePercent muss zwischen 1 und 99 liegen.",
+      "- Maximal 3 Punkte fuer keyRisks und priorityFixes.",
+      "- Sprache: Deutsch.",
+    ].join("\n");
 
-    return this.requestWithFallback({ prompt, payload, temperature: 0.2, maxTokens: 450 });
+    return this.requestWithFallback({
+      prompt,
+      payload,
+      temperature: 0.2,
+      maxTokens: 450,
+    });
   }
 
-  async requestGymStrategy({ playerTeam, gymTeam, playerAvgStats, gymAvgStats }) {
+  async requestGymStrategy({
+    playerTeam,
+    gymTeam,
+    playerAvgStats,
+    gymAvgStats,
+  }) {
     const payload = {
       playerTeam: this.sanitizeTeam(playerTeam),
       gymTeam: this.sanitizeTeam(gymTeam),
       playerAvgStats: playerAvgStats || {},
-      gymAvgStats: gymAvgStats || {}
+      gymAvgStats: gymAvgStats || {},
     };
 
     const prompt = [
-      'Du bist ein Gym-Battle Strategist.',
-      'Erstelle einen Battleplan fuer ein Team-vs-Team Matchup.',
-      'Antworte im JSON-Format mit folgenden Feldern:',
+      "Du bist ein Gym-Battle Strategist.",
+      "Erstelle einen Battleplan fuer ein Team-vs-Team Matchup.",
+      "Antworte im JSON-Format mit folgenden Feldern:",
       '{"strategySummary":"string","recommendedLead":"string","swapPriorities":["string"],"targetFocus":["string"],"riskAlerts":["string"]}',
-      'Regeln:',
-      '- Maximal 5 Eintraege je Liste.',
-      '- Beruecksichtige Typen und Basiswerte.',
-      '- Sprache: Deutsch.'
-    ].join('\n');
+      "Regeln:",
+      "- Maximal 5 Eintraege je Liste.",
+      "- Beruecksichtige Typen und Basiswerte.",
+      "- Sprache: Deutsch.",
+    ].join("\n");
 
-    return this.requestWithFallback({ prompt, payload, temperature: 0.25, maxTokens: 700 });
+    return this.requestWithFallback({
+      prompt,
+      payload,
+      temperature: 0.25,
+      maxTokens: 700,
+    });
   }
 
-  async requestWithFallback({ prompt, payload, temperature = 0.3, maxTokens = 700 }) {
+  async requestWithFallback({
+    prompt,
+    payload,
+    temperature = 0.3,
+    maxTokens = 700,
+  }) {
     await this.detectProxy();
 
     if (this.useProxy) {
       // When proxy is available, use it directly with both providers
       const providers = [
         { ...this.providers.mistral },
-        { ...this.providers.groq }
+        { ...this.providers.groq },
       ];
 
       let lastError = null;
@@ -201,32 +266,37 @@ class TeamAIService {
             prompt,
             payload,
             temperature,
-            maxTokens
+            maxTokens,
           });
 
           return {
             provider: provider.name,
             providerLabel: provider.label,
             rawContent: content,
-            parsed: this.tryParseJSON(content)
+            parsed: this.tryParseJSON(content),
           };
         } catch (error) {
           lastError = error;
-          console.warn(`[AI] ${provider.label} via proxy failed, trying fallback`, error);
+          console.warn(
+            `[AI] ${provider.label} via proxy failed, trying fallback`,
+            error,
+          );
         }
       }
-      throw new Error(lastError?.message || 'AI request failed on all providers.');
+      throw new Error(
+        lastError?.message || "AI request failed on all providers.",
+      );
     }
 
     const config = this.getConfig();
 
     const providers = [
       { ...this.providers.mistral, apiKey: config.mistralApiKey },
-      { ...this.providers.groq, apiKey: config.groqApiKey }
+      { ...this.providers.groq, apiKey: config.groqApiKey },
     ].filter((provider) => Boolean(provider.apiKey));
 
     if (!providers.length) {
-      throw new Error('Bitte API-Key fuer Mistral oder Groq speichern.');
+      throw new Error("Bitte API-Key fuer Mistral oder Groq speichern.");
     }
 
     let lastError = null;
@@ -238,22 +308,27 @@ class TeamAIService {
           prompt,
           payload,
           temperature,
-          maxTokens
+          maxTokens,
         });
 
         return {
           provider: provider.name,
           providerLabel: provider.label,
           rawContent: content,
-          parsed: this.tryParseJSON(content)
+          parsed: this.tryParseJSON(content),
         };
       } catch (error) {
         lastError = error;
-        console.warn(`[AI] ${provider.label} failed, trying fallback if available`, error);
+        console.warn(
+          `[AI] ${provider.label} failed, trying fallback if available`,
+          error,
+        );
       }
     }
 
-    throw new Error(lastError?.message || 'AI request failed on all providers.');
+    throw new Error(
+      lastError?.message || "AI request failed on all providers.",
+    );
   }
 
   async callProvider({ provider, prompt, payload, temperature, maxTokens }) {
@@ -264,9 +339,9 @@ class TeamAIService {
 
     const useProxy = this.useProxy;
     const url = useProxy ? this.proxyEndpoint : provider.endpoint;
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = { "Content-Type": "application/json" };
     if (!useProxy) {
-      headers['Authorization'] = `Bearer ${provider.apiKey}`;
+      headers["Authorization"] = `Bearer ${provider.apiKey}`;
     }
 
     const bodyObj = {
@@ -275,14 +350,15 @@ class TeamAIService {
       max_tokens: maxTokens,
       messages: [
         {
-          role: 'system',
-          content: 'Du bist ein praeziser Pokemon-Coach. Antworte nur mit gueltigem JSON ohne Markdown.'
+          role: "system",
+          content:
+            "Du bist ein praeziser Pokemon-Coach. Antworte nur mit gueltigem JSON ohne Markdown.",
         },
         {
-          role: 'user',
-          content: `${prompt}\n\nInput:\n${JSON.stringify(payload)}`
-        }
-      ]
+          role: "user",
+          content: `${prompt}\n\nInput:\n${JSON.stringify(payload)}`,
+        },
+      ],
     };
 
     if (useProxy) {
@@ -291,22 +367,27 @@ class TeamAIService {
 
     try {
       const response = await this._fetchWithRetry(url, {
-        method: 'POST',
+        method: "POST",
         headers,
         body: JSON.stringify(bodyObj),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
         const body = await response.text();
-        const compactBody = body ? body.slice(0, 280) : 'no-body';
-        throw new Error(`${provider.label} API ${response.status}: ${compactBody}`);
+        const compactBody = body ? body.slice(0, 280) : "no-body";
+        throw new Error(
+          `${provider.label} API ${response.status}: ${compactBody}`,
+        );
       }
 
       const data = await response.json();
       const messageContent = data?.choices?.[0]?.message?.content;
       const content = Array.isArray(messageContent)
-        ? messageContent.map((part) => part?.text || '').join(' ').trim()
+        ? messageContent
+            .map((part) => part?.text || "")
+            .join(" ")
+            .trim()
         : messageContent;
       if (!content) {
         throw new Error(`${provider.label} API returned no content.`);
@@ -323,9 +404,9 @@ class TeamAIService {
 
     return team.map((pokemon) => ({
       id: pokemon?.id || null,
-      name: pokemon?.name || '',
+      name: pokemon?.name || "",
       types: Array.isArray(pokemon?.types) ? pokemon.types : [],
-      stats: pokemon?.stats || null
+      stats: pokemon?.stats || null,
     }));
   }
 
@@ -347,8 +428,8 @@ class TeamAIService {
   }
 
   extractJSONObject(text) {
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
     if (start === -1 || end === -1 || end <= start) return null;
     return text.slice(start, end + 1);
   }

@@ -149,7 +149,7 @@
   position: absolute;
   top: 15px;
   right: 15px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.156);
   color: #333;
   padding: 5px 10px;
   border-radius: 15px;
@@ -222,7 +222,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 8px;
-  color: white;
+  color: rgb(35, 35, 35);
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
@@ -499,7 +499,9 @@
   object-fit: contain;
   filter: drop-shadow(0 12px 25px rgba(0, 0, 0, 0.15));
   transform: scale(0.5) translateZ(-200px);
-  transition: transform 5.9s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.9s ease;
+  transition:
+    transform 5.9s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.9s ease;
   transform-origin: center center;
 }
 

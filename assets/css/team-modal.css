@@ -116,8 +116,8 @@
 }
 
 .team-position {
-  background: var(--primary-color);
-  color: rgba(255, 255, 255, 0);
+  background: rgba(0, 128, 0, 0.105);
+  color: rgba(18, 17, 17, 0.923);
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.75rem;

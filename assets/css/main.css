@@ -300,10 +300,11 @@ body {
   border-radius: 10px;
   padding: 6px 8px 7px;
   margin-top: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.18);
-  color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+  color: #1a1a1a;
 }
-.team-strength--mini-card.is-hidden { /* Robust für initialen Zustand */
+.team-strength--mini-card.is-hidden {
+  /* Robust für initialen Zustand */
   display: none;
 }
 .team-strength--mini-card .ts-row {
@@ -445,7 +446,8 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       circle at 20% 20%,
       rgba(255, 255, 255, 0.1) 2px,
       transparent 2px
@@ -460,7 +462,10 @@ body::before {
       rgba(255, 255, 255, 0.05) 1px,
       transparent 1px
     );
-  background-size: 50px 50px, 60px 60px, 30px 30px;
+  background-size:
+    50px 50px,
+    60px 60px,
+    30px 30px;
   pointer-events: none;
   z-index: -1;
   opacity: 0.3;
@@ -692,14 +697,16 @@ body.type-fairy {
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.1) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-size:
+    100px 100px,
+    100px 100px,
+    20px 20px,
+    20px 20px;
   z-index: 2;
   opacity: 0.3;
   animation: mapGrid 20s linear infinite;
@@ -1476,7 +1483,9 @@ body.type-fairy {
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #333 !important;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 2px rgba(255, 255, 255, 0.4),
     inset 0 -1px 2px rgba(0, 0, 0, 0.1);
 }
@@ -1491,17 +1500,21 @@ body.type-fairy {
     rgba(255, 255, 255, 0.15) 100%
   );
   backdrop-filter: blur(25px) saturate(200%) brightness(1.1);
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.15),
     0 8px 25px rgba(255, 255, 255, 0.1),
     inset 0 2px 4px rgba(255, 255, 255, 0.5),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.2);
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(255, 255, 255, 0.2);
   color: #222 !important;
   text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9);
 }
 
 .nav-control-btn:active:not(:disabled) {
   transform: perspective(1000px) translateZ(5px) scale(0.98);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav-control-btn::before {
@@ -1539,7 +1552,8 @@ body.type-fairy {
   ) !important;
   backdrop-filter: blur(10px) saturate(100%);
   color: rgba(51, 51, 51, 0.4) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 2px rgba(255, 255, 255, 0.2);
   transform: none;
   cursor: not-allowed;
@@ -1572,7 +1586,8 @@ body.type-fairy {
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
   min-width: 80px;
   text-align: center;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
@@ -1594,7 +1609,9 @@ body.type-fairy {
   font-family: var(--font-ui) !important;
   text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8) !important;
   padding: 15px 30px !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 2px rgba(255, 255, 255, 0.4),
     inset 0 -1px 2px rgba(0, 0, 0, 0.1) !important;
   transition: all var(--transition-cubic) !important;
@@ -1615,17 +1632,21 @@ body.type-fairy {
     rgba(255, 255, 255, 0.15) 100%
   ) !important;
   backdrop-filter: blur(25px) saturate(200%) brightness(1.1) !important;
-  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15),
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.15),
     0 8px 25px rgba(255, 255, 255, 0.1),
     inset 0 2px 4px rgba(255, 255, 255, 0.5),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 255, 255, 0.2) !important;
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(255, 255, 255, 0.2) !important;
   color: #222 !important;
   text-shadow: 0 1px 4px rgba(255, 255, 255, 0.9) !important;
 }
 
 .load-more-btn:active:not(:disabled) {
   transform: perspective(1000px) translateZ(5px) scale(0.98) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+  box-shadow:
+    0 5px 15px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 
 .load-more-btn::before {
@@ -1659,7 +1680,9 @@ body.type-fairy {
   background: rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: width 0.3s ease, height 0.3s ease;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
   z-index: 1;
 }
 
@@ -1691,7 +1714,8 @@ body.type-fairy {
   ) !important;
   backdrop-filter: blur(10px) saturate(100%) !important;
   color: rgba(51, 51, 51, 0.4) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05),
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 2px rgba(255, 255, 255, 0.2) !important;
   transform: none !important;
   cursor: not-allowed;
@@ -2182,7 +2206,9 @@ body.type-fairy {
     border-radius: 20px;
     color: #333;
     text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05),
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      0 4px 16px rgba(0, 0, 0, 0.05),
       inset 0 1px 2px rgba(255, 255, 255, 0.4),
       inset 0 -1px 2px rgba(0, 0, 0, 0.1);
     transition: all var(--transition-cubic);
@@ -2203,7 +2229,8 @@ body.type-fairy {
       rgba(255, 255, 255, 0.25) 50%,
       rgba(255, 255, 255, 0.15) 100%
     );
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15),
+    box-shadow:
+      0 15px 45px rgba(0, 0, 0, 0.15),
       0 8px 25px rgba(255, 255, 255, 0.1),
       inset 0 2px 4px rgba(255, 255, 255, 0.5),
       inset 0 -2px 4px rgba(0, 0, 0, 0.15);
@@ -2279,7 +2306,11 @@ body.type-fairy {
   }
 
   .hero-section::after {
-    background-size: 50px 50px, 50px 50px, 10px 10px, 10px 10px;
+    background-size:
+      50px 50px,
+      50px 50px,
+      10px 10px,
+      10px 10px;
   }
 
   .pokedex-title {
@@ -2580,7 +2611,8 @@ body.type-fairy {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: box-shadow var(--transition-base),
+  transition:
+    box-shadow var(--transition-base),
     background var(--transition-base);
   font-family: var(--font-ui);
   position: relative;
