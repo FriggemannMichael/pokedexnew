@@ -203,7 +203,7 @@ class TeamBattleSystem {
     // Generate 6 random Pokemon IDs (1-151 for Gen 1)
     const randomIds = [];
     while (randomIds.length < 6) {
-      const randomId = Math.floor(Math.random() * 151) + 1;
+      const randomId = Math.floor(Math.random() * 300) + 1;
       if (!randomIds.includes(randomId)) {
         randomIds.push(randomId);
       }
@@ -407,38 +407,54 @@ class TeamBattleSystem {
       await aiService.detectProxy();
     }
 
+    // Helper für KI-Provider-Dialog
+    const tryProvider = async (provider) => {
+      if (
+        !aiService ||
+        typeof aiService.requestGymLeaderDialogue !== "function"
+      )
+        return null;
+      try {
+        const line = await aiService.requestGymLeaderDialogue({
+          leaderName: this.gymLeader?.name || "Gym Leader",
+          leaderType: this.getTypeLabel(this.gymLeader?.type || "normal"),
+          leaderStyle: this.gymLeader?.style || "fokussiert",
+          eventText,
+          provider, // explizit Provider angeben
+        });
+        return line;
+      } catch (e) {
+        return null;
+      }
+    };
+
+    // 1. Groq versuchen
+    let line = null;
     if (
-      !aiService ||
-      typeof aiService.requestGymLeaderDialogue !== "function" ||
-      typeof aiService.hasGroqKey !== "function" ||
-      !aiService.hasGroqKey()
+      aiService &&
+      typeof aiService.hasGroqKey === "function" &&
+      aiService.hasGroqKey()
     ) {
-      if (requestId !== this.gymLeaderDialogRequestId) return;
-      this.clearLeaderThinkingState();
-      this.setGymLeaderDialogue(fallback);
-      return;
+      line = await tryProvider("groq");
+    }
+    // 2. Mistral versuchen, falls Groq fehlschlägt
+    if (
+      !line &&
+      aiService &&
+      typeof aiService.hasMistralKey === "function" &&
+      aiService.hasMistralKey()
+    ) {
+      line = await tryProvider("mistral");
     }
 
-    try {
-      const line = await aiService.requestGymLeaderDialogue({
-        leaderName: this.gymLeader?.name || "Gym Leader",
-        leaderType: this.getTypeLabel(this.gymLeader?.type || "normal"),
-        leaderStyle: this.gymLeader?.style || "fokussiert",
-        eventText,
-      });
-
-      if (requestId !== this.gymLeaderDialogRequestId) return;
-      this.clearLeaderThinkingState();
-      this.setGymLeaderDialogue(line || fallback);
-    } catch (error) {
-      console.warn(
-        "[TeamBattle] Leader dialogue failed, using local fallback",
-        error,
-      );
-      if (requestId !== this.gymLeaderDialogRequestId) return;
-      this.clearLeaderThinkingState();
-      this.setGymLeaderDialogue(fallback);
+    // 3. Fallback lokal
+    if (!line) {
+      line = fallback;
     }
+
+    if (requestId !== this.gymLeaderDialogRequestId) return;
+    this.clearLeaderThinkingState();
+    this.setGymLeaderDialogue(line);
   }
 
   createLocalLeaderLine(eventText) {
@@ -485,6 +501,9 @@ class TeamBattleSystem {
         <!-- Player Team -->
         <div class="team-side player-side">
           <div class="team-side-header">
+            <div class="gym-leader-avatar-lg type-gradient-normal">
+              <span class="gym-leader-initials">YT</span>
+            </div>
             <div class="team-side-title">YOUR TEAM</div>
             <div class="team-side-subtitle">
               <span>Average Stats</span>
