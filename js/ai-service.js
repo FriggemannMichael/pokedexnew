@@ -43,7 +43,7 @@
       if (this._proxyChecked) return this.useProxy;
       this._proxyChecked = true;
       try {
-        const resp = await fetch(this.proxyEndpoint + '/ping');
+        const resp = await fetch(this.proxyEndpoint + "/ping");
         this.useProxy = resp.ok;
       } catch {
         this.useProxy = false;
@@ -58,30 +58,37 @@
           const response = await fetch(url, options);
           if (response.status >= 500 && attempt < maxRetries) {
             const delay = Math.pow(2, attempt) * 1000;
-            console.warn(`[AI] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            console.warn(
+              `[AI] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }
           return response;
         } catch (error) {
           lastError = error;
-          if (error.name === 'AbortError') throw error;
+          if (error.name === "AbortError") throw error;
           if (attempt < maxRetries) {
             const delay = Math.pow(2, attempt) * 1000;
-            console.warn(`[AI] Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, error.message);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            console.warn(
+              `[AI] Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`,
+              error.message,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
             continue;
           }
         }
       }
-      throw lastError || new Error('Request failed after retries');
+      throw lastError || new Error("Request failed after retries");
     }
 
     async _throttle() {
       const now = Date.now();
       const elapsed = now - this._lastRequestTime;
       if (elapsed < this._minRequestIntervalMs) {
-        await new Promise(resolve => setTimeout(resolve, this._minRequestIntervalMs - elapsed));
+        await new Promise((resolve) =>
+          setTimeout(resolve, this._minRequestIntervalMs - elapsed),
+        );
       }
       this._lastRequestTime = Date.now();
     }
@@ -107,7 +114,13 @@
         ? Number(options.maxTokens)
         : 320;
       const useCache = options.useCache !== false;
-      const cacheKey = this.getCacheKey(model, systemPrompt, userPrompt, temperature, maxTokens);
+      const cacheKey = this.getCacheKey(
+        model,
+        systemPrompt,
+        userPrompt,
+        temperature,
+        maxTokens,
+      );
 
       if (useCache) {
         const cached = this.getCached(cacheKey);
@@ -143,7 +156,9 @@
         }
 
         const data = await response.json();
-        const content = String(data?.choices?.[0]?.message?.content || "").trim();
+        const content = String(
+          data?.choices?.[0]?.message?.content || "",
+        ).trim();
         if (!content) {
           throw new Error("Groq returned empty content.");
         }
@@ -167,7 +182,13 @@
         ? Number(options.maxTokens)
         : 320;
       const useCache = options.useCache !== false;
-      const cacheKey = this.getCacheKey(model, systemPrompt, userPrompt, temperature, maxTokens);
+      const cacheKey = this.getCacheKey(
+        model,
+        systemPrompt,
+        userPrompt,
+        temperature,
+        maxTokens,
+      );
 
       if (useCache) {
         const cached = this.getCached(cacheKey);
@@ -196,11 +217,15 @@
 
         if (!response.ok) {
           const body = await response.text();
-          throw new Error(`Proxy API ${response.status}: ${body.slice(0, 240)}`);
+          throw new Error(
+            `Proxy API ${response.status}: ${body.slice(0, 240)}`,
+          );
         }
 
         const data = await response.json();
-        const content = String(data?.choices?.[0]?.message?.content || "").trim();
+        const content = String(
+          data?.choices?.[0]?.message?.content || "",
+        ).trim();
         if (!content) throw new Error("Proxy returned empty content.");
 
         if (useCache) this.setCached(cacheKey, content);
@@ -210,20 +235,30 @@
       }
     }
 
-    async requestProfessorTeamAdvice({ team = [], staticAnalysis = null } = {}) {
-      const teamNames = Array.isArray(team)
-        ? team.map((pokemon) => String(pokemon?.name || "").trim()).filter(Boolean)
-        : [];
+    async requestProfessorTeamAdvice({
+      team = [],
+      staticAnalysis = null,
+    } = {}) {
+      // ... (Team-Größe Logik bleibt gleich)
 
-      const userPrompt = [
-        `Mein Team besteht aus: ${teamNames.join(", ") || "unbekannt"}.`,
-        `Statische Analyse: ${JSON.stringify(staticAnalysis || {})}`,
+      const systemPrompt = [
+        "Du bist Professor Eich, der legendäre Pokémon-Experte.",
+        "Analysiere das Team auf Basis der bereitgestellten Daten.",
+        "REGELN FÜR DEINE ANTWORT:",
+        "1. Falls das Team < 6 Mitglieder hat, beginne mit einer väterlichen Ermutigung, das Team zu vervollständigen.",
+        "2. Variiere deine Analyse: Mal liegt der Fokus auf der Typen-Abdeckung, mal auf der Synergie oder den Defensiv-Werten.",
+        "3. Nutze abwechslungsreiche Formulierungen und Fachbegriffe (STAB, Coverage, Schwächen).",
+        "4. Antworte in 3-4 Sätzen auf Deutsch. Sei mal lobend, mal kritisch, aber immer professionell.",
       ].join("\n");
 
+      // userPrompt definieren
+      const userPrompt = `Teamdaten: ${JSON.stringify(team)}\nStatische Analyse: ${JSON.stringify(staticAnalysis)}`;
+
       return this.askGroq(
-        "Du bist Professor Eich. Analysiere das Pokemon-Team. Nenne die groesste Typen-Schwaeche und eine Staerke. Antworte in 2 kurzen Saetzen auf Deutsch. Sei fachlich fundiert.",
+        systemPrompt,
         userPrompt,
-        { temperature: 0.45, maxTokens: 180, useCache: true }
+        // Erhöhe die Temperature leicht für mehr sprachliche Varianz
+        { temperature: 0.7, maxTokens: 200, useCache: false },
       );
     }
 
@@ -237,7 +272,7 @@
       return this.askGroq(
         "Du bist ein leidenschaftlicher Kampf-Kommentator. Beschreibe das Ergebnis eines Spielzugs in einem einzigen, actionreichen Satz. Nutze dramatische Worte. Antworte auf Deutsch.",
         userPrompt,
-        { temperature: 0.8, maxTokens: 90, useCache: true }
+        { temperature: 0.8, maxTokens: 90, useCache: true },
       );
     }
 
@@ -248,11 +283,15 @@
       eventText,
     } = {}) {
       const systemPrompt = `Du bist ${leaderName}, der ${leaderType}-Arenaleiter. Dein Stil ist ${leaderStyle}. Antworte dem Spieler basierend auf seinem aktuellen Zug. Max. 12 Woerter.`;
-      const result = await this.askGroq(systemPrompt, String(eventText || "").trim(), {
-        temperature: 0.7,
-        maxTokens: 60,
-        useCache: false,
-      });
+      const result = await this.askGroq(
+        systemPrompt,
+        String(eventText || "").trim(),
+        {
+          temperature: 0.7,
+          maxTokens: 60,
+          useCache: false,
+        },
+      );
 
       const words = result.split(/\s+/).filter(Boolean).slice(0, 12);
       return words.join(" ");
@@ -260,7 +299,9 @@
 
     typewriterToElement(element, text, options = {}) {
       if (!element) return Promise.resolve();
-      const speed = Number.isFinite(Number(options.speed)) ? Number(options.speed) : 18;
+      const speed = Number.isFinite(Number(options.speed))
+        ? Number(options.speed)
+        : 18;
       const finalText = String(text || "");
 
       if (element._typewriterTimer) {

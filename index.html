@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -34,7 +34,7 @@
     <div class="offcanvas offcanvas-end" tabindex="-1" id="teamOffcanvas">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title">
-          <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Team
+          <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein Team
           <span class="badge bg-primary ms-2" id="teamCounter">0/6</span>
         </h5>
         <button
@@ -90,7 +90,8 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="teamModalLabel">
-              <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Pokemon Team
+              <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein
+              Pokemon Team
             </h5>
             <button
               type="button"
@@ -118,10 +119,20 @@
             <button class="btn btn-filter" onclick="openTeamAnalysis()">
               Team analysieren
             </button>
-            <button class="btn btn-filter" onclick="window.teamBattle.startChallenge(window.teamOffcanvas?.getTeam() || [])" style="background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%); color: white; font-weight: 700;">
+            <button
+              class="btn btn-filter"
+              onclick="
+                window.teamBattle.startChallenge(
+                  window.teamOffcanvas?.getTeam() || [],
+                )
+              "
+            >
               Challenge Gym
             </button>
-            <button class="btn btn-filter" onclick="window.teamBattle.showBattleHistory()" style="background: var(--dark); color: white; font-weight: 600;">
+            <button
+              class="btn btn-filter"
+              onclick="window.teamBattle.showBattleHistory()"
+            >
               Kampfhistorie
             </button>
             <button
@@ -496,7 +507,11 @@
             data-role="ai-advice"
             aria-live="polite"
           ></div>
-          <div class="visually-hidden" id="teamBuilderLiveRegion" aria-live="polite"></div>
+          <div
+            class="visually-hidden"
+            id="teamBuilderLiveRegion"
+            aria-live="polite"
+          ></div>
         </div>
       </div>
     </section>
