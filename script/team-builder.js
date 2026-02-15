@@ -78,7 +78,11 @@
     }
 
     assignPokemonToSlot(slotIndex, pokemon) {
-      if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= this.size) {
+      if (
+        !Number.isInteger(slotIndex) ||
+        slotIndex < 0 ||
+        slotIndex >= this.size
+      ) {
         return { changed: false };
       }
 
@@ -87,7 +91,7 @@
 
       const nextSlots = this.getSlots();
       const existingIndex = nextSlots.findIndex(
-        (entry) => entry && Number(entry.id) === Number(normalized.id)
+        (entry) => entry && Number(entry.id) === Number(normalized.id),
       );
 
       if (existingIndex !== -1 && existingIndex !== slotIndex) {
@@ -100,7 +104,12 @@
         Number(replaced.id) === Number(normalized.id) &&
         existingIndex === slotIndex;
       if (noChange) {
-        return { changed: false, replaced: null, movedFrom: null, pokemon: normalized };
+        return {
+          changed: false,
+          replaced: null,
+          movedFrom: null,
+          pokemon: normalized,
+        };
       }
 
       nextSlots[slotIndex] = normalized;
@@ -115,7 +124,11 @@
     }
 
     removeFromSlot(slotIndex) {
-      if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= this.size) {
+      if (
+        !Number.isInteger(slotIndex) ||
+        slotIndex < 0 ||
+        slotIndex >= this.size
+      ) {
         return null;
       }
 
@@ -160,7 +173,7 @@
         document.getElementById("ai-advice");
       this.liveRegion = document.getElementById("teamBuilderLiveRegion");
       this.state = new TeamBuilderState(MAX_TEAM_SIZE, (payload) =>
-        this.onStateChange(payload)
+        this.onStateChange(payload),
       );
       this.lastAdvisorSignature = "";
       this.cachedAdvisorAssessment = null;
@@ -183,7 +196,8 @@
 
     hydrateInitialState() {
       const teamFromOffcanvas =
-        window.teamOffcanvas && typeof window.teamOffcanvas.getTeam === "function"
+        window.teamOffcanvas &&
+        typeof window.teamOffcanvas.getTeam === "function"
           ? window.teamOffcanvas.getTeam()
           : [];
 
@@ -243,7 +257,7 @@
 
       this.grid.addEventListener("click", (event) => {
         const removeButton = event.target.closest(
-          'button[data-action="remove-slot"][data-slot-index]'
+          'button[data-action="remove-slot"][data-slot-index]',
         );
         if (!removeButton) return;
 
@@ -277,7 +291,9 @@
         const source = event.detail?.source;
         if (source === "team-builder") return;
 
-        const externalTeam = Array.isArray(event.detail?.team) ? event.detail.team : [];
+        const externalTeam = Array.isArray(event.detail?.team)
+          ? event.detail.team
+          : [];
         this.state.setSlotsFromTeam(externalTeam, {
           reason: "external-sync",
           emit: false,
@@ -288,22 +304,53 @@
       });
     }
 
-    handleDrop(slotIndex, pokemonId) {
+    async handleDrop(slotIndex, pokemonId) {
       const numericId = Number(pokemonId);
       if (!numericId) return;
 
-      const pokemon = extractPokemonFromCard(numericId);
+      let pokemon = extractPokemonFromCard(numericId);
       if (!pokemon) {
         this.announce("Pokemon data could not be read.");
         return;
       }
 
+      // Prüfe, ob Stats oder base_experience fehlen und lade ggf. nach
+      const needsApi =
+        !Array.isArray(pokemon.stats) ||
+        pokemon.stats.length === 0 ||
+        !pokemon.base_experience ||
+        pokemon.base_experience === 0;
+      if (needsApi) {
+        try {
+          const response = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${numericId}`,
+          );
+          if (response.ok) {
+            const apiData = await response.json();
+            // Stats und base_experience übernehmen
+            pokemon = {
+              ...pokemon,
+              stats: Array.isArray(apiData.stats) ? apiData.stats : [],
+              base_experience: apiData.base_experience || 0,
+              types: Array.isArray(apiData.types)
+                ? apiData.types.map((t) => t.type.name)
+                : pokemon.types,
+            };
+          }
+        } catch (err) {
+          console.warn("[TeamBuilder] Konnte Daten nicht nachladen:", err);
+        }
+      }
+
       const result = this.state.assignPokemonToSlot(slotIndex, pokemon);
       if (!result.changed) return;
 
-      if (result.replaced && Number(result.replaced.id) !== Number(result.pokemon.id)) {
+      if (
+        result.replaced &&
+        Number(result.replaced.id) !== Number(result.pokemon.id)
+      ) {
         this.announce(
-          `${result.pokemon.name} replaced ${result.replaced.name} in slot ${slotIndex + 1}.`
+          `${result.pokemon.name} replaced ${result.replaced.name} in slot ${slotIndex + 1}.`,
         );
         return;
       }
@@ -371,7 +418,11 @@
       }
 
       const signature = this.getTeamSignature(team);
-      if (signature && signature === this.lastAdvisorSignature && this.cachedAdvisorAssessment) {
+      if (
+        signature &&
+        signature === this.lastAdvisorSignature &&
+        this.cachedAdvisorAssessment
+      ) {
         this.renderAdvisorResult(this.cachedAdvisorAssessment);
         return;
       }
@@ -402,7 +453,18 @@
     async generateTeamAssessment(team) {
       const staticAnalysis = this.getStaticTeamAnalysis(team);
       const aiService = window.aiService;
-      const localFallback = this.createLocalProfessorAdvice(team, staticAnalysis);
+      const localFallback = this.createLocalProfessorAdvice(
+        team,
+        staticAnalysis,
+      );
+
+      // Debug: Logge das Team-Array vor dem KI-Aufruf
+      console.log("[TeamBuilder][KI Übergabe] Team-Array:", team);
+      if (Array.isArray(team)) {
+        team.forEach((p, i) => {
+          console.log(`[TeamBuilder][KI Übergabe] Slot ${i + 1}:`, p);
+        });
+      }
 
       // Ensure proxy detection has completed before checking key
       if (aiService && typeof aiService.detectProxy === "function") {
@@ -465,7 +527,9 @@
       const weakestType = weaknessRanking[0]?.type;
 
       const coverage = staticAnalysis?.coverage || {};
-      const coveredCount = Object.values(coverage).filter((entry) => entry?.covered).length;
+      const coveredCount = Object.values(coverage).filter(
+        (entry) => entry?.covered,
+      ).length;
       const totalCoverageTypes = Object.keys(coverage).length || 18;
 
       const weaknessSentence = weakestType
@@ -494,9 +558,14 @@
       const fallbackParts = this.splitSentences(fallback);
       const parts = this.splitSentences(raw);
 
-      const first = parts[0] || fallbackParts[0] || "Groesste Schwaeche: Analyse unvollstaendig.";
+      const first =
+        parts[0] ||
+        fallbackParts[0] ||
+        "Groesste Schwaeche: Analyse unvollstaendig.";
       const second =
-        parts[1] || fallbackParts[1] || "Staerke: Dein Team zeigt trotzdem offensive Optionen.";
+        parts[1] ||
+        fallbackParts[1] ||
+        "Staerke: Dein Team zeigt trotzdem offensive Optionen.";
 
       return `${first} ${second}`.trim();
     }
@@ -560,7 +629,9 @@
     renderAdvisorResult(assessment) {
       if (!this.advisor) return;
 
-      const safeProvider = escapeHtml(assessment.providerLabel || "Professor Eich");
+      const safeProvider = escapeHtml(
+        assessment.providerLabel || "Professor Eich",
+      );
       const adviceText = String(assessment.adviceText || "").trim();
 
       this.advisor.className = "team-builder-advisor is-ready";
@@ -578,7 +649,10 @@
       const output = this.advisor.querySelector('[data-role="advisor-output"]');
       if (!output) return;
 
-      if (window.aiService && typeof window.aiService.typewriterToElement === "function") {
+      if (
+        window.aiService &&
+        typeof window.aiService.typewriterToElement === "function"
+      ) {
         window.aiService.typewriterToElement(output, adviceText, { speed: 17 });
       } else {
         output.textContent = adviceText;
@@ -654,15 +728,25 @@
     const name = (pokemon.name || "").trim();
     const image = pokemon.image || pokemon.spriteUrl || "";
     const spriteUrl = pokemon.spriteUrl || pokemon.image || "";
-    const rawTypes = Array.isArray(pokemon.types) && pokemon.types.length
-      ? pokemon.types
-      : (Array.isArray(sourcePokemon?.types) ? sourcePokemon.types : []);
+    const rawTypes =
+      Array.isArray(pokemon.types) && pokemon.types.length
+        ? pokemon.types
+        : Array.isArray(sourcePokemon?.types)
+          ? sourcePokemon.types
+          : [];
     const types = rawTypes
-      .map((type) => String(type || "").toLowerCase().replace(/[^a-z]/g, ""))
+      .map((type) =>
+        String(type || "")
+          .toLowerCase()
+          .replace(/[^a-z]/g, ""),
+      )
       .filter((type) => VALID_TYPES.has(type));
-    const stats = Array.isArray(pokemon.stats) && pokemon.stats.length
-      ? pokemon.stats
-      : (Array.isArray(sourcePokemon?.stats) ? sourcePokemon.stats : []);
+    const stats =
+      Array.isArray(pokemon.stats) && pokemon.stats.length
+        ? pokemon.stats
+        : Array.isArray(sourcePokemon?.stats)
+          ? sourcePokemon.stats
+          : [];
     const baseExperience = Number.isFinite(Number(pokemon.base_experience))
       ? Number(pokemon.base_experience)
       : Number(sourcePokemon?.base_experience || 0);
@@ -682,19 +766,23 @@
     const sourceContainer = document.getElementById("pokemonContainer");
     const selector = `.pokemon-card[data-pokemon-id="${pokemonId}"], .pokemon-card[data-id="${pokemonId}"]`;
     const card =
-      sourceContainer?.querySelector(selector) || document.querySelector(selector);
+      sourceContainer?.querySelector(selector) ||
+      document.querySelector(selector);
     if (!card) return null;
 
     const sourcePokemon = getPokemonSourceData(pokemonId);
     const nameElement = card.querySelector(".pokemon-name, .card-title");
     const imageElement = card.querySelector(".pokemon-image, img");
     const typeElements = card.querySelectorAll(
-      ".type-badge, .detail-type-badge, .type-badge-inline"
+      ".type-badge, .detail-type-badge, .type-badge-inline",
     );
 
     const types = Array.from(typeElements)
       .map((element) =>
-        element.textContent.toLowerCase().trim().replace(/[^a-z]/g, "")
+        element.textContent
+          .toLowerCase()
+          .trim()
+          .replace(/[^a-z]/g, ""),
       )
       .filter((type) => VALID_TYPES.has(type));
 
@@ -702,16 +790,18 @@
       id: pokemonId,
       name: nameElement
         ? nameElement.textContent
-        : (sourcePokemon?.name || `pokemon-${pokemonId}`),
+        : sourcePokemon?.name || `pokemon-${pokemonId}`,
       image: imageElement
         ? imageElement.src
-        : (sourcePokemon?.image || sourcePokemon?.spriteUrl || ""),
+        : sourcePokemon?.image || sourcePokemon?.spriteUrl || "",
       spriteUrl: imageElement
         ? imageElement.src
-        : (sourcePokemon?.spriteUrl || sourcePokemon?.image || ""),
+        : sourcePokemon?.spriteUrl || sourcePokemon?.image || "",
       types: types.length
         ? types
-        : (Array.isArray(sourcePokemon?.types) ? sourcePokemon.types : []),
+        : Array.isArray(sourcePokemon?.types)
+          ? sourcePokemon.types
+          : [],
       stats: Array.isArray(sourcePokemon?.stats) ? sourcePokemon.stats : [],
       base_experience: sourcePokemon?.base_experience ?? 0,
     });
@@ -724,11 +814,14 @@
     const pools = [];
     if (typeof appState !== "undefined") {
       if (Array.isArray(appState.pokemonList)) pools.push(appState.pokemonList);
-      if (Array.isArray(appState.allPokemonList)) pools.push(appState.allPokemonList);
+      if (Array.isArray(appState.allPokemonList))
+        pools.push(appState.allPokemonList);
     }
     if (window.appState) {
-      if (Array.isArray(window.appState.pokemonList)) pools.push(window.appState.pokemonList);
-      if (Array.isArray(window.appState.allPokemonList)) pools.push(window.appState.allPokemonList);
+      if (Array.isArray(window.appState.pokemonList))
+        pools.push(window.appState.pokemonList);
+      if (Array.isArray(window.appState.allPokemonList))
+        pools.push(window.appState.allPokemonList);
     }
 
     for (const pool of pools) {

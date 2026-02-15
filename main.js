@@ -1,15 +1,69 @@
+import { ApiService } from "./script/services/ApiService.js";
+
+/**
+ * 1. GLOBALE KONFIGURATION & SERVICE INITIALISIERUNG
+ */
+window.POKEMON_API_CONFIG = {
+  baseUrl: "https://pokeapi.co/api/v2/pokemon",
+  pokemonPerPage: 20,
+  defaultOffset: 0,
+};
+
+// Instanz mit der API-Root erstellen
+window.apiService = new ApiService({
+  baseUrl: "https://pokeapi.co/api/v2",
+});
+
+/**
+ * 2. KOMPATIBILITÄTS-BRÜCKE (Legacy Support)
+ * Emuliert die Funktionen der alten api.js für pokemon-core.js
+ */
+window.fetchPokemonData = async (offset, limit) => {
+  try {
+    const result = await window.apiService.fetchPokemonList(offset, limit);
+    return result.pokemon; // Gibt das transformierte Array zurück (jetzt inkl. .image)
+  } catch (error) {
+    console.error("Fehler in fetchPokemonData Brücke:", error);
+    return [];
+  }
+};
+
+window.fetchPokemonByTypeData = async (type) => {
+  try {
+    const typeData = await window.apiService.fetch(`/type/${type}`);
+    const pokemonUrls = typeData.pokemon
+      .slice(0, window.POKEMON_API_CONFIG.pokemonPerPage)
+      .map((p) => p.pokemon.url);
+
+    return await Promise.all(
+      pokemonUrls.map((url) =>
+        window.apiService.fetch(url).then((data) => {
+          return window.apiService.transformPokemonData(data);
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error(`Fehler in fetchPokemonByTypeData (${type}):`, error);
+    return [];
+  }
+};
+
+/**
+ * 3. UI HELFER & GLOBALE VARIABLEN
+ */
 window.toggleDropdown = function (className) {
   const section = document.querySelector("." + className);
-  if (!section) return; // Silent return, da es oft nur ein UI-Zustand ist
+  if (!section) return;
   section.classList.toggle("d-none");
   section.classList.toggle("d-flex");
 };
 
-// Flag für main.js
 window.mainJsLoaded = true;
-
 let loadedCount = 0;
 
+/**
+ * 4. SCRIPT LOADER LOGIK
+ */
 async function loadAllScripts(scripts) {
   for (const path of scripts) {
     await loadScript(path);
@@ -23,19 +77,15 @@ function loadScript(path) {
       resolve();
       return;
     }
-
     const script = createScriptElement(path);
-
     script.onload = () => {
       loadedCount++;
       resolve();
     };
-
     script.onerror = (error) => {
       console.error(`✗ Failed to load script: ${path}`, error);
       reject(new Error(`Failed to load ${path}`));
     };
-
     document.head.appendChild(script);
   });
 }
@@ -47,97 +97,57 @@ function isAlreadyLoaded(path) {
 function createScriptElement(path) {
   const script = document.createElement("script");
   script.src = path;
+  if (path.includes("ai-service.js")) {
+    script.type = "module";
+  }
   return script;
 }
 
+/**
+ * 5. APP INITIALISIERUNG
+ */
 function startApp() {
   setTimeout(() => {
     try {
       if (typeof initializeApp === "function") {
         initializeApp();
+      } else if (typeof loadPokemon === "function") {
+        loadPokemon();
       } else {
-        // Fallback: Direkt die wichtigsten Funktionen aufrufen
-        if (typeof loadPokemon === "function") {
-          loadPokemon();
-        } else if (typeof fetchAndDisplayPokemon === "function") {
-          fetchAndDisplayPokemon();
-        } else {
-          console.error("No main pokemon function found");
-          showError();
-        }
+        console.error("No main pokemon function found");
+        showError();
       }
     } catch (error) {
       console.error("Error starting app:", error);
       showError();
     }
-
-    // Team Modal & Analyzer Instanzen initialisieren
-    try {
-      if (!window.pokemonTeamModal && window.PokemonTeamModalCore) {
-        window.pokemonTeamModal = new window.PokemonTeamModalCore();
-        if (typeof window.pokemonTeamModal.init === "function")
-          window.pokemonTeamModal.init();
-      }
-      if (!window.pokemonTeamAnalyzer && window.PokemonTeamAnalyzerCore) {
-        window.pokemonTeamAnalyzer = new window.PokemonTeamAnalyzerCore();
-        if (typeof window.pokemonTeamAnalyzer.init === "function")
-          window.pokemonTeamAnalyzer.init();
-      }
-      if (
-        window.pokemonGoFeatures &&
-        typeof window.pokemonGoFeatures.init === "function"
-      ) {
-        window.pokemonGoFeatures.init();
-      }
-
-      if (
-        window.pokemonCompare &&
-        typeof window.pokemonCompare.init === "function"
-      ) {
-        window.pokemonCompare.init();
-      }
-
-      if (
-        window.battleSimulator &&
-        typeof window.battleSimulator.init === "function"
-      ) {
-        window.battleSimulator.init();
-      }
-
-      if (window.teamBattle && typeof window.teamBattle.init === "function") {
-        window.teamBattle.init();
-      }
-    } catch (e) {
-      /* Silent catch für optionale Komponenten */
-    }
-
-    try {
-      if (typeof initDynamicBars === "function") {
-        initDynamicBars();
-      }
-    } catch (e) {
-      // Nur warnen, wenn die UI-Funktion existiert, aber crashed
-    }
+    initializeComponents();
   }, 300);
 }
 
-function initDynamicBars() {
-  const progressFills = document.querySelectorAll(
-    ".progress-bar-fill[data-progress]",
-  );
-  progressFills.forEach((el) => {
-    const val = parseFloat(el.getAttribute("data-progress"));
-    if (!isNaN(val)) {
-      el.style.width = val + "%";
-    }
-  });
-  const coverageBars = document.querySelectorAll(
-    ".progress-bar[data-coverage]",
-  );
-  coverageBars.forEach((el) => {
-    const val = parseFloat(el.getAttribute("data-coverage"));
-    if (!isNaN(val)) {
-      el.style.width = val + "%";
+function initializeComponents() {
+  const components = [
+    { winKey: "pokemonTeamModal", coreKey: "PokemonTeamModalCore" },
+    { winKey: "pokemonTeamAnalyzer", coreKey: "PokemonTeamAnalyzerCore" },
+    { winKey: "pokemonGoFeatures" },
+    { winKey: "pokemonCompare" },
+    { winKey: "battleSimulator" },
+    { winKey: "teamBattle" },
+  ];
+
+  components.forEach((comp) => {
+    try {
+      if (comp.coreKey && !window[comp.winKey] && window[comp.coreKey]) {
+        window[comp.winKey] = new window[comp.coreKey]();
+      }
+      if (
+        window[comp.winKey] &&
+        typeof window[comp.winKey].init === "function"
+      ) {
+        window[comp.winKey].init();
+      }
+    } catch (e) {
+      console.warn(`Could not init component: ${comp.winKey}`, e);
     }
   });
 }
@@ -148,18 +158,18 @@ function showError() {
   container.innerHTML = `
         <div class="error-container text-center py-5">
             <h2>App Loading Failed</h2>
-            <p>Could not initialize the Pokemon app.</p>
-            <button class="btn btn-primary" onclick="window.location.reload()">
-                Reload Page
-            </button>
+            <p>Check the console for errors.</p>
+            <button class="btn btn-primary" onclick="window.location.reload()">Reload Page</button>
         </div>
     `;
 }
 
+/**
+ * 6. START-PROZESS
+ */
 function startPokemonApp() {
   const scripts = [
     "./script/dom-cache.js",
-    "./script/api.js",
     "./script/template.js",
     "./script/pokemon-core.js",
     "./script/pokemon-detail.js",
@@ -205,6 +215,7 @@ if (document.readyState === "loading") {
   startPokemonApp();
 }
 
+// Globaler Click-Listener
 document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="show-detail"][data-pokemon-id]');
   if (btn) {
@@ -213,35 +224,4 @@ document.addEventListener("click", (e) => {
       window.showPokemonDetail(id);
     }
   }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    try {
-      if (
-        window.teamOffcanvas &&
-        typeof window.teamOffcanvas.getTeam === "function" &&
-        window.sanitizeTypes
-      ) {
-        const current = window.teamOffcanvas.getTeam();
-        let mutated = false;
-        current.forEach((p) => {
-          const cleaned = window.sanitizeTypes(p.types);
-          if (cleaned.join(",") !== p.types.join(",")) {
-            p.types = cleaned;
-            mutated = true;
-          }
-        });
-        if (
-          mutated &&
-          typeof window.teamOffcanvas.saveTeamToStorage === "function"
-        ) {
-          window.teamOffcanvas.team = current;
-          window.teamOffcanvas.saveTeamToStorage();
-        }
-      }
-    } catch (e) {
-      /* Silent fix */
-    }
-  }, 1000);
 });

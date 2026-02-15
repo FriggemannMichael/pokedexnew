@@ -37,7 +37,7 @@ window.removePokemonFromTeam = function (pokemonId, event) {
   if (!window.teamOffcanvas) {
     console.error("window.teamOffcanvas not available");
     alert(
-      "Team-System wird noch geladen. Bitte warte einen Moment und versuche es erneut."
+      "Team-System wird noch geladen. Bitte warte einen Moment und versuche es erneut.",
     );
     return false;
   }
@@ -47,7 +47,7 @@ window.removePokemonFromTeam = function (pokemonId, event) {
     if (window.POKE_DEBUG)
       console.debug(
         "[Team] Available functions:",
-        Object.getOwnPropertyNames(window.teamOffcanvas)
+        Object.getOwnPropertyNames(window.teamOffcanvas),
       );
     return false;
   }
@@ -57,11 +57,11 @@ window.removePokemonFromTeam = function (pokemonId, event) {
     if (window.POKE_DEBUG)
       console.debug(
         "[Team] before removal:",
-        window.teamOffcanvas.getTeam().map((p) => p.id)
+        window.teamOffcanvas.getTeam().map((p) => p.id),
       );
 
     const result = window.teamOffcanvas.removePokemonFromTeam(
-      parseInt(pokemonId)
+      parseInt(pokemonId),
     );
     if (window.POKE_DEBUG) console.debug("[Team] removed result:", result);
 
@@ -69,7 +69,7 @@ window.removePokemonFromTeam = function (pokemonId, event) {
     if (window.POKE_DEBUG)
       console.debug(
         "[Team] after removal:",
-        window.teamOffcanvas.getTeam().map((p) => p.id)
+        window.teamOffcanvas.getTeam().map((p) => p.id),
       );
 
     // Warte kurz und aktualisiere dann das Modal
@@ -99,7 +99,7 @@ window.openTeamAnalysis = function () {
   } else {
     console.warn("Team Analyzer not available");
     alert(
-      "Team Analyzer wird noch geladen. Bitte warte einen Moment und versuche es erneut."
+      "Team Analyzer wird noch geladen. Bitte warte einen Moment und versuche es erneut.",
     );
   }
 };
@@ -131,7 +131,7 @@ function renderTeamOverview() {
   // Berechne Team-Statistiken korrekt
   const totalPower = team.reduce(
     (sum, pokemon) => sum + calculatePokemonStrengthValue(pokemon),
-    0
+    0,
   );
   const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
 
@@ -163,14 +163,14 @@ function renderTeamOverview() {
         <button class="pokemon-remove-btn" data-pokemon-id="${
           pokemon.id
         }" title="Pokemon entfernen" onclick="removePokemonFromTeam(${
-        pokemon.id
-      }, event); return false;">
+          pokemon.id
+        }, event); return false;">
           ✕
         </button>
   <div class="team-position-badge">#${index + 1}</div>
     <img src="${pokemon.image}" alt="${
-        pokemon.name
-      }" loading="lazy" class="pokemon-image team-card-image team-card-image--sm">
+      pokemon.name
+    }" loading="lazy" class="pokemon-image team-card-image team-card-image--sm">
   <div class="pokemon-info pokemon-info-block">
           <h6 class="pokemon-name pokemon-name--team">${pokemon.name}</h6>
           <div class="pokemon-types types-row">
@@ -201,7 +201,7 @@ function renderTeamOverview() {
               return safeTypes
                 .map(
                   (type) =>
-                    `<span class=\"type-badge type-${type}\">${type}</span>`
+                    `<span class=\"type-badge type-${type}\">${type}</span>`,
                 )
                 .join("");
             })()}
@@ -219,7 +219,7 @@ function renderTeamOverview() {
                   typeof window.pokemonGoFeatures.generateIVs === "function"
                 ) {
                   const base = window.pokemonGoFeatures.getBaseStats(
-                    pokemon.id
+                    pokemon.id,
                   );
                   const ivs = window.pokemonGoFeatures.generateIVs(pokemon.id);
                   if (base && ivs) {
@@ -378,7 +378,7 @@ function setupStrengthToggle(container, { exclusive = true } = {}) {
         .forEach((openP) => {
           if (openP === panel) return;
           const linked = container.querySelector(
-            `.strength-toggle-btn[aria-controls="${openP.id}"]`
+            `.strength-toggle-btn[aria-controls="${openP.id}"]`,
           );
           applyState(openP, linked, false);
           const logicalId = openP.id.startsWith("team-strength-")
@@ -401,7 +401,7 @@ function setupStrengthToggle(container, { exclusive = true } = {}) {
       const pid = "team-strength-" + logicalId;
       const panel = container.querySelector("#" + pid);
       const btn = container.querySelector(
-        `.strength-toggle-btn[aria-controls="${pid}"]`
+        `.strength-toggle-btn[aria-controls="${pid}"]`,
       );
       if (panel && btn) applyState(panel, btn, expanded);
     });
@@ -470,7 +470,7 @@ function showDetailedTeamViewInternal() {
   // Berechne korrekte Team-Statistiken
   const totalPower = team.reduce(
     (sum, pokemon) => sum + calculatePokemonStrengthValue(pokemon),
-    0
+    0,
   );
   const averagePower = Math.round(totalPower / team.length);
   const uniqueTypes = [...new Set(team.flatMap((p) => p.types))].length;
@@ -558,7 +558,7 @@ function showDetailedTeamViewInternal() {
                   return safeTypes
                     .map(
                       (type) =>
-                        `<span class=\"type-badge-inline type-${type}\">${type}</span>`
+                        `<span class=\"type-badge-inline type-${type}\">${type}</span>`,
                     )
                     .join("");
                 })()}
@@ -616,8 +616,15 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTeamOverview();
     });
 
+    // Accessibility: Fokus nach Modal-Schließen auf Hauptinhalt setzen
     teamModal.addEventListener("hidden.bs.modal", () => {
       if (window.POKE_DEBUG) console.debug("[Team] Team Modal hidden");
+      // Fokus auf ein sichtbares Element außerhalb des Modals setzen
+      const mainContent =
+        document.getElementById("mainContent") || document.body;
+      if (mainContent && typeof mainContent.focus === "function") {
+        mainContent.focus();
+      }
     });
   }
 
