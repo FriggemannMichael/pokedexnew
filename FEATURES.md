@@ -176,8 +176,6 @@ Legende: ✅ = verfügbar · 🔄 = in Entwicklung · 📝 = geplant
 | 2.1           | 22.09.2025 | Offcanvas, Mini-Card Redesign, Strength Mini-Card, dynamischer Gradient Header, doppelter Counter, Dokumentations-Updates |
 | 2.2 (geplant) | TBA        | Notiz-System, Gradient Konsolidierung, Stat-Heatmapping, Legacy CSS Cleanup                                               |
 
-Weitere technische Refactor-Details siehe `CLEANUP_DOCUMENTATION.md`.
-
 ---
 
 **Entwickelt mit ❤️ für Pokémon-Trainer**  

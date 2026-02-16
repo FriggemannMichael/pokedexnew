@@ -23,7 +23,6 @@ class BattleSimulator {
 
     this.createBattleModal();
     this.initialized = true;
-    console.log("[Battle] Battle Simulator initialized");
   }
 
   createBattleModal() {
@@ -80,9 +79,6 @@ class BattleSimulator {
     // Lade Moves für beide Pokemon
     const moves1 = await this.fetchPokemonMoves(details1);
     const moves2 = await this.fetchPokemonMoves(details2);
-
-    console.log("[Battle] Fighter 1 moves:", moves1);
-    console.log("[Battle] Fighter 2 moves:", moves2);
 
     this.currentBattle = {
       fighter1: {
