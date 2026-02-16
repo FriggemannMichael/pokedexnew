@@ -1,6 +1,6 @@
 (function () {
   const MAX_TEAM_SIZE = 6;
-  const MIN_ADVICE_TEAM_SIZE = 3;
+  const MIN_ADVICE_TEAM_SIZE = 4;
   const TEAM_STORAGE_KEY = "pokemonTeam";
   const TEAM_EVENT_NAME = "pokemon-team-updated";
   const VALID_TYPES = new Set([
