@@ -1,10 +1,7 @@
-// Power / IV / CP related methods
 (function(){
   const PGF = PokemonGoFeatures.prototype;
 
   PGF.generateIVs = function(id){
-    // Deterministischer Hash je Pokemon-ID, aber mit entkoppelten IV-Kanälen.
-    // So sind alle Appraisal-Stufen (inkl. 4*) erreichbar.
     const hash32 = (n) => {
       let x = n >>> 0;
       x ^= x >>> 16;
@@ -17,7 +14,6 @@
 
     const base = hash32((id >>> 0) ^ 0x9e3779b9);
 
-    // Seltene perfekte "hundo"-Variante, damit 4* praktisch auffindbar bleibt.
     if ((base % 97) === 0) {
       return { attack: 15, defense: 15, stamina: 15 };
     }

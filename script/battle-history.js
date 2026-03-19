@@ -1,4 +1,3 @@
-// Battle History Module
 class BattleHistory {
   constructor() {
     this.storageKey = "pokemonBattleHistory";

@@ -1,0 +1,129 @@
+/* =========================
+   Responsive Styles
+   ========================= */
+@media (max-width: 768px) {
+  .pokemon-card {
+    margin-bottom: 1.5rem;
+  }
+
+  .pokemon-image {
+    height: 140px;
+  }
+
+  .pokemon-name {
+    font-size: 1.4rem;
+  }
+
+  .pokemon-detail-card {
+    padding: 1.5rem;
+  }
+
+  .detail-pokemon-name {
+    font-size: 2.2rem;
+  }
+
+  .detail-pokemon-image {
+    height: 200px;
+  }
+
+  .pokemon-tabs {
+    margin: 1rem 0;
+    padding: 3px;
+  }
+
+  .tab-btn {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    min-width: 60px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolution-chain {
+    flex-direction: column;
+  }
+
+  .evolution-arrow {
+    transform: rotate(90deg);
+  }
+
+  .nav-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+  }
+
+  .breeding-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .moves-grid {
+    max-height: 200px;
+  }
+
+  .progress-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .progress-value {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 576px) {
+  .pokemon-image {
+    height: 120px;
+  }
+
+  .pokemon-name {
+    font-size: 1.3rem;
+  }
+
+  .pokemon-card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+
+  .pokemon-card-content {
+    padding: 1rem;
+  }
+
+  .pokemon-tabs {
+    flex-direction: row;
+    gap: 5px;
+  }
+
+  .tab-btn {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .moves-grid {
+    gap: 0.3rem;
+  }
+
+  .move-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 375px) {
+  .pokemon-card {
+    max-width: 280px;
+    margin: 0 auto 1rem auto;
+  }
+}
+
+@media (max-width: 320px) {
+  .pokemon-card {
+    max-width: 260px;
+  }
+
+  .pokemon-name {
+    font-size: 1.2rem;
+  }
+}

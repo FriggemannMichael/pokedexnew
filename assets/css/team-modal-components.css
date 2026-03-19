@@ -1,0 +1,219 @@
+/* Modal Footer */
+#pokemonTeamModal .modal-footer {
+  background: rgba(248, 249, 250, 0.8);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 16px 16px;
+  padding: 16px 24px;
+}
+
+#pokemonTeamModal .modal-footer .btn {
+  border-radius: 25px;
+  font-weight: 500;
+  padding: 8px 20px;
+  transition: all 0.3s ease;
+}
+
+#pokemonTeamModal .modal-footer .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #pokemonTeamModal .modal-dialog {
+    max-width: 95vw;
+    margin: 1rem auto;
+  }
+
+  .team-stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .team-pokemon-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .team-pokemon-card {
+    padding: 16px;
+  }
+
+  .team-actions-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .team-modal-container {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .team-stats-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .team-pokemon-actions {
+    flex-direction: column;
+  }
+
+  .team-pokemon-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Animation für Cards beim Laden */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.team-pokemon-card {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.team-pokemon-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.team-pokemon-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.team-pokemon-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.team-pokemon-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.team-pokemon-card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.team-pokemon-card:nth-child(6) {
+  animation-delay: 0.6s;
+}
+
+/* Team View Button im Droppoint */
+.drop-point .btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent));
+  border: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.drop-point .btn-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.drop-point .btn-primary:hover::before {
+  left: 100%;
+}
+
+.drop-point .btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.4);
+}
+
+/* Leeres Team */
+.empty-team-message {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+}
+
+.empty-team-message img {
+  width: 120px;
+  height: 120px;
+  opacity: 0.3;
+  margin-bottom: 20px;
+}
+
+.empty-team-message h6 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.empty-team-message p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* =============================================
+   POKEMON REMOVE BUTTONS - Team Modal Styles
+   ============================================= */
+
+/* Pokemon Card Container - Position relative für absolute positioning */
+.pokemon-card {
+  position: relative;
+}
+
+/* Remove Button INNERHALB der Pokemon Card */
+.pokemon-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #333;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  line-height: 1;
+}
+
+.pokemon-remove-btn:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px) scale(1.05);
+  opacity: 1;
+  border-color: #dc3545;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  color: #dc3545;
+}
+
+.pokemon-remove-btn:active {
+  transform: translateY(0) scale(0.95);
+  transition: all 0.1s ease;
+}
+
+/* Überschreibe die team-overview-card Styles */
+.team-overview-card .pokemon-card {
+  position: relative;
+  overflow: visible;
+}

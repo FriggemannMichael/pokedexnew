@@ -1,4 +1,3 @@
-// Mutation observer + async stat update
 (function () {
   const PGF = PokemonGoFeatures.prototype;
   PGF.initPowerObserver = function () {

@@ -1,4 +1,3 @@
-// Team Modal Actions
 (function(){ const Core=window.PokemonTeamModalCore; if(!Core){ console.error('Modal Core missing'); return; }
   Core.prototype.showPokemonDetail=function(id){ const p=this.currentTeam.find(x=>x.id===id); if(p && typeof openPokemonDetail==='function') openPokemonDetail(p); };
   Core.prototype.removePokemonFromTeam=function(id){ if(!confirm('Pokemon aus dem Team entfernen?')) return; const dp=document.querySelector('.drop-point'); const card=dp?.querySelector(`[data-pokemon-id="${id}"]`); if(card) card.remove(); if(typeof updatePokedexCount==='function') updatePokedexCount(); this.currentTeam=this.currentTeam.filter(p=>p.id!==id); this.renderTeamModal(); };

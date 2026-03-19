@@ -1,182 +1,165 @@
-# Architektur- und Changelog-Abschnitte hinzugefügt; kleiner Emoji-Fix; Version evtl. auf 2.1 belassen mit Changelog.
+# Pokedex New - Feature-Uebersicht
 
-# Stand: 22.09.2025
+Stand: 19.03.2026
 
-# 🎮 Pokédex – Feature-Übersicht (Aktualisiert)
+## Kurzfassung
 
-Stand: 22.09.2025
+Das Projekt ist ein interaktiver Pokedex mit lokalem Team-Management, Team-Analyse, Vergleichs- und Battle-Funktionen sowie optionaler KI-Unterstuetzung ueber einen lokalen Express-Proxy. Die Datei beschreibt den aktuell im Code vorhandenen Stand, nicht aeltere Planungen.
 
-## ✨ Aktive Kern-Features
+## Aktive Kern-Features
 
-### 🌟 Pokemon GO-inspirierte Erweiterungen
+### Pokedex und Navigation
 
-- **Favoriten-System**: Herz-Icon, persistiert lokal.
-- **5-Sterne-Bewertung**: Individuelle Bewertung jedes Pokémon (lokal gespeichert).
-- **Power-/Strength-Anzeige**: Berechnete Leistungskennzahl basierend auf Stats (Basis & optionale GO-Daten falls verfügbar).
-- **Erweiterte Filter**: Typen, Favoriten-Only, Bewertungs-Level.
-- **(Preview) Persönliche Notizen**: Platzhalter vorgesehen – Logik noch nicht final aktiviert.
+- Anzeige von Pokemon aus der PokeAPI mit Bild, Typen, Stats und Detailansicht
+- Suche ueber Suchfeld mit Ergebnis-Dropdown
+- Filter nach Typen, Favoriten und Bewertungsstufe
+- Pagination mit `Previous` / `Next`
+- `Load More` zum schrittweisen Nachladen weiterer Pokemon
+- Responsives Filter-Menue fuer kleinere Viewports
 
-### 🧩 Team Management & Offcanvas
+### Pokemon-Karten und Detailansichten
 
-- **Offcanvas Team Sidebar**: Drag & Drop direkt in den rechten Bereich.
-- **Doppelter Counter**: Live-Anzeige im Filter-Button & im Offcanvas (synchronisiert).
-- **Mini-Pokémon-Cards (Refactor)**: Glassmorphism, Typ-Gradient, bessere Lesbarkeit, animiertes Einfügen.
-- **Remove-Action**: Überarbeiteter runder Close-Button mit Hover-Feedback.
-- **My Pokédx Button im Offcanvas**: Direkter Zugang zur Team-Modal-Ansicht.
+- Kartenansicht mit Typ-Badges, Bild und Schnellaktionen
+- Detailansicht fuer einzelne Pokemon
+- Vergleichsmodus fuer zwei Pokemon
+- Direkter Start eines 1v1-Battle-Simulators aus dem Vergleichsmodal
 
-### 🧪 Team Modal & Analyse
+### Pokemon-GO-inspirierte Features
 
-- **Team Modal**: Kompakte Übersicht mit grundlegenden Stats & Aktionen.
-- **Strength Mini-Card**: Neu gestaltete strukturierte Stat-Zeilen (mit ARIA & Animation).
-- **Dynamischer Modal-Header**: Zufällige animierte Gradient-Auswahl pro Öffnung.
-- **Team Analyse (externes Modul)**: Typ-Coverage, Effektivitäten, Optimierungsvorschläge (bestehende Schnittstelle erhalten).
+- Favoriten-System mit lokaler Persistenz
+- Bewertungs-/Appraisal-System mit gespeicherten Ratings
+- Power-/Strength-Berechnungen auf Basis von Stats
+- Lokale Notizen-Struktur fuer Pokemon ist im Code vorhanden
 
-### � Interaktionen & UX
+### Team-Management
 
-- **Drag & Drop**: Visuelle Drop-Zone mit Statuszustand (Hover-Fokus, Skaliereffekt).
-- **Delegierte Events**: Performante Listener-Struktur statt Inline-Flut.
-- **Accessible Toggle**: Strength-Bereich nutzt aria-expanded / aria-hidden & reine Klassensteuerung (`.is-hidden`).
-- **Fallback-Rendering**: Zeigt verständliche Platzhalter, wenn Subsysteme (GO-Features) noch nicht geladen sind.
+- Team-Offcanvas mit Team-Counter und Mini-Cards
+- Separater `Active Team`-Builder mit 6 Slots
+- Drag-and-Drop vom Pokedex in Team-Slots bzw. Team-Bereiche
+- Ersetzen bereits belegter Slots per Drop
+- Synchronisation zwischen Team-Builder, Offcanvas und `localStorage`
+- Live-Regionen und Statusmeldungen fuer Team-Aenderungen
 
-### 🔄 Interaktionen & UX
+### Team-Modal und Team-Aktionen
 
-## 🎨 Design & UI Konsistenz
+- Team-Modal mit Uebersicht ueber aktuelles Team
+- Anzeige von Team-Kennzahlen wie Typenverteilung, Favoriten und Durchschnittswerten
+- Pokemon aus dem Team entfernen
+- Team mischen
+- Nicht-Favoriten gesammelt entfernen
+- Team als JSON exportieren
+- Team ueber `navigator.share` oder Clipboard teilen
+- Team-Presets im `localStorage` speichern
 
-### Visuelle Leitlinien
+### Team-Analyse
 
-- Verwendete Design-Tokens aus `root.css` (Color Vars, Radius, Shadow, Transition).
-- Glassmorphism bei Mini-Cards, Modals & Buttons.
-- Typbasierte Farb/Verlauf-Kodierung (Klassen `type-<elementart>` für Mini-Cards & Badges).
-- Animierter Gradient Header (`.modal-header.dynamic-gradient`).
+- Statische Team-Analyse fuer Coverage, Schwaechen und Zusammensetzung
+- Eigenes Analyse-Modal
+- Team-Analyse direkt aus dem Team-Modal und aus der Hauptansicht
+- KI-gestuetzte Team-Analyse mit Fallback ueber mehrere Provider
+- KI-Teamberater im `Active Team`-Bereich
 
-### Mikro-Interaktionen
+### Battle-Features
 
-- Weiche Fade/Scale Animations beim Hinzufügen/Entfernen von Team-Mitgliedern.
-- Button-Hover mit subtilen Border-/Shadow-Übergängen.
-- Gradient-Shimmer bei Badges & Countern (Hover).
+- 1v1-Battle-Simulator mit Rundenlogik
+- `Next Round`, Auto-Play und Reset im Simulator
+- Export des Battle-Logs
+- Gym-Challenge-Modus gegen ein generiertes Gegnerteam
+- Gym-Leader-Dialoge und Kampfkommentare mit optionaler KI-Unterstuetzung
+- Challenge-Auswertung mit Schaden, Zuegen und MVP
+- Kampfhistorie mit Statistiken, Win-Rate und meistgenutzten Pokemon
 
-## 🔧 Technische Verbesserungen
+### KI-Integration und Server
 
-### Struktur & Wartbarkeit
+- Lokaler Express-Server fuer statische Auslieferung und AI-Proxy
+- `/api/ai/ping` zur Proxy-Erkennung im Frontend
+- `/api/ai` als Proxy fuer Groq, Mistral und Gemini
+- Rate Limiting fuer AI-Requests
+- Frontend-Fallback zwischen direktem API-Zugriff und Proxy-Nutzung
+- Caching, Retry-Logik, Timeout und Throttling fuer KI-Anfragen
 
-- Refactor: Mini-Card Markup klar semantisch & reduzierter Inline-Stil.
-- Entfernung nicht benötigter Inline-Toggle-Logik (nur Klassensteuerung).
-- Zentralisierte Team-State Verwaltung (`TeamOffcanvas` Klasse + persistenter LocalStorage Sync).
-- Defensive Abfragen & Fallbacks (Bootstrap verfügbar? Module geladen?).
+## Persistenz
 
-### Performance
+Die Anwendung speichert mehrere Bereiche lokal im Browser:
 
-- Lazy Loading der Pokémon-Bilder (`loading="lazy"`).
-- Minimierte DOM-Reflows durch Batch-Rendering & delegierte Events.
-- Nur notwendige Re-Renders bei Team-Änderungen.
+- `pokemonTeam`
+- `pokemonFavorites`
+- `pokemonRatings`
+- `pokemonNotes`
+- `pokemonTeamPresets`
+- `pokemonBattleHistory`
+- AI-API-Keys fuer lokale Nutzung, falls kein Proxy aktiv ist
 
-### Accessibility
+## Status-Tabelle
 
-- ARIA Attribute für Toggles & Rollen (z.B. Strength-Block Strukturierung per Row-Klassen).
-- Klare Textinhalte statt rein symbolischer Icons.
-- Fokus-sichere Buttons (keine zerschossenen Outline-Resets für kritische Controls).
+| Feature | Status | Kommentar |
+| --- | --- | --- |
+| Pokedex-Anzeige | Live | PokeAPI-basierte Karten- und Detailansicht |
+| Suche und Typ-Filter | Live | Suche, Typen, Favoriten und Ratings |
+| Favoriten | Live | Lokal gespeichert |
+| Ratings / Appraisal | Live | Lokal gespeichert |
+| Notizen-Datenstruktur | Teilweise live | Persistenz vorhanden, keine ausgebaute UI im Hauptfluss |
+| Team-Offcanvas | Live | Mini-Cards und Counter |
+| Active Team Builder | Live | 6 Slots mit Drag-and-Drop |
+| Team-Modal | Live | Uebersicht, Export und Aktionen |
+| Team teilen | Live | Share API oder Clipboard |
+| Team-Presets speichern | Live | Speicherung im `localStorage` |
+| Team-Analyse | Live | Statisch plus KI-Unterstuetzung |
+| Pokemon-Vergleich | Live | Zwei Pokemon im Modal vergleichen |
+| Battle-Simulator | Live | 1v1 mit Log und Export |
+| Gym-Challenge | Live | Gegnerteam, Strategie und Historie |
+| Battle-Historie | Live | Lokale Historie mit Kennzahlen |
+| AI-Proxy-Server | Live | Express-Endpunkt mit Rate Limit |
 
-## 🧭 Benutzerfluss (Quick Guide)
+## Technische Struktur
 
-1. Pokémon entdecken & filtern.
-2. Optional bewerten oder als Favorit markieren.
-3. Per Drag & Drop (oder Klick-Funktion – falls implementiert) ins Team ziehen.
-4. Über „My Pokédx“ Modal öffnen & Überblick erhalten.
-5. Stärke umschalten (Strength Toggle) für Stat-Detail.
-6. Analyse starten (Team analysieren) für Coverage & Empfehlungen.
-7. Optional exportieren / teilen (bestehende Export-Logik beibehalten).
+### Wichtige Einstiegspunkte
 
-## 🗂 Status Tabelle
+- `index.html`: Layout, Filter, Offcanvas, Team-Modal, Team-Builder
+- `main.js`: Script-Bootstrap und Initialisierung aller Frontend-Module
+- `server.js`: Express-Server und AI-Proxy
 
-| Feature                  | Status     | Kommentar                     |
-| ------------------------ | ---------- | ----------------------------- |
-| Favoriten-System         | ✅ Live    | Persistenz via LocalStorage   |
-| Bewertungssystem         | ✅ Live    | Sterne-UI + Filter            |
-| Power/Strength Anzeige   | ✅ Live    | Berechnete Basiswerte         |
-| Team Offcanvas           | ✅ Neu     | Drag & Drop + Mini-Cards      |
-| Doppelter Team-Counter   | ✅ Neu     | Sync im Button + Offcanvas    |
-| Mini-Card Redesign       | ✅ Neu     | Gradient + Glass + Typ-Badges |
-| Strength Mini-Card       | ✅ Neu     | Kompakte Stats + ARIA         |
-| Dynamischer Modal-Header | ✅ Neu     | Zufallsgradient pro Öffnung   |
-| Team Modal               | ✅ Live    | Übersicht & Aktionen          |
-| Team Analyse             | ✅ Live    | Externes Modul integriert     |
-| Export / Teilen          | 📝 Geplant | JSON / Share API              |
-| Notiz-System             | 📝 Geplant | Platzhalter / Konzeptphase    |
-| Kampfsimulator           | 📝 Geplant | Strategische Simulation       |
-| Preset-Teams             | 📝 Geplant | Mehrfach-Konfiguration        |
-| Mehrsprachigkeit         | 📝 Geplant | i18n Struktur später          |
-| Offline-Modus            | 📝 Geplant | Service Worker Option         |
+### Modulbereiche
 
-Legende: ✅ = verfügbar · 🔄 = in Entwicklung · 📝 = geplant
+| Bereich | Dateien / Muster | Aufgabe |
+| --- | --- | --- |
+| API und Daten | `script/services/ApiService.js`, `script/pokemon-core.js` | Laden und Transformieren der Pokemon-Daten |
+| Rendering | `script/pokemon-ui.js`, `script/template.js`, `script/pokemon-detail.js` | Karten, Details und UI-Bausteine |
+| Navigation | `script/search.js`, `script/navigation.js` | Suche, Pagination, Load More, Responsive-Verhalten |
+| GO-Features | `script/pokemon-go-*` | Favoriten, Ratings, Power, Filter |
+| Team-Builder | `script/team-builder*.js`, `script/team-offcanvas-*.js` | Slots, Drag-and-Drop, Team-Sync |
+| Team-Modal | `script/team-modal-*.js`, `script/mypokedex-*.js` | Team-Uebersicht und Team-Aktionen |
+| Analyse | `script/team-analyzer-*.js`, `script/team-ai-service.js` | Statische und KI-gestuetzte Team-Analyse |
+| Vergleich | `script/pokemon-compare*.js` | Vergleichsmodal und Battle-Trigger |
+| Battle | `script/battle-sim-*.js`, `script/team-battle-*.js`, `script/battle-history.js` | Simulator, Gym-Challenge, Historie |
+| Infrastruktur | `script/utils/*.js`, `js/ai-service.js` | Retry, Modal-Fabrik, Hilfsfunktionen, AI-Client |
 
-## 🚀 Nächste sinnvolle Schritte
+## Installation und Betrieb
 
-- Notiz-System finalisieren (UI + Persistenz Schema).
-- Wiederverwendung von Gradient-Arrays zur Typ-orientierten Dynamik (nicht nur Randomisierung).
-- Optional: IV-/Stat-Farbskala (Heatmapping Balken / Werte).
-- Aufräumen: Legacy Mini-Card CSS Doppelungen entfernen.
-- Testing-Helfer (kleines Dev-Overlay für Team-State Debug).
+1. Abhaengigkeiten installieren:
+   ```bash
+   npm install
+   ```
+2. `.env` auf Basis von `.env.example` anlegen
+3. Mindestens einen AI-Key hinterlegen, wenn KI-Funktionen genutzt werden sollen
+4. Server starten:
+   ```bash
+   npm start
+   ```
+5. Anwendung im Browser ueber `http://localhost:3000` aufrufen
 
-## 🧪 Qualitätsaspekte
+## Bekannte Einschraenkungen
 
-- Keine Inline-Styles für UI-State (Konsistenz & Wartbarkeit).
-- Robust gegen Race Conditions beim Laden (defensive Checks in Modal/Offcanvas Logik).
-- Modulare JS-Dateien: Trennung von Rendering, Logik & Analyse.
+- Die Notiz-Funktion ist daten- und service-seitig vorbereitet, aber nicht als vollstaendige Haupt-UI ausgebaut.
+- Team-Presets werden gespeichert, im aktuellen Stand aber nicht als vollstaendige Preset-Verwaltung mit Laden/Loeschen praesentiert.
+- Ein Teil des Projekts enthaelt aeltere und neuere Modulpfade parallel; `main.js` bootstrapped den aktuell genutzten Satz.
 
-## 🏗 Architektur & Technische Struktur
+## Nicht mehr zutreffend aus der alten Datei
 
-### Modul-Schichten
+Folgende Punkte aus der frueheren `FEATURES.md` sind nicht mehr korrekt:
 
-| Ebene                    | Dateien (Beispiele)                                        | Aufgabe                                                  |
-| ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------- |
-| Core Daten / API         | `api.js`, `pokemon-core.js`                                | Laden & Aufbereiten von Pokémon-Daten                    |
-| UI Rendering             | `pokemon-ui.js`, `pokemon-detail.js`, `template.js`        | Karten, Detail-Views, dynamische Templates               |
-| Interaktion / Navigation | `navigation.js`, `search.js`                               | Filtering, Suche, Pagination                             |
-| Team Funktionalität      | `team-offcanvas.js`, `mypokedex-section.js`, `team-modal*` | Team-State, Offcanvas, Modals, Actions                   |
-| Analyse                  | `team-analyzer-*`                                          | Coverage, Effektivitäten, Empfehlungen                   |
-| Zusatz Features          | `pokemon-go-*`                                             | GO-inspirierte Erweiterungen (Power, Favoriten, Ratings) |
-| Bootstrap Integration    | (divers verteilt)                                          | Events (`show.bs.modal`, Offcanvas)                      |
-
-### Event Flow (vereinfacht)
-
-1. Nutzer draggt Karte → `dragstart` (Quelle) → Drop-Zone `dragover` → `drop` in Offcanvas.
-2. `TeamOffcanvas.addPokemonToTeam()` → State Push → `renderMiniCard()` → `updateCounters()`.
-3. Falls Modal offen → Re-Render (`renderTeamOverview()` / `showDetailedTeamViewInternal`).
-4. Strength Toggle Klick → Klasse `.is-hidden` toggeln + ARIA Sync.
-5. Öffnen Modal → `show.bs.modal` → dynamischer Gradient Header.
-
-### State & Persistenz
-
-- Team-State: In-Memory Array in Instanz `TeamOffcanvas` + Sync auf `localStorage` (`pokemonTeam`).
-- Favoriten / Ratings (implizit): Speicherung (vermutlich) ebenfalls lokal (siehe GO-Module; nicht voll auditiert in diesem Schritt).
-- Keine serverseitige Persistenz → rein lokaler Zustand.
-
-### Fehler- & Fallback-Strategien
-
-- Fehlende Bootstrap APIs → Warnungen statt Abbruch.
-- Ungültige / nicht verfügbare Typen → Sanitizing + Fallback `'normal'`.
-- Entfernen von Pokémon, die nicht mehr existieren → stilles Abbrechen mit Log.
-
-### Sicherheit / Robustheit
-
-- Kein Fremd-Input außer API (PokeAPI) → Minimales XSS-Risiko (Badge Sanitizing aktiv).
-- DOM-Injektion erfolgt via kontrollierte Templates ohne unescaped Fremd-HTML.
-
-### Accessibility Ergänzungen
-
-- Toggle Komponenten: aria-expanded / aria-hidden konsequent.
-- Buttons behalten Focus Outline (keine aggressive Reset-Entfernung dokumentiert).
-- Verbesserungs-Potenzial: Landmark-Struktur (main / nav) & Fokus-Reihenfolge in Offcanvas.
-
-## 📝 Changelog (Kurz)
-
-| Version       | Datum      | Änderungen                                                                                                                |
-| ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------- |
-| 2.0           | früher     | Grundsystem + Bewertung + Favoriten + Analyse                                                                             |
-| 2.1           | 22.09.2025 | Offcanvas, Mini-Card Redesign, Strength Mini-Card, dynamischer Gradient Header, doppelter Counter, Dokumentations-Updates |
-| 2.2 (geplant) | TBA        | Notiz-System, Gradient Konsolidierung, Stat-Heatmapping, Legacy CSS Cleanup                                               |
-
----
-
-**Entwickelt mit ❤️ für Pokémon-Trainer**  
-_Version 2.1 – Offcanvas & Gradient Update_
+- Battle- und Compare-Funktionen sind nicht mehr "geplant", sondern vorhanden.
+- Export und Teilen sind implementiert.
+- Team-Presets koennen gespeichert werden.
+- Das Projekt nutzt inzwischen einen lokalen Node-/Express-Server fuer die KI-Anbindung.
+- Die alte Datei war in Teilen fehlerhaft kodiert und enthielt ueberholte Versions-/Changelog-Eintraege.
