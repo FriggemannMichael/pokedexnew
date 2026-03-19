@@ -1,4 +1,3 @@
-// Team Analyzer Modal - modal setup and actions
 (function () {
   const Core = window.PokemonTeamAnalyzerCore;
   if (!Core) {
@@ -74,7 +73,6 @@
     const content = document.getElementById('teamAnalysisContent');
     if (!content) return;
 
-    // Order: 1. Pokemon Overview  2. Professor AI  3. Offensive Coverage
     const teamOverviewHTML = this.createTeamOverviewHTML(team);
     const aiAdvisorHTML = `
       <div class="analysis-section analysis-ai-advisor" id="analysisAiAdvisor">
@@ -96,7 +94,6 @@
       initDynamicBars();
     }
 
-    // Request AI analysis asynchronously
     this.requestAIAnalysis(team, analysis);
   };
 
@@ -104,7 +101,6 @@
     const container = document.getElementById('aiAdvisorContent');
     if (!container) return;
 
-    // Try teamAIService first (structured JSON analysis)
     const teamAI = window.teamAIService;
     if (teamAI && typeof teamAI.detectProxy === 'function') {
       await teamAI.detectProxy();
@@ -123,7 +119,6 @@
       }
     }
 
-    // Fallback to basic aiService (Professor Eich)
     const aiService = window.aiService;
     if (aiService && typeof aiService.detectProxy === 'function') {
       await aiService.detectProxy();
@@ -132,10 +127,17 @@
     if (aiService && aiService.hasGroqKey()) {
       try {
         const advice = await aiService.requestProfessorTeamAdvice({ team, staticAnalysis });
+        const normalizedAdvice =
+          team.length >= 6 &&
+          /\b(vervollstaend|vervollst[aä]nd|unvollst[aä]nd|zu wenig|fehlen|fehlt|nur\s+[0-5]\b|nur\s+(eins|zwei|drei|vier|fuenf|fünf)\b|weniger als 6|nicht komplett|aus\s+(eins|zwei|drei|vier|fuenf|fünf)\s+mitglied)/i.test(
+            String(advice || ""),
+          )
+            ? "Dein Team ist vollstaendig besetzt. Die statische Analyse oben zeigt dir die wichtigsten Staerken und Schwaechen."
+            : advice;
         container.innerHTML = `
           <div class="ai-advisor-result">
             <div class="ai-advisor-provider">Professor Eich (Groq)</div>
-            <p class="ai-advisor-text">${advice}</p>
+            <p class="ai-advisor-text">${normalizedAdvice}</p>
           </div>`;
         return;
       } catch (err) {
@@ -143,7 +145,6 @@
       }
     }
 
-    // No AI available
     container.innerHTML = `
       <div class="ai-advisor-result">
         <div class="ai-advisor-provider">Professor Eich (lokal)</div>
@@ -152,13 +153,38 @@
   };
 
   Core.prototype.renderAIAnalysis = function (parsed, providerLabel) {
-    const summary = parsed.summary || '';
-    const risks = (parsed.criticalRisks || []).filter(Boolean);
-    const suggestedTypes = (parsed.suggestedPokemonTypes || []).filter(Boolean);
-    const actions = (parsed.nextActions || []).filter(Boolean);
+    const summary = parsed.summary || parsed.team_synergy || '';
+    const criticalRisks = Array.isArray(parsed.criticalRisks)
+      ? parsed.criticalRisks
+      : Array.isArray(parsed.cumulative_weaknesses?.critical)
+        ? parsed.cumulative_weaknesses.critical
+        : [];
+    const moderateRisks = Array.isArray(parsed.cumulative_weaknesses?.moderate)
+      ? parsed.cumulative_weaknesses.moderate
+      : [];
+    const risks = [...criticalRisks, ...moderateRisks].filter(Boolean);
+    const suggestedTypes = Array.isArray(parsed.suggestedPokemonTypes)
+      ? parsed.suggestedPokemonTypes
+      : Array.isArray(parsed.offensive_gaps)
+        ? parsed.offensive_gaps
+        : [];
+    const actions = Array.isArray(parsed.nextActions)
+      ? parsed.nextActions
+      : Array.isArray(parsed.next_moves)
+        ? parsed.next_moves
+        : [];
+    const rating = Number.isFinite(Number(parsed.overall_rating))
+      ? Number(parsed.overall_rating)
+      : null;
+    const redundancies = Array.isArray(parsed.type_redundancies)
+      ? parsed.type_redundancies.filter(Boolean)
+      : [];
 
     let html = `<div class="ai-advisor-result">`;
     html += `<div class="ai-advisor-provider">Professor Eich (${providerLabel || 'KI'})</div>`;
+    if (rating !== null) {
+      html += `<div class="ai-advisor-section"><strong>Gesamtwertung:</strong> ${rating}/100</div>`;
+    }
 
     if (summary) {
       html += `<p class="ai-advisor-text">${summary}</p>`;
@@ -169,7 +195,16 @@
     }
 
     if (suggestedTypes.length) {
-      html += `<div class="ai-advisor-section"><strong>Empfohlene Typen:</strong> <span class="ai-advisor-types">${suggestedTypes.map(t => `<span class="type-badge type-${t.toLowerCase()}">${t}</span>`).join(' ')}</span></div>`;
+      html += `<div class="ai-advisor-section"><strong>Offensive Luecken:</strong> <span class="ai-advisor-types">${suggestedTypes.map(t => `<span class="type-badge type-${String(t).toLowerCase()}">${t}</span>`).join(' ')}</span></div>`;
+    }
+
+    if (redundancies.length) {
+      html += `<div class="ai-advisor-section"><strong>Typ-Dopplungen:</strong><ul>${redundancies.map((entry) => {
+        const type = entry?.type || 'Unbekannt';
+        const count = entry?.count || '?';
+        const impact = entry?.impact ? `: ${entry.impact}` : '';
+        return `<li>${type} (${count}x)${impact}</li>`;
+      }).join('')}</ul></div>`;
     }
 
     if (actions.length) {

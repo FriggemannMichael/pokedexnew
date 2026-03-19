@@ -1,5 +1,3 @@
-// Filters & event listeners
-// Filters & event listeners (Rollback Version)
 (function () {
   const PGF = PokemonGoFeatures.prototype;
   PGF.setupEventListeners = function () {

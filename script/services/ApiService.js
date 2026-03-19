@@ -1,12 +1,8 @@
-/**
- * ApiService - PokeAPI Integration Service
- */
 export class ApiService {
-  // Standard-URL auf v2 setzen, damit /pokemon Pfade korrekt angehängt werden
   #baseUrl = "https://pokeapi.co/api/v2";
   #cache = new Map();
   #cacheEnabled = true;
-  #cacheDuration = 1000 * 60 * 30; // 30 Minuten
+  #cacheDuration = 1000 * 60 * 30;
 
   constructor(config = {}) {
     if (config.baseUrl) this.#baseUrl = config.baseUrl;
@@ -43,7 +39,6 @@ export class ApiService {
   }
 
   async fetchPokemonList(offset = 0, limit = 20) {
-    // Ruft /pokemon auf. Ergibt mit baseUrl: https://pokeapi.co/api/v2/pokemon
     const data = await this.fetch(`/pokemon?offset=${offset}&limit=${limit}`);
 
     const pokemonDetails = await Promise.all(
@@ -81,14 +76,10 @@ export class ApiService {
     return details.map((p) => this.transformPokemonData(p));
   }
 
-  /**
-   * Transformation der Rohdaten in das von der App erwartete Format
-   */
   transformPokemonData(rawPokemon) {
     return {
       id: rawPokemon.id,
       name: rawPokemon.name,
-      // WICHTIG: Das Feld 'image' muss existieren, damit pokemon-ui.js es findet!
       image:
         rawPokemon.sprites.other["official-artwork"].front_default ||
         rawPokemon.sprites.front_default,

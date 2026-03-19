@@ -159,7 +159,6 @@ function createPokemonCard(pokemon) {
   cardElement.innerHTML = getPokemonCardTemplate(pokemon);
 
   cardElement.addEventListener("click", (event) => {
-    // Verhindere das Öffnen der Detail-Ansicht wenn auf Favorite-Button oder Compare-Button geklickt wird
     if (
       event.target.classList.contains("favorite-btn") ||
       event.target.closest(".favorite-btn") ||
@@ -227,24 +226,9 @@ function formatPokemonNumber(id) {
 }
 
 function createTypeBadges(types) {
-  // Sicherheitsfilter: Nur echte bekannte Typen rendern, um versehentliche Inhalte (z.B. 'cp level', 'ivs:') zu vermeiden
-  const VALID_TYPES = new Set([
-    'normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'
-  ]);
   return types
     .map(t => (t||'').toLowerCase().trim())
-    .filter(t => VALID_TYPES.has(t))
+    .filter(t => VALID_POKEMON_TYPES.has(t))
     .map((type) => `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`)
     .join("");
 }
-
-// Zentrale Typ-Säuberung für alle anderen Module
-window.sanitizeTypes = function(rawTypes) {
-  const VALID_TYPES = new Set(['normal','fire','water','grass','electric','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy']);
-  if (!Array.isArray(rawTypes)) return ['normal'];
-  const cleaned = rawTypes
-    .map(t => (t||'').toString().toLowerCase().replace(/[^a-z]/g,''))
-    .filter(t => VALID_TYPES.has(t));
-  if (cleaned.length === 0) return ['normal'];
-  return cleaned;
-};

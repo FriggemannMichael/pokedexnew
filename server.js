@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// ===== In-Memory Rate Limiter =====
 const rateLimitMap = new Map();
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -37,7 +36,6 @@ function rateLimiter(req, res, next) {
   next();
 }
 
-// Cleanup old entries every 5 minutes
 setInterval(
   () => {
     const now = Date.now();
@@ -53,15 +51,12 @@ setInterval(
   5 * 60 * 1000,
 );
 
-// ===== Static Files =====
 app.use(express.static(path.join(__dirname)));
 
-// ===== AI Proxy Health Check =====
 app.get("/api/ai/ping", (req, res) => {
   res.json({ status: "ok" });
 });
 
-// ===== AI Proxy Endpoint =====
 app.post("/api/ai", rateLimiter, async (req, res) => {
   const { provider, model, messages, temperature, max_tokens } = req.body;
 

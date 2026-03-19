@@ -1,27 +1,19 @@
 import { ApiService } from "./script/services/ApiService.js";
 
-/**
- * 1. GLOBALE KONFIGURATION & SERVICE INITIALISIERUNG
- */
 window.POKEMON_API_CONFIG = {
   baseUrl: "https://pokeapi.co/api/v2/pokemon",
   pokemonPerPage: 20,
   defaultOffset: 0,
 };
 
-// Instanz mit der API-Root erstellen
 window.apiService = new ApiService({
   baseUrl: "https://pokeapi.co/api/v2",
 });
 
-/**
- * 2. KOMPATIBILITÄTS-BRÜCKE (Legacy Support)
- * Emuliert die Funktionen der alten api.js für pokemon-core.js
- */
 window.fetchPokemonData = async (offset, limit) => {
   try {
     const result = await window.apiService.fetchPokemonList(offset, limit);
-    return result.pokemon; // Gibt das transformierte Array zurück (jetzt inkl. .image)
+    return result.pokemon;
   } catch (error) {
     console.error("Fehler in fetchPokemonData Brücke:", error);
     return [];
@@ -48,9 +40,6 @@ window.fetchPokemonByTypeData = async (type) => {
   }
 };
 
-/**
- * 3. UI HELFER & GLOBALE VARIABLEN
- */
 window.toggleDropdown = function (className) {
   const section = document.querySelector("." + className);
   if (!section) return;
@@ -61,9 +50,6 @@ window.toggleDropdown = function (className) {
 window.mainJsLoaded = true;
 let loadedCount = 0;
 
-/**
- * 4. SCRIPT LOADER LOGIK
- */
 async function loadAllScripts(scripts) {
   for (const path of scripts) {
     await loadScript(path);
@@ -103,9 +89,6 @@ function createScriptElement(path) {
   return script;
 }
 
-/**
- * 5. APP INITIALISIERUNG
- */
 function startApp() {
   setTimeout(() => {
     try {
@@ -155,20 +138,18 @@ function initializeComponents() {
 function showError() {
   const container =
     document.getElementById("pokemonContainer") || document.body;
-  container.innerHTML = `
-        <div class="error-container text-center py-5">
-            <h2>App Loading Failed</h2>
-            <p>Check the console for errors.</p>
-            <button class="btn btn-primary" onclick="window.location.reload()">Reload Page</button>
-        </div>
-    `;
+  container.innerHTML = typeof createAppErrorTemplate === "function"
+    ? createAppErrorTemplate()
+    : "<p>App Loading Failed. Check console.</p>";
 }
 
-/**
- * 6. START-PROZESS
- */
 function startPokemonApp() {
   const scripts = [
+    "./script/utils/fetch-retry.js",
+    "./script/utils/type-constants.js",
+    "./script/utils/modal-factory.js",
+    "./script/utils/ui-helpers.js",
+    "./script/templates/error-template.js",
     "./script/dom-cache.js",
     "./script/template.js",
     "./script/pokemon-core.js",
@@ -177,15 +158,23 @@ function startPokemonApp() {
     "./script/pokemon-ui.js",
     "./script/navigation.js",
     "./script/search.js",
-    "./script/team-offcanvas.js",
+    "./script/team-offcanvas-core.js",
+    "./script/team-offcanvas-ui.js",
     "./script/drag-drop-enhanced.js",
     "./js/ai-service.js",
     "./script/team-builder.js",
+    "./script/team-builder-ui.js",
+    "./script/team-builder-events.js",
+    "./script/prompts/team-analysis-prompt.js",
+    "./script/prompts/team-advice-prompt.js",
+    "./script/prompts/battle-strategy-prompt.js",
+    "./script/prompts/coach-prompt.js",
     "./script/team-ai-service.js",
     "./script/team-modal-core.js",
     "./script/team-modal-render.js",
     "./script/team-modal-actions.js",
     "./script/team-modal-events.js",
+    "./script/mypokedex-render.js",
     "./script/mypokedex-section.js",
     "./script/team-analyzer-core.js",
     "./script/team-analyzer-logic.js",
@@ -198,9 +187,14 @@ function startPokemonApp() {
     "./script/pokemon-go-filters.js",
     "./script/pokemon-go-observer.js",
     "./script/pokemon-compare.js",
+    "./script/pokemon-compare-ui.js",
     "./script/battle-history.js",
-    "./script/battle-simulator.js",
-    "./script/team-battle.js",
+    "./script/battle-sim-core.js",
+    "./script/battle-sim-moves.js",
+    "./script/battle-sim-ui.js",
+    "./script/team-battle-core.js",
+    "./script/team-battle-ui.js",
+    "./script/team-battle-combat.js",
   ];
 
   loadAllScripts(scripts).catch((error) => {
@@ -215,7 +209,6 @@ if (document.readyState === "loading") {
   startPokemonApp();
 }
 
-// Globaler Click-Listener
 document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="show-detail"][data-pokemon-id]');
   if (btn) {

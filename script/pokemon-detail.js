@@ -278,16 +278,11 @@ async function handleEvolutionClick(item, currentPokemonId) {
   }
 }
 
-// --- Globale Kompatibilitäts-Funktion ---
-// Einige Buttons verwenden noch ein inline onclick="showPokemonDetail(id)" Pattern.
-// Damit diese weiterhin funktionieren, definieren wir einen sicheren Wrapper.
-// Er versucht zuerst das TeamModal-System zu nutzen, fällt sonst auf openPokemonDetail(pokemonObject) zurück.
 if (!window.showPokemonDetail) {
   window.showPokemonDetail = function (pokemonId) {
     try {
       const id = parseInt(pokemonId);
       if (isNaN(id)) return;
-      // Priorität: Team Modal Instanz
       if (
         window.pokemonTeamModal &&
         typeof window.pokemonTeamModal.showPokemonDetail === "function"
@@ -296,7 +291,6 @@ if (!window.showPokemonDetail) {
         return;
       }
 
-      // Falls wir eine globale Pokemon Liste haben
       if (Array.isArray(appState?.pokemonList)) {
         const pokemon = appState.pokemonList.find((p) => p.id === id);
         if (pokemon) {
@@ -307,7 +301,6 @@ if (!window.showPokemonDetail) {
         }
       }
 
-      // Letzter Versuch: Direkt API Daten holen und minimal Objekt bauen
       fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
         .then((r) => r.json())
         .then((data) => {

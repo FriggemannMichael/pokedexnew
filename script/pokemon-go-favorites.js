@@ -1,4 +1,3 @@
-// Favorites / rating / notes UI + filters
 (function(){
   const PGF = PokemonGoFeatures.prototype;
   PGF.toggleFavorite = function(id){ this.favorites.has(id)?this.favorites.delete(id):this.favorites.add(id); localStorage.setItem('pokemonFavorites', JSON.stringify([...this.favorites])); this.updateFavoriteButtons(id); document.dispatchEvent(new CustomEvent('favoriteToggled',{detail:{pokemonId:id,isFavorite:this.favorites.has(id)}})); };

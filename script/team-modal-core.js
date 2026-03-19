@@ -1,4 +1,3 @@
-// Team Modal Core
 class PokemonTeamModalCore {
   constructor() {
     this.currentTeam = [];
@@ -25,7 +24,6 @@ class PokemonTeamModalCore {
       console.error("Pokemon Team Modal not found");
       return;
     }
-    // Offene andere Modals schließen & Fokus säubern um aria-hidden Konflikte zu vermeiden
     document.querySelectorAll(".modal.show").forEach((mo) => {
       if (mo !== modal) {
         if (mo.contains(document.activeElement)) document.activeElement.blur();

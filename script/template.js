@@ -131,16 +131,15 @@ function createDescriptionTabTemplate() {
 function getPokemonCardTemplate(pokemon) {
     const pokemonNumber = formatPokemonNumber(pokemon.id);
     const typeBadges = createTypeBadges(pokemon.types);
-    
-    // Pokemon Go Features
-    const favoriteBtn = window.pokemonGoFeatures ? 
+
+    const favoriteBtn = window.pokemonGoFeatures ?
         window.pokemonGoFeatures.getFavoriteButtonHTML(pokemon.id) : '';
-    const ratingStars = window.pokemonGoFeatures ? 
+    const ratingStars = window.pokemonGoFeatures ?
         window.pokemonGoFeatures.getRatingStarsHTML(pokemon.id, pokemon) : '';
-    const powerLevel = window.pokemonGoFeatures ? 
+    const powerLevel = window.pokemonGoFeatures ?
         window.pokemonGoFeatures.getPowerLevelHTML(pokemon) : '';
 
-    
+
     return `
         <div class="pokemon-card h-100 type-${pokemon.types[0]}"
              data-pokemon-id="${pokemon.id}"
@@ -329,4 +328,3 @@ function addEscapeListener() {
         isEscapeListenerActive = true;
     }
 }
-

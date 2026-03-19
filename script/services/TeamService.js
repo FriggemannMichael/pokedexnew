@@ -1,13 +1,3 @@
-/**
- * TeamService - Team Management Service
- *
- * Features:
- * - Team von max 6 Pokemon verwalten
- * - Persistierung in Storage
- * - Team Validierung
- * - Event Notifications
- */
-
 export class TeamService {
   #stateManager;
   #storageService;
@@ -23,10 +13,6 @@ export class TeamService {
     this.#loadTeamFromStorage();
   }
 
-  /**
-   * Initialisiert den Team State
-   * @private
-   */
   #initializeState() {
     this.#stateManager.setState({
       team: [],
@@ -35,10 +21,6 @@ export class TeamService {
     });
   }
 
-  /**
-   * Lädt Team aus Storage
-   * @private
-   */
   #loadTeamFromStorage() {
     const savedTeam = this.#storageService.get('team', []);
     if (savedTeam.length > 0) {
@@ -46,15 +28,9 @@ export class TeamService {
     }
   }
 
-  /**
-   * Fügt ein Pokemon zum Team hinzu
-   * @param {number} pokemonId - Pokemon ID
-   * @returns {boolean} Erfolg
-   */
   addPokemon(pokemonId) {
     const team = this.getTeam();
 
-    // Validierung
     if (team.length >= this.#maxTeamSize) {
       console.warn('⚠️ Team is already full (max 6 Pokemon)');
       return false;
@@ -65,7 +41,6 @@ export class TeamService {
       return false;
     }
 
-    // Pokemon zum Team hinzufügen
     const newTeam = [...team, pokemonId];
     this.#updateTeamState(newTeam);
     this.#saveTeamToStorage(newTeam);
@@ -74,11 +49,6 @@ export class TeamService {
     return true;
   }
 
-  /**
-   * Entfernt ein Pokemon aus dem Team
-   * @param {number} pokemonId - Pokemon ID
-   * @returns {boolean} Erfolg
-   */
   removePokemon(pokemonId) {
     const team = this.getTeam();
 
@@ -95,11 +65,6 @@ export class TeamService {
     return true;
   }
 
-  /**
-   * Togglet ein Pokemon im Team (add/remove)
-   * @param {number} pokemonId - Pokemon ID
-   * @returns {boolean} Ob Pokemon jetzt im Team ist
-   */
   togglePokemon(pokemonId) {
     const isInTeam = this.isInTeam(pokemonId);
 
@@ -112,27 +77,14 @@ export class TeamService {
     }
   }
 
-  /**
-   * Prüft ob Pokemon im Team ist
-   * @param {number} pokemonId - Pokemon ID
-   * @returns {boolean}
-   */
   isInTeam(pokemonId) {
     return this.getTeam().includes(pokemonId);
   }
 
-  /**
-   * Gibt das aktuelle Team zurück
-   * @returns {number[]} Array von Pokemon IDs
-   */
   getTeam() {
     return this.#stateManager.get('team') || [];
   }
 
-  /**
-   * Gibt Team mit vollständigen Pokemon Daten zurück
-   * @returns {Object[]} Array von Pokemon Objekten
-   */
   getTeamWithDetails() {
     const team = this.getTeam();
     return team
@@ -140,35 +92,20 @@ export class TeamService {
       .filter(pokemon => pokemon !== undefined);
   }
 
-  /**
-   * Gibt die Anzahl der Team-Mitglieder zurück
-   * @returns {number}
-   */
   getTeamCount() {
     return this.#stateManager.get('teamCount') || 0;
   }
 
-  /**
-   * Prüft ob Team voll ist
-   * @returns {boolean}
-   */
   isTeamFull() {
     return this.#stateManager.get('isTeamFull') || false;
   }
 
-  /**
-   * Leert das Team
-   */
   clearTeam() {
     this.#updateTeamState([]);
     this.#saveTeamToStorage([]);
     console.log('✅ Team cleared');
   }
 
-  /**
-   * Sortiert das Team
-   * @param {Function} compareFn - Vergleichsfunktion
-   */
   sortTeam(compareFn) {
     const teamWithDetails = this.getTeamWithDetails();
     const sortedTeam = teamWithDetails.sort(compareFn);
@@ -178,10 +115,6 @@ export class TeamService {
     this.#saveTeamToStorage(sortedIds);
   }
 
-  /**
-   * Updated den Team State
-   * @private
-   */
   #updateTeamState(team) {
     this.#stateManager.setState({
       team: team,
@@ -190,19 +123,10 @@ export class TeamService {
     });
   }
 
-  /**
-   * Speichert Team in Storage
-   * @private
-   */
   #saveTeamToStorage(team) {
     this.#storageService.set('team', team);
   }
 
-  /**
-   * Abonniert Team Changes
-   * @param {Function} listener - Callback Funktion
-   * @returns {Function} Unsubscribe Funktion
-   */
   subscribe(listener) {
     return this.#stateManager.subscribe((state, changes) => {
       if (changes.team !== undefined || changes.teamCount !== undefined) {
@@ -211,20 +135,11 @@ export class TeamService {
     });
   }
 
-  /**
-   * Exportiert Team als JSON
-   * @returns {string} JSON String
-   */
   exportTeam() {
     const teamWithDetails = this.getTeamWithDetails();
     return JSON.stringify(teamWithDetails, null, 2);
   }
 
-  /**
-   * Importiert Team aus JSON
-   * @param {string} json - JSON String
-   * @returns {boolean} Erfolg
-   */
   importTeam(json) {
     try {
       const team = JSON.parse(json);

@@ -1,4 +1,3 @@
-// Team Analyzer Render - HTML creation
 (function () {
   const Core = window.PokemonTeamAnalyzerCore;
   if (!Core) {
