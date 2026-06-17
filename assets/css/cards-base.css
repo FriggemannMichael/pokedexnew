@@ -262,9 +262,9 @@
 
 .team-add-btn {
   padding: 0.5rem 1rem;
-  background: rgba(var(--primary-color-rgb), 0.18);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(var(--primary-color-rgb), 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 8px;
   color: rgb(35, 35, 35);
   font-size: 0.85rem;
@@ -278,8 +278,8 @@
 }
 
 .team-add-btn:hover {
-  background: rgba(var(--primary-color-rgb), 0.32);
-  border-color: var(--primary);
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.6);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -290,6 +290,13 @@
 
 .team-add-btn i {
   font-size: 1rem;
+  color: var(--primary);
+}
+
+.compare-btn:focus-visible,
+.team-add-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* =========================
