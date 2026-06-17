@@ -383,6 +383,16 @@
   }
 }
 
+@keyframes pokeballPulse {
+  0%,
+  100% {
+    opacity: 0.08;
+  }
+  50% {
+    opacity: 0.12;
+  }
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
