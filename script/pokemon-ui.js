@@ -130,11 +130,9 @@ function updatePaginationVisibility(paginationControls) {
     }
 }
 
-// Debug Hinweis: window.POKE_DEBUG = true; aktiviert zusätzliche console.debug Ausgaben in mehreren Modulen
 function initializeApp() {
     if (window.POKE_DEBUG) console.debug("[App] init start");
     
-    // Prüfen ob DOM bereit ist
     if (document.readyState === "loading") {
         if (window.POKE_DEBUG) console.debug("[App] DOM not ready yet, waiting...");
         return;
@@ -156,7 +154,6 @@ function initializeApp() {
     if (window.POKE_DEBUG) console.debug("[App] init complete");
 }
 
-// Nur aufrufen, wenn nicht bereits von main.js gehandhabt wird
 if (!window.mainJsLoaded) {
     document.addEventListener("DOMContentLoaded", initializeApp);
 }

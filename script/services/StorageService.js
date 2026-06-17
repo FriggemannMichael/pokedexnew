@@ -1,14 +1,3 @@
-/**
- * StorageService - Abstraction Layer für Browser Storage
- *
- * Features:
- * - localStorage Abstraktion
- * - Automatisches JSON Parsing
- * - Error Handling
- * - Type Safety Support
- * - Quota Management
- */
-
 export class StorageService {
   #prefix = '';
   #storage = null;
@@ -18,20 +7,10 @@ export class StorageService {
     this.#storage = storage;
   }
 
-  /**
-   * Gibt den vollständigen Key mit Prefix zurück
-   * @private
-   */
   #getKey(key) {
     return `${this.#prefix}${key}`;
   }
 
-  /**
-   * Speichert einen Wert im Storage
-   * @param {string} key - Storage Key
-   * @param {*} value - Wert zum Speichern (wird automatisch zu JSON)
-   * @returns {boolean} Erfolg
-   */
   set(key, value) {
     try {
       const serialized = JSON.stringify(value);
@@ -48,12 +27,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Liest einen Wert aus dem Storage
-   * @param {string} key - Storage Key
-   * @param {*} defaultValue - Fallback Wert falls Key nicht existiert
-   * @returns {*} Gespeicherter Wert oder defaultValue
-   */
   get(key, defaultValue = null) {
     try {
       const item = this.#storage.getItem(this.#getKey(key));
@@ -69,11 +42,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Entfernt einen Wert aus dem Storage
-   * @param {string} key - Storage Key
-   * @returns {boolean} Erfolg
-   */
   remove(key) {
     try {
       this.#storage.removeItem(this.#getKey(key));
@@ -84,18 +52,10 @@ export class StorageService {
     }
   }
 
-  /**
-   * Prüft ob ein Key existiert
-   * @param {string} key - Storage Key
-   * @returns {boolean} Existiert
-   */
   has(key) {
     return this.#storage.getItem(this.#getKey(key)) !== null;
   }
 
-  /**
-   * Löscht alle Keys mit dem aktuellen Prefix
-   */
   clear() {
     try {
       const keys = this.keys();
@@ -107,10 +67,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Gibt alle Keys mit dem aktuellen Prefix zurück
-   * @returns {string[]} Array von Keys (ohne Prefix)
-   */
   keys() {
     const allKeys = Object.keys(this.#storage);
     return allKeys
@@ -118,18 +74,10 @@ export class StorageService {
       .map(key => key.substring(this.#prefix.length));
   }
 
-  /**
-   * Gibt die Anzahl der gespeicherten Items zurück
-   * @returns {number} Anzahl Items
-   */
   size() {
     return this.keys().length;
   }
 
-  /**
-   * Gibt die ungefähre Größe des verwendeten Storage zurück (in Bytes)
-   * @returns {number} Größe in Bytes
-   */
   getUsedSpace() {
     let total = 0;
     this.keys().forEach(key => {
@@ -139,10 +87,6 @@ export class StorageService {
     return total;
   }
 
-  /**
-   * Gibt Storage Info zurück
-   * @returns {Object} Storage Informationen
-   */
   getInfo() {
     const usedSpace = this.getUsedSpace();
     return {
@@ -154,29 +98,16 @@ export class StorageService {
     };
   }
 
-  /**
-   * Formatiert Bytes zu lesbarem String
-   * @private
-   */
   #formatBytes(bytes) {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   }
 
-  /**
-   * Behandelt Quota Exceeded Error
-   * @private
-   */
   #handleQuotaExceeded() {
     console.warn('⚠️ Storage quota exceeded. Consider clearing old data.');
-    // Hier könnte man automatisch alte Daten löschen
   }
 
-  /**
-   * Migriert Daten von alten Keys zu neuen Keys
-   * @param {Object} migrations - Objekt mit old -> new Key Mappings
-   */
   migrate(migrations) {
     Object.entries(migrations).forEach(([oldKey, newKey]) => {
       if (this.has(oldKey)) {
@@ -189,9 +120,6 @@ export class StorageService {
   }
 }
 
-/**
- * Legacy Storage Keys (für Migration)
- */
 export const LEGACY_KEYS = {
   TEAM: 'pokemonTeam',
   FAVORITES: 'pokemonFavorites',
@@ -199,9 +127,6 @@ export const LEGACY_KEYS = {
   NOTES: 'pokemonNotes'
 };
 
-/**
- * Neue Storage Keys
- */
 export const STORAGE_KEYS = {
   TEAM: 'team',
   FAVORITES: 'favorites',

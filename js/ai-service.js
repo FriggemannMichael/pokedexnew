@@ -1,8 +1,6 @@
-/* global window */
 (function () {
   class PokedexAIService {
     constructor() {
-      this.endpoint = "https://api.groq.com/openai/v1/chat/completions";
       this.proxyEndpoint = "/api/ai";
       this.useProxy = false;
       this._proxyChecked = false;
@@ -11,39 +9,19 @@
       this.cache = new Map();
       this.cacheTtlMs = 5 * 60 * 1000;
       this.maxCacheEntries = 80;
-      this.storageKey = "pokedex_ai_groq_api_key";
       this.fallbackText = "Professor Eich ist gerade nicht erreichbar...";
-      this._lastRequestTime = 0;
-      this._minRequestIntervalMs = 2000;
-    }
-
-    getGroqApiKey() {
-      const runtimeConfig = window.POKE_AI_CONFIG || {};
-      const runtimeKey = String(runtimeConfig.groqApiKey || "").trim();
-      if (runtimeKey) return runtimeKey;
-
-      return String(localStorage.getItem(this.storageKey) || "").trim();
+      this._throttleFn = window.createThrottler(2000);
     }
 
     hasGroqKey() {
-      if (this.useProxy) return true;
-      return Boolean(this.getGroqApiKey());
-    }
-
-    setGroqApiKey(apiKey) {
-      const safeKey = String(apiKey || "").trim();
-      if (!safeKey) {
-        localStorage.removeItem(this.storageKey);
-        return;
-      }
-      localStorage.setItem(this.storageKey, safeKey);
+      return this.useProxy;
     }
 
     async detectProxy() {
       if (this._proxyChecked) return this.useProxy;
       this._proxyChecked = true;
       try {
-        const resp = await fetch(this.proxyEndpoint + '/ping');
+        const resp = await fetch(this.proxyEndpoint + "/ping");
         this.useProxy = resp.ok;
       } catch {
         this.useProxy = false;
@@ -52,243 +30,165 @@
     }
 
     async _fetchWithRetry(url, options, maxRetries = 2) {
-      let lastError = null;
-      for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-          const response = await fetch(url, options);
-          if (response.status >= 500 && attempt < maxRetries) {
-            const delay = Math.pow(2, attempt) * 1000;
-            console.warn(`[AI] Server error ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
-          }
-          return response;
-        } catch (error) {
-          lastError = error;
-          if (error.name === 'AbortError') throw error;
-          if (attempt < maxRetries) {
-            const delay = Math.pow(2, attempt) * 1000;
-            console.warn(`[AI] Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`, error.message);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
-          }
-        }
-      }
-      throw lastError || new Error('Request failed after retries');
+      return window.fetchWithRetry(url, options, maxRetries);
     }
 
     async _throttle() {
-      const now = Date.now();
-      const elapsed = now - this._lastRequestTime;
-      if (elapsed < this._minRequestIntervalMs) {
-        await new Promise(resolve => setTimeout(resolve, this._minRequestIntervalMs - elapsed));
-      }
-      this._lastRequestTime = Date.now();
+      return this._throttleFn();
+    }
+
+    _resolveOptions(options) {
+      return {
+        model: String(options.model || this.model).trim(),
+        temperature: Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.7,
+        maxTokens: Number.isFinite(Number(options.maxTokens)) ? Number(options.maxTokens) : 320,
+        useCache: options.useCache !== false,
+      };
+    }
+
+    _buildMessages(systemPrompt, userPrompt) {
+      return [
+        { role: "system", content: String(systemPrompt || "").trim() },
+        { role: "user", content: String(userPrompt || "").trim() },
+      ];
+    }
+
+    _extractContent(data, label) {
+      const content = String(data?.choices?.[0]?.message?.content || "").trim();
+      if (!content) throw AppError.create(AppError.CATEGORY.AI, `${label} returned empty content.`);
+      return content;
     }
 
     async askGroq(systemPrompt, userPrompt, options = {}) {
       await this._throttle();
       await this.detectProxy();
+      if (!this.useProxy) throw AppError.create(AppError.CATEGORY.AI, "Proxy nicht verfügbar.");
+      return this._askViaProxy(systemPrompt, userPrompt, options);
+    }
 
-      if (this.useProxy) {
-        return this._askViaProxy(systemPrompt, userPrompt, options);
-      }
+    _buildProxyBody(systemPrompt, userPrompt, opts) {
+      return {
+        provider: "groq",
+        model: opts.model,
+        temperature: opts.temperature,
+        max_tokens: opts.maxTokens,
+        messages: this._buildMessages(systemPrompt, userPrompt),
+      };
+    }
 
-      const apiKey = String(options.apiKey || this.getGroqApiKey()).trim();
-      if (!apiKey) {
-        throw new Error("Groq API key missing.");
-      }
+    async _buildResponseError(response, label) {
+      const body = await response.text();
+      return `${label} API ${response.status}: ${(body || "").slice(0, 240)}`;
+    }
 
-      const model = String(options.model || this.model).trim();
-      const temperature = Number.isFinite(Number(options.temperature))
-        ? Number(options.temperature)
-        : 0.7;
-      const maxTokens = Number.isFinite(Number(options.maxTokens))
-        ? Number(options.maxTokens)
-        : 320;
-      const useCache = options.useCache !== false;
-      const cacheKey = this.getCacheKey(model, systemPrompt, userPrompt, temperature, maxTokens);
+    async _makeProxyRequest(controller, systemPrompt, userPrompt, opts) {
+      return this._fetchWithRetry(this.proxyEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(this._buildProxyBody(systemPrompt, userPrompt, opts)),
+        signal: controller.signal,
+      });
+    }
 
-      if (useCache) {
-        const cached = this.getCached(cacheKey);
-        if (cached) return cached;
-      }
-
+    async _fetchFromProxy(systemPrompt, userPrompt, opts) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-
       try {
-        const response = await this._fetchWithRetry(this.endpoint, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model,
-            temperature,
-            max_tokens: maxTokens,
-            messages: [
-              { role: "system", content: String(systemPrompt || "").trim() },
-              { role: "user", content: String(userPrompt || "").trim() },
-            ],
-          }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const body = await response.text();
-          const compactBody = body ? body.slice(0, 240) : "no-body";
-          throw new Error(`Groq API ${response.status}: ${compactBody}`);
-        }
-
-        const data = await response.json();
-        const content = String(data?.choices?.[0]?.message?.content || "").trim();
-        if (!content) {
-          throw new Error("Groq returned empty content.");
-        }
-
-        if (useCache) {
-          this.setCached(cacheKey, content);
-        }
-
-        return content;
+        const res = await this._makeProxyRequest(controller, systemPrompt, userPrompt, opts);
+        if (!res.ok) throw AppError.create(AppError.CATEGORY.AI, await this._buildResponseError(res, "Proxy"));
+        return this._extractContent(await res.json(), "Proxy");
       } finally {
         clearTimeout(timeoutId);
       }
     }
 
     async _askViaProxy(systemPrompt, userPrompt, options = {}) {
-      const model = String(options.model || this.model).trim();
-      const temperature = Number.isFinite(Number(options.temperature))
-        ? Number(options.temperature)
-        : 0.7;
-      const maxTokens = Number.isFinite(Number(options.maxTokens))
-        ? Number(options.maxTokens)
-        : 320;
-      const useCache = options.useCache !== false;
-      const cacheKey = this.getCacheKey(model, systemPrompt, userPrompt, temperature, maxTokens);
-
-      if (useCache) {
+      const opts = this._resolveOptions(options);
+      const cacheKey = this.getCacheKey(opts.model, systemPrompt, userPrompt, opts.temperature, opts.maxTokens);
+      if (opts.useCache) {
         const cached = this.getCached(cacheKey);
         if (cached) return cached;
       }
+      const content = await this._fetchFromProxy(systemPrompt, userPrompt, opts);
+      if (opts.useCache) this.setCached(cacheKey, content);
+      return content;
+    }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
-
-      try {
-        const response = await this._fetchWithRetry(this.proxyEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            provider: "groq",
-            model,
-            temperature,
-            max_tokens: maxTokens,
-            messages: [
-              { role: "system", content: String(systemPrompt || "").trim() },
-              { role: "user", content: String(userPrompt || "").trim() },
-            ],
-          }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const body = await response.text();
-          throw new Error(`Proxy API ${response.status}: ${body.slice(0, 240)}`);
-        }
-
-        const data = await response.json();
-        const content = String(data?.choices?.[0]?.message?.content || "").trim();
-        if (!content) throw new Error("Proxy returned empty content.");
-
-        if (useCache) this.setCached(cacheKey, content);
-        return content;
-      } finally {
-        clearTimeout(timeoutId);
-      }
+    _buildProfessorSystemPrompt(teamSize) {
+      const isComplete = teamSize >= 6;
+      const sizeRule = isComplete
+        ? "Das Team ist VOLLSTÄNDIG (6/6). Schlage NIEMALS vor, weitere Mitglieder hinzuzufügen."
+        : "Beginne mit einer väterlichen Ermutigung, das Team auf 6 Mitglieder zu vervollständigen.";
+      return [
+        "Du bist Professor Eich, der legendäre Pokémon-Experte.",
+        `Das Team hat aktuell ${teamSize} von 6 Mitgliedern.`,
+        sizeRule,
+        "Wähle GENAU EINEN Schwerpunkt: Typen-Abdeckung ODER Synergie ODER Defensiv-Werte.",
+        "Nutze Fachbegriffe (STAB, Coverage, Schwächen).",
+        "Antworte als Fließtext in maximal 3 vollständigen Sätzen auf Deutsch. Keine Aufzählungen, kein Markdown. Professionell.",
+      ].join("\n");
     }
 
     async requestProfessorTeamAdvice({ team = [], staticAnalysis = null } = {}) {
-      const teamNames = Array.isArray(team)
-        ? team.map((pokemon) => String(pokemon?.name || "").trim()).filter(Boolean)
-        : [];
-
-      const userPrompt = [
-        `Mein Team besteht aus: ${teamNames.join(", ") || "unbekannt"}.`,
-        `Statische Analyse: ${JSON.stringify(staticAnalysis || {})}`,
-      ].join("\n");
-
-      return this.askGroq(
-        "Du bist Professor Eich. Analysiere das Pokemon-Team. Nenne die groesste Typen-Schwaeche und eine Staerke. Antworte in 2 kurzen Saetzen auf Deutsch. Sei fachlich fundiert.",
-        userPrompt,
-        { temperature: 0.45, maxTokens: 180, useCache: true }
-      );
+      const systemPrompt = this._buildProfessorSystemPrompt(team.length);
+      const userPrompt = `Teamdaten: ${JSON.stringify(team)}\nStatische Analyse: ${JSON.stringify(staticAnalysis)}`;
+      return this.askGroq(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 400, useCache: false });
     }
 
-    async requestBattleCommentary({
-      attackerName,
-      moveName,
-      defenderName,
-      effectiveness,
-    } = {}) {
+    async requestBattleCommentary({ attackerName, moveName, defenderName, effectiveness } = {}) {
       const userPrompt = `${attackerName} nutzt ${moveName} gegen ${defenderName}. Es ist ${effectiveness}.`;
       return this.askGroq(
         "Du bist ein leidenschaftlicher Kampf-Kommentator. Beschreibe das Ergebnis eines Spielzugs in einem einzigen, actionreichen Satz. Nutze dramatische Worte. Antworte auf Deutsch.",
         userPrompt,
-        { temperature: 0.8, maxTokens: 90, useCache: true }
+        { temperature: 0.8, maxTokens: 90, useCache: true },
       );
     }
 
-    async requestGymLeaderDialogue({
-      leaderName,
-      leaderType,
-      leaderStyle,
-      eventText,
-    } = {}) {
+    async requestGymLeaderDialogue({ leaderName, leaderType, leaderStyle, eventText } = {}) {
       const systemPrompt = `Du bist ${leaderName}, der ${leaderType}-Arenaleiter. Dein Stil ist ${leaderStyle}. Antworte dem Spieler basierend auf seinem aktuellen Zug. Max. 12 Woerter.`;
-      const result = await this.askGroq(systemPrompt, String(eventText || "").trim(), {
-        temperature: 0.7,
-        maxTokens: 60,
-        useCache: false,
-      });
-
+      const result = await this.askGroq(
+        systemPrompt,
+        String(eventText || "").trim(),
+        { temperature: 0.7, maxTokens: 60, useCache: false },
+      );
       const words = result.split(/\s+/).filter(Boolean).slice(0, 12);
       return words.join(" ");
     }
 
+    _resolveTypewriterSpeed(options) {
+      const n = Number(options.speed);
+      return Number.isFinite(n) ? n : 18;
+    }
+
+    _clearTypewriterTimer(element) {
+      if (!element._typewriterTimer) return;
+      clearTimeout(element._typewriterTimer);
+      element._typewriterTimer = null;
+    }
+
+    _typewriterTick(element, text, cursor, speed, resolve) {
+      const next = cursor + 1;
+      element.textContent = text.slice(0, next);
+      if (next >= text.length) {
+        element._typewriterTimer = null;
+        resolve();
+        return;
+      }
+      element._typewriterTimer = setTimeout(
+        () => this._typewriterTick(element, text, next, speed, resolve),
+        speed,
+      );
+    }
+
     typewriterToElement(element, text, options = {}) {
       if (!element) return Promise.resolve();
-      const speed = Number.isFinite(Number(options.speed)) ? Number(options.speed) : 18;
+      const speed = this._resolveTypewriterSpeed(options);
       const finalText = String(text || "");
-
-      if (element._typewriterTimer) {
-        clearTimeout(element._typewriterTimer);
-        element._typewriterTimer = null;
-      }
-
+      this._clearTypewriterTimer(element);
       element.textContent = "";
-      let cursor = 0;
-
       return new Promise((resolve) => {
-        const tick = () => {
-          cursor += 1;
-          element.textContent = finalText.slice(0, cursor);
-          if (cursor >= finalText.length) {
-            element._typewriterTimer = null;
-            resolve();
-            return;
-          }
-          element._typewriterTimer = setTimeout(tick, speed);
-        };
-
-        if (!finalText.length) {
-          resolve();
-          return;
-        }
-
-        tick();
+        if (!finalText.length) { resolve(); return; }
+        this._typewriterTick(element, finalText, 0, speed, resolve);
       });
     }
 
@@ -317,21 +217,15 @@
         const oldestKey = this.cache.keys().next().value;
         if (oldestKey) this.cache.delete(oldestKey);
       }
-
-      this.cache.set(cacheKey, {
-        value,
-        expiresAt: Date.now() + this.cacheTtlMs,
-      });
+      this.cache.set(cacheKey, { value, expiresAt: Date.now() + this.cacheTtlMs });
     }
   }
 
   if (!window.aiService) {
     window.aiService = new PokedexAIService();
-    // Eagerly detect proxy so hasGroqKey() works synchronously later
     window.aiService.detectProxy();
   }
 
-  // Backward-compatible helper expected by existing snippets.
   if (typeof window.askGroq !== "function") {
     window.askGroq = function askGroq(systemPrompt, userPrompt, options = {}) {
       return window.aiService.askGroq(systemPrompt, userPrompt, options);

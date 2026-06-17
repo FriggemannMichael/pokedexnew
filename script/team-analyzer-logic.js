@@ -1,4 +1,3 @@
-// Team Analyzer Logic – Analyse Berechnungen
 (function(){
   const Core = window.PokemonTeamAnalyzerCore;
   if(!Core){ console.error('Core not loaded'); return; }

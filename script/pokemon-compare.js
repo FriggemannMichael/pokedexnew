@@ -1,4 +1,3 @@
-// Pokemon Compare System
 class PokemonCompare {
   constructor() {
     this.selectedPokemon = [];
@@ -12,7 +11,6 @@ class PokemonCompare {
   init() {
     if (this.initialized) return;
 
-    // Warte bis Bootstrap verfügbar ist
     if (typeof bootstrap === 'undefined') {
       console.warn('[Compare] Bootstrap not loaded yet, retrying...');
       setTimeout(() => this.init(), 500);
@@ -22,44 +20,16 @@ class PokemonCompare {
     this.createCompareModal();
     this.setupEventListeners();
     this.initialized = true;
-    console.log('[Compare] Pokemon Compare System initialized');
   }
 
   createCompareModal() {
-    // Prüfe ob Modal bereits existiert
-    if (document.getElementById('compareModal')) {
-      console.log('[Compare] Modal already exists');
-      this.modalElement = document.getElementById('compareModal');
-      this.compareModal = bootstrap.Modal.getOrCreateInstance(this.modalElement);
-      return;
-    }
-
-    const modalHTML = `
-      <div class="modal fade compare-modal" id="compareModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">
-                <span class="vs-icon">VS</span>
-                Pokemon Comparison
-              </h5>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="compareModalBody">
-              <!-- Content will be dynamically generated -->
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    this.modalElement = document.getElementById('compareModal');
-    this.compareModal = new bootstrap.Modal(this.modalElement);
+    this.compareModal = createBootstrapModal("compareModal", '<span class="matchup-icon" aria-hidden="true">⚖</span> Matchup Analysis', {
+      modalClass: "compare-modal glass-modal",
+    });
+    this.modalElement = document.getElementById("compareModal");
   }
 
   setupEventListeners() {
-    // Event Delegation für Compare Buttons
     document.addEventListener('click', (e) => {
       const compareBtn = e.target.closest('.compare-btn');
       if (compareBtn) {
@@ -70,7 +40,6 @@ class PokemonCompare {
       }
     });
 
-    // Modal Close Event
     if (this.modalElement) {
       this.modalElement.addEventListener('hidden.bs.modal', () => {
         this.exitSelectionMode();
@@ -79,10 +48,7 @@ class PokemonCompare {
   }
 
   handleCompareButtonClick(pokemonId) {
-    console.log('[Compare] Button clicked for Pokemon ID:', pokemonId);
-
     if (!this.initialized) {
-      console.warn('[Compare] System not initialized yet, initializing now...');
       this.init();
       setTimeout(() => this.handleCompareButtonClick(pokemonId), 500);
       return;
@@ -96,7 +62,6 @@ class PokemonCompare {
   }
 
   enterSelectionMode(firstPokemonId) {
-    console.log('[Compare] Entering selection mode with Pokemon:', firstPokemonId);
     this.isSelectionMode = true;
     this.selectedPokemon = [];
     this.addPokemonToComparison(firstPokemonId);
@@ -111,30 +76,23 @@ class PokemonCompare {
   }
 
   addPokemonToComparison(pokemonId) {
-    // Prüfen ob bereits ausgewählt
     if (this.selectedPokemon.some(p => p.id === pokemonId)) {
       this.removePokemonFromComparison(pokemonId);
       return;
     }
 
-    // Maximum erreicht?
     if (this.selectedPokemon.length >= this.maxSelection) {
       this.showMaxSelectionWarning();
       return;
     }
 
-    // Pokemon aus App State holen
     const pokemon = this.findPokemonById(pokemonId);
-    if (!pokemon) {
-      console.warn('[Compare] Pokemon not found:', pokemonId);
-      return;
-    }
+    if (!pokemon) return;
 
     this.selectedPokemon.push(pokemon);
     this.markCardAsSelected(pokemonId);
     this.updateSelectionIndicator();
 
-    // Wenn 2 Pokemon ausgewählt, direkt vergleichen
     if (this.selectedPokemon.length === this.maxSelection) {
       this.showComparison();
     }
@@ -147,47 +105,27 @@ class PokemonCompare {
   }
 
   findPokemonById(pokemonId) {
-    console.log('[Compare] Searching for Pokemon ID:', pokemonId);
-
-    // 1. Versuche in aktueller pokemonList
-    if (window.appState?.pokemonList && window.appState.pokemonList.length > 0) {
+    if (window.appState?.pokemonList?.length > 0) {
       const found = window.appState.pokemonList.find(p => p.id === pokemonId);
-      if (found) {
-        console.log('[Compare] Found Pokemon in appState.pokemonList:', found.name);
-        return found;
-      }
+      if (found) return found;
     }
 
-    // 2. Versuche in allPokemonList
-    if (window.appState?.allPokemonList && window.appState.allPokemonList.length > 0) {
+    if (window.appState?.allPokemonList?.length > 0) {
       const found = window.appState.allPokemonList.find(p => p.id === pokemonId);
-      if (found) {
-        console.log('[Compare] Found Pokemon in appState.allPokemonList:', found.name);
-        return found;
-      }
+      if (found) return found;
     }
 
-    // 3. Versuche im Team
-    if (window.teamOffcanvas?.team && window.teamOffcanvas.team.length > 0) {
+    if (window.teamOffcanvas?.team?.length > 0) {
       const found = window.teamOffcanvas.team.find(p => p.id === pokemonId);
-      if (found) {
-        console.log('[Compare] Found Pokemon in team:', found.name);
-        return found;
-      }
+      if (found) return found;
     }
 
-    // 4. Fallback: Suche in allen Pokemon Cards im DOM
     const card = document.querySelector(`.pokemon-card[data-pokemon-id="${pokemonId}"]`);
     if (card) {
-      console.log('[Compare] Found Pokemon in DOM, extracting data...');
       const pokemon = this.extractPokemonFromCard(card, pokemonId);
-      if (pokemon) {
-        console.log('[Compare] Extracted Pokemon from DOM:', pokemon.name);
-        return pokemon;
-      }
+      if (pokemon) return pokemon;
     }
 
-    console.warn('[Compare] Pokemon not found in any source');
     return null;
   }
 
@@ -199,51 +137,21 @@ class PokemonCompare {
 
       if (!nameElement || !imageElement) return null;
 
-      const name = nameElement.textContent.trim();
-      const image = imageElement.src;
       const types = Array.from(typeElements).map(el => {
-        const classList = Array.from(el.classList);
-        const typeClass = classList.find(cls => cls.startsWith('type-') && cls !== 'type-badge');
+        const typeClass = Array.from(el.classList).find(cls => cls.startsWith('type-') && cls !== 'type-badge');
         return typeClass ? typeClass.replace('type-', '') : '';
       }).filter(Boolean);
 
       return {
         id: pokemonId,
-        name: name,
-        image: image,
+        name: nameElement.textContent.trim(),
+        image: imageElement.src,
         types: types.length > 0 ? types : ['normal']
       };
     } catch (error) {
       console.error('[Compare] Failed to extract Pokemon from DOM:', error);
       return null;
     }
-  }
-
-  async showComparison() {
-    if (this.selectedPokemon.length !== 2) {
-      console.warn('[Compare] Need exactly 2 Pokemon to compare');
-      return;
-    }
-
-    const [pokemon1, pokemon2] = this.selectedPokemon;
-
-    // Detaillierte Daten laden
-    const [details1, details2] = await Promise.all([
-      this.fetchPokemonDetails(pokemon1.id),
-      this.fetchPokemonDetails(pokemon2.id)
-    ]);
-
-    // Modal Content generieren
-    const modalBody = document.getElementById('compareModalBody');
-    if (!modalBody) return;
-
-    modalBody.innerHTML = this.generateComparisonHTML(
-      { ...pokemon1, details: details1 },
-      { ...pokemon2, details: details2 }
-    );
-
-    // Modal öffnen
-    this.compareModal.show();
   }
 
   async fetchPokemonDetails(pokemonId) {
@@ -256,111 +164,8 @@ class PokemonCompare {
     }
   }
 
-  generateComparisonHTML(pokemon1, pokemon2) {
-    const stats1 = this.extractStats(pokemon1.details);
-    const stats2 = this.extractStats(pokemon2.details);
-    const effectiveness = this.calculateTypeEffectiveness(pokemon1, pokemon2);
-
-    return `
-      <div class="compare-container">
-        <!-- Pokemon 1 -->
-        <div class="pokemon-compare-card" style="--type-color-1: var(--type-${pokemon1.types[0]}); --type-color-2: var(--type-${pokemon1.types[1] || pokemon1.types[0]});">
-          ${this.generatePokemonCardHTML(pokemon1, stats1)}
-        </div>
-
-        <!-- VS Divider -->
-        <div class="vs-divider">
-          <div class="vs-circle">VS</div>
-        </div>
-
-        <!-- Pokemon 2 -->
-        <div class="pokemon-compare-card" style="--type-color-1: var(--type-${pokemon2.types[0]}); --type-color-2: var(--type-${pokemon2.types[1] || pokemon2.types[0]});">
-          ${this.generatePokemonCardHTML(pokemon2, stats2)}
-        </div>
-      </div>
-
-      <!-- Stats Comparison -->
-      <div class="compare-stats-section">
-        <h3 class="compare-section-title">Base Stats Comparison</h3>
-        ${this.generateStatsComparisonHTML(stats1, stats2)}
-      </div>
-
-      <!-- Type Effectiveness -->
-      <div class="type-effectiveness-section">
-        <h3 class="compare-section-title">Type Effectiveness</h3>
-        ${this.generateEffectivenessHTML(pokemon1, pokemon2, effectiveness)}
-      </div>
-
-      <!-- Battle Button -->
-      <button class="battle-trigger-btn" onclick="window.pokemonCompare.triggerBattle()">
-        ⚔️ Start Battle Simulation
-      </button>
-    `;
-  }
-
-  generatePokemonCardHTML(pokemon, stats) {
-    const typesBadges = pokemon.types.map(type =>
-      `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`
-    ).join('');
-
-    return `
-      <div class="compare-card-header">
-        <img src="${pokemon.image}" alt="${pokemon.name}" class="compare-pokemon-image" loading="lazy">
-        <h3 class="compare-pokemon-name">${pokemon.name}</h3>
-        <p class="compare-pokemon-number">#${pokemon.id.toString().padStart(3, '0')}</p>
-        <div class="compare-types">${typesBadges}</div>
-      </div>
-    `;
-  }
-
-  generateStatsComparisonHTML(stats1, stats2) {
-    const statNames = ['HP', 'Attack', 'Defense', 'Sp. Attack', 'Sp. Defense', 'Speed'];
-    const statKeys = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
-
-    return statKeys.map((key, index) => {
-      const value1 = stats1[key] || 0;
-      const value2 = stats2[key] || 0;
-
-      const class1 = value1 > value2 ? 'winner' : (value1 === value2 ? 'tie' : 'loser');
-      const class2 = value2 > value1 ? 'winner' : (value2 === value1 ? 'tie' : 'loser');
-
-      return `
-        <div class="stat-compare-row">
-          <div class="stat-value ${class1}">${value1}</div>
-          <div class="stat-name">${statNames[index]}</div>
-          <div class="stat-value ${class2}">${value2}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  generateEffectivenessHTML(pokemon1, pokemon2, effectiveness) {
-    return `
-      <div class="effectiveness-grid">
-        <div class="effectiveness-card">
-          <div class="effectiveness-label">${pokemon1.name} attacks ${pokemon2.name}</div>
-          <div class="effectiveness-pokemon-name">${pokemon1.name}</div>
-          <div class="effectiveness-value ${this.getEffectivenessClass(effectiveness.pokemon1ToPokemon2)}">
-            ${effectiveness.pokemon1ToPokemon2}x
-          </div>
-          <div class="effectiveness-text">${this.getEffectivenessText(effectiveness.pokemon1ToPokemon2)}</div>
-        </div>
-
-        <div class="effectiveness-card">
-          <div class="effectiveness-label">${pokemon2.name} attacks ${pokemon1.name}</div>
-          <div class="effectiveness-pokemon-name">${pokemon2.name}</div>
-          <div class="effectiveness-value ${this.getEffectivenessClass(effectiveness.pokemon2ToPokemon1)}">
-            ${effectiveness.pokemon2ToPokemon1}x
-          </div>
-          <div class="effectiveness-text">${this.getEffectivenessText(effectiveness.pokemon2ToPokemon1)}</div>
-        </div>
-      </div>
-    `;
-  }
-
   extractStats(pokemonDetails) {
     if (!pokemonDetails?.stats) return {};
-
     const stats = {};
     pokemonDetails.stats.forEach(stat => {
       stats[stat.stat.name] = stat.base_stat;
@@ -369,38 +174,29 @@ class PokemonCompare {
   }
 
   calculateTypeEffectiveness(pokemon1, pokemon2) {
-    const eff1to2 = this.calculateAttackEffectiveness(pokemon1.types, pokemon2.types);
-    const eff2to1 = this.calculateAttackEffectiveness(pokemon2.types, pokemon1.types);
-
     return {
-      pokemon1ToPokemon2: eff1to2,
-      pokemon2ToPokemon1: eff2to1
+      pokemon1ToPokemon2: this.calculateAttackEffectiveness(pokemon1.types, pokemon2.types),
+      pokemon2ToPokemon1: this.calculateAttackEffectiveness(pokemon2.types, pokemon1.types)
     };
   }
 
   calculateAttackEffectiveness(attackTypes, defendTypes) {
-    // Nutze die Type Chart Logik aus team-analyzer
     if (!window.PokemonTeamAnalyzerCore?.prototype?.calculateTypeEffectiveness) {
-      return 1; // Fallback
+      return 1;
     }
 
     let maxEffectiveness = 0;
     attackTypes.forEach(attackType => {
       const eff = this.getOffensiveTypeEffectiveness(attackType, defendTypes);
-      if (eff > maxEffectiveness) {
-        maxEffectiveness = eff;
-      }
+      if (eff > maxEffectiveness) maxEffectiveness = eff;
     });
-
     return maxEffectiveness;
   }
 
   getOffensiveTypeEffectiveness(attackType, defendTypes) {
     let effectiveness = 1;
-
     const typeChart = this.getSimplifiedTypeChart();
     const attackData = typeChart[attackType];
-
     if (!attackData) return effectiveness;
 
     defendTypes.forEach(defendType => {
@@ -412,7 +208,6 @@ class PokemonCompare {
         effectiveness = 0;
       }
     });
-
     return effectiveness;
   }
 
@@ -439,87 +234,56 @@ class PokemonCompare {
     };
   }
 
-  getEffectivenessClass(value) {
-    if (value === 0) return 'immune';
-    if (value >= 2) return 'super-effective';
-    if (value === 1) return 'effective';
-    return 'not-effective';
+  sumStats(stats) {
+    const keys = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+    return keys.reduce((sum, key) => sum + (stats[key] || 0), 0);
   }
 
-  getEffectivenessText(value) {
-    if (value === 0) return 'No Effect';
-    if (value >= 4) return 'Extremely Effective';
-    if (value >= 2) return 'Super Effective';
-    if (value === 1) return 'Normal Damage';
-    if (value >= 0.5) return 'Not Very Effective';
-    return 'Barely Effective';
+  edgeFrom(value1, value2, pokemon1, pokemon2) {
+    if (value1 === value2) return { winner: null };
+    return value1 > value2 ? { winner: pokemon1 } : { winner: pokemon2 };
   }
 
-  showSelectionIndicator() {
-    const indicator = document.createElement('div');
-    indicator.id = 'compareSelectionIndicator';
-    indicator.className = 'compare-select-mode';
-    indicator.innerHTML = `
-      <span>Select Pokemon to Compare</span>
-      <span class="compare-count">0/${this.maxSelection}</span>
-      <button onclick="window.pokemonCompare.exitSelectionMode()" style="background: rgba(255,255,255,0.3); border: none; padding: 0.3rem 0.8rem; border-radius: 20px; color: white; cursor: pointer;">Cancel</button>
-    `;
-    document.body.appendChild(indicator);
+  buildMatchupSummary(pokemon1, pokemon2, stats1, stats2, effectiveness) {
+    const total1 = this.sumStats(stats1);
+    const total2 = this.sumStats(stats2);
+    return {
+      total1,
+      total2,
+      statEdge: this.edgeFrom(total1, total2, pokemon1, pokemon2),
+      typeEdge: this.edgeFrom(effectiveness.pokemon1ToPokemon2, effectiveness.pokemon2ToPokemon1, pokemon1, pokemon2)
+    };
   }
 
-  hideSelectionIndicator() {
-    const indicator = document.getElementById('compareSelectionIndicator');
-    if (indicator) indicator.remove();
+  applyMatchupTheme(pokemon1, pokemon2) {
+    if (!this.modalElement) return;
+    this.modalElement.style.setProperty('--matchup-type-1', `var(--type-${pokemon1.types[0]})`);
+    this.modalElement.style.setProperty('--matchup-type-2', `var(--type-${pokemon2.types[0]})`);
+    this.modalElement.style.setProperty('--type-accent', `var(--type-${pokemon1.types[0]})`);
   }
 
-  updateSelectionIndicator() {
-    const countElement = document.querySelector('.compare-select-mode .compare-count');
-    if (countElement) {
-      countElement.textContent = `${this.selectedPokemon.length}/${this.maxSelection}`;
-    }
-  }
-
-  markCardAsSelected(pokemonId) {
-    const card = document.querySelector(`.pokemon-card[data-pokemon-id="${pokemonId}"]`);
-    if (card) card.classList.add('compare-selected-card');
-  }
-
-  unmarkCardAsSelected(pokemonId) {
-    const card = document.querySelector(`.pokemon-card[data-pokemon-id="${pokemonId}"]`);
-    if (card) card.classList.remove('compare-selected-card');
-  }
-
-  clearCardSelections() {
-    document.querySelectorAll('.compare-selected-card').forEach(card => {
-      card.classList.remove('compare-selected-card');
-    });
-  }
-
-  showMaxSelectionWarning() {
-    alert('You can only compare 2 Pokemon at a time. Please deselect one first.');
+  matchupVerdict(summary) {
+    const stat = summary.statEdge.winner;
+    const type = summary.typeEdge.winner;
+    if (!stat && !type) return { tone: 'balanced', text: 'Balanced Matchup' };
+    if (stat && type && stat.id === type.id) return { tone: 'favored', text: `${stat.name} Favored` };
+    return { tone: 'mixed', text: 'Contested Matchup' };
   }
 
   triggerBattle() {
     if (this.selectedPokemon.length !== 2) return;
-
-    // Schließe Compare Modal
     this.compareModal.hide();
 
-    // Trigger Battle Simulator (wird in Feature 2 implementiert)
     if (window.battleSimulator?.startBattle) {
       setTimeout(() => {
         window.battleSimulator.startBattle(this.selectedPokemon[0], this.selectedPokemon[1]);
       }, 300);
     } else {
-      console.log('[Compare] Battle Simulator not yet implemented');
-      alert('Battle Simulator coming soon in Feature 2! 🎮');
+      alert('Battle Simulator coming soon!');
     }
   }
 }
 
-// Globale Instanz erstellen (wird von main.js initialisiert)
 if (!window.pokemonCompare) {
   window.pokemonCompare = new PokemonCompare();
 }
-
-console.log('[Compare] Pokemon Compare Module loaded');

@@ -1,13 +1,66 @@
+import { ApiService } from "./script/services/ApiService.js";
+
+function initializeAppIntro() {
+  const intro = document.getElementById("appIntro");
+  if (!intro) return;
+
+  const removeIntro = () => intro.remove();
+  const dismissIntro = () => {
+    intro.classList.add("is-leaving");
+    window.setTimeout(removeIntro, 560);
+  };
+
+  window.setTimeout(dismissIntro, 6600);
+}
+
+initializeAppIntro();
+
+window.POKEMON_API_CONFIG = {
+  baseUrl: "https://pokeapi.co/api/v2/pokemon",
+  pokemonPerPage: 20,
+  defaultOffset: 0,
+};
+
+window.apiService = new ApiService({
+  baseUrl: "https://pokeapi.co/api/v2",
+});
+
+window.fetchPokemonData = async (offset, limit) => {
+  try {
+    const result = await window.apiService.fetchPokemonList(offset, limit);
+    return result.pokemon;
+  } catch (error) {
+    AppError.log(AppError.CATEGORY.API, "fetchPokemonData Brücke Fehler", error);
+    return [];
+  }
+};
+
+async function fetchSinglePokemon(url) {
+  const data = await window.apiService.fetch(url);
+  return window.apiService.transformPokemonData(data);
+}
+
+window.fetchPokemonByTypeData = async (type) => {
+  try {
+    const typeData = await window.apiService.fetch(`/type/${type}`);
+    const pokemonUrls = typeData.pokemon
+      .slice(0, window.POKEMON_API_CONFIG.pokemonPerPage)
+      .map((p) => p.pokemon.url);
+    return await Promise.all(pokemonUrls.map(fetchSinglePokemon));
+  } catch (error) {
+    AppError.log(AppError.CATEGORY.API, `fetchPokemonByTypeData (${type}) Fehler`, error);
+    return [];
+  }
+};
+
 window.toggleDropdown = function (className) {
   const section = document.querySelector("." + className);
-  if (!section) return console.warn("Section not found:", className);
+  if (!section) return;
   section.classList.toggle("d-none");
   section.classList.toggle("d-flex");
 };
 
-// Flag für main.js
 window.mainJsLoaded = true;
-
 let loadedCount = 0;
 
 async function loadAllScripts(scripts) {
@@ -20,25 +73,18 @@ async function loadAllScripts(scripts) {
 function loadScript(path) {
   return new Promise((resolve, reject) => {
     if (isAlreadyLoaded(path)) {
-      console.log(`Script already loaded: ${path}`);
       resolve();
       return;
     }
-
-    console.log(`Loading script: ${path}`);
     const script = createScriptElement(path);
-    
     script.onload = () => {
       loadedCount++;
-      console.log(`✓ Loaded script: ${path} (${loadedCount} total)`);
       resolve();
     };
-    
     script.onerror = (error) => {
-      console.error(`✗ Failed to load script: ${path}`, error);
+      AppError.log(AppError.CATEGORY.APP, `Script laden fehlgeschlagen: ${path}`, error);
       reject(new Error(`Failed to load ${path}`));
     };
-
     document.head.appendChild(script);
   });
 }
@@ -53,173 +99,167 @@ function createScriptElement(path) {
   return script;
 }
 
-function startApp() {
-  setTimeout(() => {
-    console.log("Starting Pokemon App...");
-    
-    try {
-      if (typeof initializeApp === "function") {
-        console.log("Found initializeApp, calling it...");
-        initializeApp();
-      } else {
-        console.warn("initializeApp not found, calling main pokemon functions directly");
-        // Fallback: Direkt die wichtigsten Funktionen aufrufen
-        if (typeof loadPokemon === "function") {
-          console.log("Calling loadPokemon...");
-          loadPokemon();
-        } else if (typeof fetchAndDisplayPokemon === "function") {
-          console.log("Calling fetchAndDisplayPokemon...");
-          fetchAndDisplayPokemon();
-        } else {
-          console.error("No main pokemon function found");
-          showError();
-        }
-      }
-    } catch (error) {
-      console.error("Error starting app:", error);
-      showError();
-    }
-
-    // Sicherstellen, dass Team Modal & Analyzer Instanzen existieren (nach Refactor modularisiert)
-    try {
-      if (!window.pokemonTeamModal && window.PokemonTeamModalCore) {
-        window.pokemonTeamModal = new window.PokemonTeamModalCore();
-        if (typeof window.pokemonTeamModal.init === 'function') window.pokemonTeamModal.init();
-        if (window.POKE_DEBUG) console.debug('[Init] TeamModal initialisiert');
-      }
-      if (!window.pokemonTeamAnalyzer && window.PokemonTeamAnalyzerCore) {
-        window.pokemonTeamAnalyzer = new window.PokemonTeamAnalyzerCore();
-        if (typeof window.pokemonTeamAnalyzer.init === 'function') window.pokemonTeamAnalyzer.init();
-        if (window.POKE_DEBUG) console.debug('[Init] TeamAnalyzer initialisiert');
-      }
-      if(window.pokemonGoFeatures && typeof window.pokemonGoFeatures.init==='function'){
-        window.pokemonGoFeatures.init();
-        if (window.POKE_DEBUG) console.debug('[Init] PokemonGoFeatures init aufgerufen');
-      }
-
-      // Compare System initialisieren
-      if (window.pokemonCompare && typeof window.pokemonCompare.init === 'function') {
-        window.pokemonCompare.init();
-        console.log('[Init] PokemonCompare initialisiert');
-      }
-
-      // Battle Simulator initialisieren
-      if (window.battleSimulator && typeof window.battleSimulator.init === 'function') {
-        window.battleSimulator.init();
-        console.log('[Init] BattleSimulator initialisiert');
-      }
-
-      // Team Battle System initialisieren
-      if (window.teamBattle && typeof window.teamBattle.init === 'function') {
-        window.teamBattle.init();
-        console.log('[Init] TeamBattle initialisiert');
-      }
-    } catch(e){ console.warn('Team Komponenten Init fehlgeschlagen', e); }
-
-    // Dynamische Balken initialisieren (Progress & Coverage)
-    try {
-      if (typeof initDynamicBars === 'function') {
-        initDynamicBars();
-      }
-    } catch(e){
-      console.warn('initDynamicBars failed or not present', e);
-    }
-  }, 300); // Noch mehr Zeit für Script-Loading
+function runMainFunction() {
+  if (typeof initializeApp === "function") return initializeApp();
+  if (typeof loadPokemon === "function") return loadPokemon();
+  console.error("No main pokemon function found");
+  showError();
 }
 
-// Initialisierung für Progress-Balken aus data-Attributen
-function initDynamicBars() {
-  const progressFills = document.querySelectorAll('.progress-bar-fill[data-progress]');
-  progressFills.forEach(el => {
-    const val = parseFloat(el.getAttribute('data-progress'));
-    if (!isNaN(val)) {
-      el.style.width = val + '%';
+function startApp() {
+  setTimeout(() => {
+    try {
+      runMainFunction();
+    } catch (error) {
+      AppError.log(AppError.CATEGORY.APP, "App-Start fehlgeschlagen", error);
+      showError();
     }
-  });
-  const coverageBars = document.querySelectorAll('.progress-bar[data-coverage]');
-  coverageBars.forEach(el => {
-    const val = parseFloat(el.getAttribute('data-coverage'));
-    if (!isNaN(val)) {
-      el.style.width = val + '%';
-    }
+    initializeComponents();
+  }, 300);
+}
+
+function initComponent(comp) {
+  if (comp.coreKey && !window[comp.winKey] && window[comp.coreKey]) {
+    window[comp.winKey] = new window[comp.coreKey]();
+  }
+  if (window[comp.winKey] && typeof window[comp.winKey].init === "function") {
+    window[comp.winKey].init();
+  }
+}
+
+function initializeComponents() {
+  const components = [
+    { winKey: "pokemonTeamModal", coreKey: "PokemonTeamModalCore" },
+    { winKey: "pokemonTeamAnalyzer", coreKey: "PokemonTeamAnalyzerCore" },
+    { winKey: "pokemonGoFeatures" },
+    { winKey: "pokemonCompare" },
+    { winKey: "battleSimulator" },
+    { winKey: "teamBattle" },
+  ];
+  components.forEach((comp) => {
+    try { initComponent(comp); }
+    catch (e) { console.warn(`Could not init component: ${comp.winKey}`, e); }
   });
 }
 
 function showError() {
   const container =
     document.getElementById("pokemonContainer") || document.body;
-  container.innerHTML = `
-        <div class="error-container text-center py-5">
-            <h2>App Loading Failed</h2>
-            <p>Could not initialize the Pokemon app.</p>
-            <button class="btn btn-primary" onclick="window.location.reload()">
-                Reload Page
-            </button>
-        </div>
-    `;
+  container.innerHTML = typeof createAppErrorTemplate === "function"
+    ? createAppErrorTemplate()
+    : "<p>App Loading Failed. Check console.</p>";
 }
 
-function startPokemonApp() {
-  console.log("Starting to load Pokemon app scripts...");
-  
-  const scripts = [
-    // 1. Core Foundation Scripts
+function getUtilScripts() {
+  return [
+    "./script/utils/error-handler.js",
+    "./script/utils/fetch-retry.js",
+    "./script/utils/type-constants.js",
+    "./script/utils/modal-factory.js",
+    "./script/utils/ui-helpers.js",
+    "./script/utils/team-actions.js",
+    "./script/templates/error-template.js",
     "./script/dom-cache.js",
-    "./script/api.js",
     "./script/template.js",
-    
-    // 2. Pokemon Core Functionality
+  ];
+}
+
+function getPokemonScripts() {
+  return [
     "./script/pokemon-core.js",
     "./script/pokemon-detail.js",
     "./script/pokemon-modal.js",
     "./script/pokemon-ui.js",
-    
-    // 3. Navigation and Search
     "./script/navigation.js",
     "./script/search.js",
-    
-    // 4. Team System (Order matters for dependencies)
-    "./script/team-offcanvas.js",      // Base team system - MUSS ZUERST sein
-    "./script/drag-drop-enhanced.js",  // Drag & drop functionality
-    "./js/ai-service.js",              // Central Groq helper + typewriter/caching
-    "./script/team-builder.js",        // Central 6-slot team builder
-  "./script/team-ai-service.js",     // AI provider integration (Mistral -> Groq fallback)
-  // Team modal modular
-  "./script/team-modal-core.js",
-  "./script/team-modal-render.js",
-  "./script/team-modal-actions.js",
-  "./script/team-modal-events.js",
-  "./script/mypokedex-section.js",   // Team section integration - NACH team-offcanvas
-  // Team Analyzer modular
-  "./script/team-analyzer-core.js",
-  "./script/team-analyzer-logic.js",
-  "./script/team-analyzer-modal.js",
-  "./script/team-analyzer-render.js",
-    
-    // 5. Additional Features
-    // Pokemon GO modular features (Replaces former single file)
+  ];
+}
+
+function getTeamCoreScripts() {
+  return [
+    "./script/team-offcanvas-core.js",
+    "./script/team-offcanvas-ui.js",
+    "./script/drag-drop-enhanced.js",
+    "./js/ai-service.js",
+    "./script/team-builder.js",
+    "./script/team-builder-ui.js",
+    "./script/team-builder-events.js",
+  ];
+}
+
+function getPromptScripts() {
+  return [
+    "./script/prompts/team-analysis-prompt.js",
+    "./script/prompts/team-advice-prompt.js",
+    "./script/prompts/battle-strategy-prompt.js",
+    "./script/prompts/coach-prompt.js",
+    "./script/team-ai-service.js",
+  ];
+}
+
+function getTeamModalScripts() {
+  return [
+    "./script/team-modal-core.js",
+    "./script/team-modal-render.js",
+    "./script/team-modal-actions.js",
+    "./script/team-modal-events.js",
+  ];
+}
+
+function getAnalyzerScripts() {
+  return [
+    "./script/mypokedex-render.js",
+    "./script/mypokedex-section.js",
+    "./script/team-analyzer-core.js",
+    "./script/team-analyzer-logic.js",
+    "./script/team-analyzer-modal.js",
+    "./script/team-analyzer-render.js",
+  ];
+}
+
+function getPokemonGoScripts() {
+  return [
     "./script/pokemon-go-core.js",
     "./script/pokemon-go-power.js",
     "./script/pokemon-go-dom.js",
     "./script/pokemon-go-favorites.js",
     "./script/pokemon-go-filters.js",
     "./script/pokemon-go-observer.js",
-
-    // 6. Compare & Battle Features
-    "./script/pokemon-compare.js",
-    "./script/battle-history.js",
-    "./script/battle-simulator.js",
-    "./script/team-battle.js",
   ];
+}
 
-  loadAllScripts(scripts)
-    .then(() => {
-      console.log("All scripts loaded successfully");
-    })
-    .catch((error) => {
-      console.error("Script loading failed:", error);
-      showError();
-    });
+function getBattleScripts() {
+  return [
+    "./script/pokemon-compare.js",
+    "./script/pokemon-compare-ui.js",
+    "./script/battle-history.js",
+    "./script/battle-sim-core.js",
+    "./script/battle-sim-moves.js",
+    "./script/battle-sim-ui.js",
+    "./script/team-battle-core.js",
+    "./script/team-battle-ui.js",
+    "./script/team-battle-combat.js",
+  ];
+}
+
+function getAllScripts() {
+  return [
+    ...getUtilScripts(),
+    ...getPokemonScripts(),
+    ...getTeamCoreScripts(),
+    ...getPromptScripts(),
+    ...getTeamModalScripts(),
+    ...getAnalyzerScripts(),
+    ...getPokemonGoScripts(),
+    ...getBattleScripts(),
+  ];
+}
+
+function startPokemonApp() {
+  loadAllScripts(getAllScripts()).catch((error) => {
+    AppError.log(AppError.CATEGORY.APP, "Kritisch: Script-Laden fehlgeschlagen", error);
+    showError();
+  });
 }
 
 if (document.readyState === "loading") {
@@ -228,37 +268,12 @@ if (document.readyState === "loading") {
   startPokemonApp();
 }
 
-// Delegiertes Click Handling für Detail-Buttons (ersetzt alte inline onclick Aufrufe)
-document.addEventListener('click', (e) => {
+document.addEventListener("click", (e) => {
   const btn = e.target.closest('[data-action="show-detail"][data-pokemon-id]');
   if (btn) {
-    const id = parseInt(btn.getAttribute('data-pokemon-id'));
-    if (!isNaN(id) && typeof window.showPokemonDetail === 'function') {
+    const id = parseInt(btn.getAttribute("data-pokemon-id"));
+    if (!isNaN(id) && typeof window.showPokemonDetail === "function") {
       window.showPokemonDetail(id);
     }
   }
-});
-
-// Einmalige Team-Daten Bereinigung (Badge Pollution Fix)
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    try {
-      if (window.teamOffcanvas && typeof window.teamOffcanvas.getTeam === 'function' && window.sanitizeTypes) {
-        const current = window.teamOffcanvas.getTeam();
-        let mutated = false;
-        current.forEach(p => {
-          const cleaned = window.sanitizeTypes(p.types);
-            if (cleaned.join(',') !== p.types.join(',')) {
-              p.types = cleaned;
-              mutated = true;
-            }
-        });
-        if (mutated && typeof window.teamOffcanvas.saveTeamToStorage === 'function') {
-          window.teamOffcanvas.team = current; // überschreiben
-          window.teamOffcanvas.saveTeamToStorage();
-          console.log('[Sanitize] Team-Typen bereinigt & gespeichert');
-        }
-      }
-    } catch(e) { console.warn('Sanitize team types failed', e); }
-  }, 1000);
 });

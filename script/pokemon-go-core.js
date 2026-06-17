@@ -1,4 +1,3 @@
-// Core initialisation for Pokemon Go inspired features
 class PokemonGoFeatures {
   constructor() {
     this.favorites = new Set(JSON.parse(localStorage.getItem('pokemonFavorites')||'[]'));
@@ -7,8 +6,7 @@ class PokemonGoFeatures {
     this._initialized = false;
   }
   init(){
-    if(this._initialized) return; // idempotent
-    // Warten bis Prototyp-Erweiterungen geladen wurden
+    if(this._initialized) return;
     if(typeof this.setupEventListeners !== 'function' || typeof this.addFilterToggles !== 'function'){
       return setTimeout(()=> this.init(), 50);
     }
@@ -22,5 +20,4 @@ class PokemonGoFeatures {
   }
 }
 
-// Instance (will be populated as prototypes from extension files)
 window.pokemonGoFeatures = new PokemonGoFeatures();

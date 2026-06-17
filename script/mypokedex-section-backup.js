@@ -1,8 +1,6 @@
-// Button als Dropzone für Warenkorb-Funktion
 const myPokedexBtn = document.querySelector("#myPokedexBtn");
 const dropPoint = document.querySelector(".drop-point");
 
-// Drag & Drop auf den Button
 window.handleButtonDragover = function(e) {
   e.preventDefault();
   myPokedexBtn.style.backgroundColor = "var(--accent)";
@@ -18,7 +16,7 @@ window.handleButtonDrop = function(e) {
   e.preventDefault();
   myPokedexBtn.style.backgroundColor = "";
   myPokedexBtn.style.transform = "";
-  
+
   const cardId = e.dataTransfer.getData("pokedex-card-id");
   if (cardId && dropPoint) {
     addPokemonToDropPoint(cardId, dropPoint);
@@ -26,7 +24,6 @@ window.handleButtonDrop = function(e) {
   }
 };
 
-// Pokédex Counter aktualisieren
 function updatePokedexCount() {
   const count = dropPoint.querySelectorAll(".pokemon-card").length;
   const countElement = document.getElementById("pokedexCount");
@@ -66,10 +63,10 @@ function addPokemonToDropPoint(cardId, dropPoint) {
   removeBtn.textContent = "Entfernen";
   removeBtn.onclick = () => {
     clone.remove();
-    updatePokedexCount(); // Counter nach dem Entfernen aktualisieren
+    updatePokedexCount();
   };
   btnWrapper.appendChild(removeBtn);
   clone.appendChild(btnWrapper);
   dropPoint.appendChild(clone);
-  updatePokedexCount(); // Counter nach dem Hinzufügen aktualisieren
+  updatePokedexCount();
 }
