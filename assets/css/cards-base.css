@@ -582,6 +582,12 @@
   pointer-events: none;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .detail-image-section::before {
+    animation: none;
+  }
+}
+
 .detail-pokemon-image {
   position: relative;
   z-index: 1;
