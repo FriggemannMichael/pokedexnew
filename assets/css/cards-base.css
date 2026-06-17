@@ -427,78 +427,68 @@
   overflow-y: auto;
 }
 
-/* Type-specific Detail Card Colors */
-.pokemon-detail-card.type-fire {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #ff6b47 100%);
-  color: white;
-}
-.pokemon-detail-card.type-water {
-  background: linear-gradient(135deg, #3498db 0%, #5dade2 50%, #2e86c1 100%);
-  color: white;
-}
-.pokemon-detail-card.type-grass {
-  background: linear-gradient(135deg, #2ecc71 0%, #58d68d 50%, #27ae60 100%);
-  color: white;
-}
-.pokemon-detail-card.type-electric {
-  background: linear-gradient(135deg, #f1c40f 0%, #f7dc6f 50%, #d4ac0d 100%);
-  color: white;
-}
-.pokemon-detail-card.type-psychic {
-  background: linear-gradient(135deg, #e74c3c 0%, #ec7063 50%, #cb4335 100%);
-  color: white;
-}
-.pokemon-detail-card.type-ice {
-  background: linear-gradient(135deg, #85c1e9 0%, #aed6f1 50%, #5dade2 100%);
-  color: white;
-}
-.pokemon-detail-card.type-dragon {
-  background: linear-gradient(135deg, #8e44ad 0%, #a569bd 50%, #7d3c98 100%);
-  color: white;
-}
-.pokemon-detail-card.type-dark {
-  background: linear-gradient(135deg, #34495e 0%, #5d6d7e 50%, #2c3e50 100%);
-  color: white;
-}
-.pokemon-detail-card.type-fighting {
-  background: linear-gradient(135deg, #e67e22 0%, #f0b27a 50%, #d35400 100%);
-  color: white;
-}
-.pokemon-detail-card.type-poison {
-  background: linear-gradient(135deg, #9b59b6 0%, #bb8fce 50%, #8e44ad 100%);
-  color: white;
-}
-.pokemon-detail-card.type-normal {
-  background: linear-gradient(135deg, #a8a878 0%, #c5c5a0 50%, #8a8a5e 100%);
-  color: white;
-}
-.pokemon-detail-card.type-flying {
-  background: linear-gradient(135deg, #a890f0 0%, #c8b5f7 50%, #9373e8 100%);
-  color: white;
-}
-.pokemon-detail-card.type-ground {
-  background: linear-gradient(135deg, #e0c068 0%, #e8d084 50%, #c9a352 100%);
-  color: white;
-}
-.pokemon-detail-card.type-rock {
-  background: linear-gradient(135deg, #b8a038 0%, #c9b65a 50%, #9e8a31 100%);
-  color: white;
-}
-.pokemon-detail-card.type-bug {
-  background: linear-gradient(135deg, #a8b820 0%, #b8c842 50%, #8fa31a 100%);
-  color: white;
-}
-.pokemon-detail-card.type-ghost {
-  background: linear-gradient(135deg, #705898 0%, #8a7aad 50%, #5e4a82 100%);
-  color: white;
-}
-.pokemon-detail-card.type-steel {
-  background: linear-gradient(135deg, #b8b8d0 0%, #d0d0e0 50%, #a0a0b8 100%);
-  color: white;
-}
-.pokemon-detail-card.type-fairy {
-  background: linear-gradient(135deg, #ee99ac 0%, #f4b5c4 50%, #e67e95 100%);
-  color: white;
+/* Type accent colour per Pokemon group (drives the liquid-glass surface) */
+.pokemon-detail-card.type-normal { --type-accent: var(--type-normal); }
+.pokemon-detail-card.type-fire { --type-accent: var(--type-fire); }
+.pokemon-detail-card.type-water { --type-accent: var(--type-water); }
+.pokemon-detail-card.type-electric { --type-accent: var(--type-electric); }
+.pokemon-detail-card.type-grass { --type-accent: var(--type-grass); }
+.pokemon-detail-card.type-ice { --type-accent: var(--type-ice); }
+.pokemon-detail-card.type-fighting { --type-accent: var(--type-fighting); }
+.pokemon-detail-card.type-poison { --type-accent: var(--type-poison); }
+.pokemon-detail-card.type-ground { --type-accent: var(--type-ground); }
+.pokemon-detail-card.type-flying { --type-accent: var(--type-flying); }
+.pokemon-detail-card.type-psychic { --type-accent: var(--type-psychic); }
+.pokemon-detail-card.type-bug { --type-accent: var(--type-bug); }
+.pokemon-detail-card.type-rock { --type-accent: var(--type-rock); }
+.pokemon-detail-card.type-ghost { --type-accent: var(--type-ghost); }
+.pokemon-detail-card.type-dragon { --type-accent: var(--type-dragon); }
+.pokemon-detail-card.type-dark { --type-accent: var(--type-dark); }
+.pokemon-detail-card.type-steel { --type-accent: var(--type-steel); }
+.pokemon-detail-card.type-fairy { --type-accent: var(--type-fairy); }
+
+/* Liquid glass surface built from the type colour: glossy sheen on top,
+   colour body in the middle, deepened bloom bottom-right for depth. */
+.pokemon-detail-card[class*="type-"] {
+  background:
+    /* bright specular highlight, top-left */
+    radial-gradient(55% 38% at 24% 4%, rgba(255, 255, 255, 0.6), transparent 55%),
+    /* diagonal gloss streak for the "liquid" look */
+    linear-gradient(
+      125deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.22) 24%,
+      transparent 38%
+    ),
+    /* top sheen */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.1) 22%,
+      transparent 46%
+    ),
+    /* soft secondary highlight, upper-right */
+    radial-gradient(38% 28% at 80% 16%, rgba(255, 255, 255, 0.2), transparent 60%),
+    /* deepened bloom, bottom */
+    radial-gradient(
+      95% 80% at 85% 102%,
+      color-mix(in srgb, var(--type-accent) 52%, #000) 0%,
+      transparent 60%
+    ),
+    /* colour body */
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--type-accent) 84%, #fff) 0%,
+      var(--type-accent) 46%,
+      color-mix(in srgb, var(--type-accent) 66%, #000) 100%
+    );
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 25px 80px rgba(31, 38, 135, 0.32),
+    inset 0 2px 1px rgba(255, 255, 255, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 -55px 90px rgba(0, 0, 0, 0.18);
 }
 
 /* All type-specific detail card text colors */
@@ -521,20 +511,28 @@
 
 .detail-pokemon-name {
   font-family: var(--font-title);
-  font-size: 2.8rem;
-  font-weight: 600;
+  font-size: 2.6rem;
+  font-weight: 700;
   color: var(--dark);
   margin: 0;
   text-transform: capitalize;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
 }
 
 .detail-pokemon-number {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 2px 14px;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font-family: var(--font-ui);
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   color: var(--primary);
   font-weight: 600;
-  opacity: 0.8;
+  letter-spacing: 0.5px;
 }
 
 /* Detail Image */
@@ -542,9 +540,51 @@
   text-align: center;
   margin-bottom: 2rem;
   position: relative;
+  z-index: 0;
+}
+
+/* Rotating Pokeball line-art behind the sprite (type colour shows through).
+   Fine strokes, large and faint so it reads as a subtle backdrop motif. */
+.detail-image-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0 8px, transparent 9px),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 14px,
+      rgba(255, 255, 255, 0.9) 14px 17px,
+      transparent 18px
+    ),
+    linear-gradient(
+      0deg,
+      transparent calc(50% - 1.5px),
+      rgba(255, 255, 255, 0.9) calc(50% - 1.5px) calc(50% + 1.5px),
+      transparent calc(50% + 1.5px)
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      transparent 0 169px,
+      rgba(255, 255, 255, 0.9) 169px 172px,
+      transparent 173px
+    );
+  opacity: 0.1;
+  animation:
+    rotatePokeball 44s linear infinite,
+    pokeballPulse 13s ease-in-out infinite;
+  will-change: transform, opacity;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .detail-pokemon-image {
+  position: relative;
+  z-index: 1;
   max-width: 100%;
   height: 280px;
   object-fit: contain;
@@ -573,13 +613,19 @@
 }
 
 .detail-type-badge {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 1rem;
-  font-weight: bold;
-  color: white;
+  padding: 7px 18px;
+  border-radius: var(--radius-circle);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  letter-spacing: 1.5px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
