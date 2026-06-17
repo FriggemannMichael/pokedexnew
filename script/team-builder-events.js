@@ -86,6 +86,53 @@
     });
   };
 
+  TeamBuilderUI.prototype.attachActionEvents = function () {
+    if (!this.actions) return;
+    this.actions.addEventListener("click", (event) => {
+      const btn = event.target.closest("button[data-action]");
+      if (!btn || btn.disabled) return;
+      this.runTeamAction(btn.dataset.action);
+    });
+  };
+
+  TeamBuilderUI.prototype.updateActionBar = function () {
+    if (!this.actions || !window.TeamActions) return;
+    const count = this.state.getTeam().length;
+    const state = window.TeamActions.getTeamActionBarState(count);
+    this.actions.classList.toggle("d-none", !state.visible);
+    this.actions.classList.toggle("is-battle-ready", state.battleReady);
+    this.setActionDisabled("analyze", !state.analyzeEnabled);
+    this.setActionDisabled("battle", !state.battleEnabled);
+    this.setActionDisabled("history", !state.historyEnabled);
+  };
+
+  TeamBuilderUI.prototype.setActionDisabled = function (action, disabled) {
+    const btn = this.actions.querySelector(`button[data-action="${action}"]`);
+    if (btn) btn.disabled = disabled;
+  };
+
+  TeamBuilderUI.prototype.runTeamAction = function (action) {
+    if (action === "analyze") return this.openAnalysis();
+    if (action === "battle") return this.startBattle();
+    if (action === "history") return this.openHistory();
+  };
+
+  TeamBuilderUI.prototype.openAnalysis = function () {
+    if (typeof window.openTeamAnalysis === "function") window.openTeamAnalysis();
+  };
+
+  TeamBuilderUI.prototype.startBattle = function () {
+    if (window.teamBattle && typeof window.teamBattle.startChallenge === "function") {
+      window.teamBattle.startChallenge(this.state.getTeam());
+    }
+  };
+
+  TeamBuilderUI.prototype.openHistory = function () {
+    if (window.teamBattle && typeof window.teamBattle.showBattleHistory === "function") {
+      window.teamBattle.showBattleHistory();
+    }
+  };
+
   TeamBuilderUI.prototype.addPokemonById = function (pokemonId) {
     const emptyIndex = this.state.getSlots().findIndex((slot) => !slot);
     if (emptyIndex === -1) {
