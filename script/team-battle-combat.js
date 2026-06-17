@@ -18,6 +18,7 @@ TeamBattleSystem.prototype.startNextBattle = function () {
   const gymPokemon = this.gymTeam[this.currentGymIndex];
   this.pendingAutoContinue = false;
   this.updateStatusIcons();
+  this.updateProgress();
 
   if (!window.battleSimulator) {
     console.error("[TeamBattle] BattleSimulator not found!");
@@ -151,7 +152,7 @@ TeamBattleSystem.prototype.handleBattleEnd = function () {
     const defeated = this.gymTeam[this.currentGymIndex];
     const isStrongest = Number(defeated?.id) === Number(this.strongestGymPokemonId);
     this.requestLeaderDialogue(
-      isStrongest ? "Der Spieler hat gerade dein staerkstes Pokemon besiegt." : "Der Spieler hat gerade eines deiner Pokemon besiegt.",
+      isStrongest ? "Der Spieler hat gerade dein stärkstes Pokemon besiegt." : "Der Spieler hat gerade eines deiner Pokemon besiegt.",
     );
     this.gymTeam[this.currentGymIndex].currentHp = 0;
     this.currentGymIndex++;

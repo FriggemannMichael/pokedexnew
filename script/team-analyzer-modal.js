@@ -35,7 +35,7 @@
 
   Core.prototype.createTeamAnalysisModalHTML = function () {
     return `
-  <div id="teamAnalysisModal" class="modal fade" tabindex="-1" aria-labelledby="teamAnalysisModalLabel" aria-describedby="teamAnalysisContent">
+  <div id="teamAnalysisModal" class="modal fade glass-modal" tabindex="-1" aria-labelledby="teamAnalysisModalLabel" aria-describedby="teamAnalysisContent">
     <div class="modal-dialog modal-xl">
       <div class="modal-content">
         <div class="modal-header">
@@ -132,7 +132,7 @@
           /\b(vervollstaend|vervollst[aä]nd|unvollst[aä]nd|zu wenig|fehlen|fehlt|nur\s+[0-5]\b|nur\s+(eins|zwei|drei|vier|fuenf|fünf)\b|weniger als 6|nicht komplett|aus\s+(eins|zwei|drei|vier|fuenf|fünf)\s+mitglied)/i.test(
             String(advice || ""),
           )
-            ? "Dein Team ist vollstaendig besetzt. Die statische Analyse oben zeigt dir die wichtigsten Staerken und Schwaechen."
+            ? "Dein Team ist vollständig besetzt. Die statische Analyse oben zeigt dir die wichtigsten Stärken und Schwächen."
             : advice;
         container.innerHTML = `
           <div class="ai-advisor-result">
@@ -148,7 +148,7 @@
     container.innerHTML = `
       <div class="ai-advisor-result">
         <div class="ai-advisor-provider">Professor Eich (lokal)</div>
-        <p class="ai-advisor-text">Keine KI-Verbindung. Die statische Analyse oben zeigt deine Team-Schwaechen und Staerken.</p>
+        <p class="ai-advisor-text">Keine KI-Verbindung. Die statische Analyse oben zeigt deine Team-Schwächen und Stärken.</p>
       </div>`;
   };
 
@@ -195,7 +195,7 @@
     }
 
     if (suggestedTypes.length) {
-      html += `<div class="ai-advisor-section"><strong>Offensive Luecken:</strong> <span class="ai-advisor-types">${suggestedTypes.map(t => `<span class="type-badge type-${String(t).toLowerCase()}">${t}</span>`).join(' ')}</span></div>`;
+      html += `<div class="ai-advisor-section"><strong>Offensive Lücken:</strong> <span class="ai-advisor-types">${suggestedTypes.map(t => `<span class="type-badge type-${String(t).toLowerCase()}">${t}</span>`).join(' ')}</span></div>`;
     }
 
     if (redundancies.length) {

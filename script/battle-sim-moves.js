@@ -69,6 +69,8 @@ BattleSimulator.prototype.startBattle = async function (pokemon1, pokemon2) {
   this.roundCounter = 0;
   this.isAutoPlaying = false;
   this.pendingCommentaryRequests = 0;
+  const accentType = (pokemon1.types && pokemon1.types[0]) || "normal";
+  if (this.modalElement) this.modalElement.style.setProperty("--type-accent", `var(--type-${accentType})`);
   this.renderBattle();
   this.battleModal.show();
 };

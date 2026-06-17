@@ -13,16 +13,34 @@ TeamOffcanvas.prototype.setupDynamicModalHeader = function () {
     header.animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: 480, easing: 'ease' });
   };
   document.addEventListener('show.bs.modal', (ev) => {
-    applyGradient(ev.target.querySelector('.modal-header'));
+    const modal = ev.target;
+    // Glass modals get the unified liquid-glass surface (no random battle gradient).
+    if (modal.classList.contains('glass-modal')) {
+      // Compare and the 1v1 simulator set their own --type-accent (from the
+      // Pokémon shown), so don't override them with the team's type.
+      if (!modal.classList.contains('compare-modal') && !modal.classList.contains('battle-modal')) {
+        this.applyGlassModalTheme(modal);
+      }
+      return;
+    }
+    if (modal.classList.contains('compare-modal')) return;
+    applyGradient(modal.querySelector('.modal-header'));
   });
   const existing = document.getElementById('teamModal');
-  if (existing?.classList.contains('show')) applyGradient(existing.querySelector('.modal-header'));
+  if (existing?.classList.contains('show')) this.applyGlassModalTheme(existing);
   if (this.offcanvasElement) {
     this.offcanvasElement.addEventListener('shown.bs.offcanvas', () => {
       const h = this.offcanvasElement.querySelector('.modal-header');
       if (h) applyGradient(h);
     });
   }
+};
+
+TeamOffcanvas.prototype.applyGlassModalTheme = function (modal) {
+  const team = (this.getTeam && this.getTeam()) || [];
+  const primary = team.find((p) => p.types && p.types[0]);
+  const type = primary ? primary.types[0] : null;
+  modal.style.setProperty('--type-accent', type ? `var(--type-${type})` : 'var(--secondary)');
 };
 
 TeamOffcanvas.prototype.renderMiniCard = function (pokemon) {

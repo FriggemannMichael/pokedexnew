@@ -15,6 +15,7 @@ PokemonCompare.prototype.showComparison = async function () {
     { ...pokemon2, details: details2 }
   );
 
+  this.applyMatchupTheme(pokemon1, pokemon2);
   this.compareModal.show();
 };
 
@@ -22,30 +23,77 @@ PokemonCompare.prototype.generateComparisonHTML = function (pokemon1, pokemon2) 
   const stats1 = this.extractStats(pokemon1.details);
   const stats2 = this.extractStats(pokemon2.details);
   const effectiveness = this.calculateTypeEffectiveness(pokemon1, pokemon2);
+  const summary = this.buildMatchupSummary(pokemon1, pokemon2, stats1, stats2, effectiveness);
+  const verdict = this.matchupVerdict(summary);
+  return this.assembleComparisonHTML(pokemon1, pokemon2, stats1, stats2, effectiveness, summary, verdict);
+};
 
+PokemonCompare.prototype.assembleComparisonHTML = function (p1, p2, stats1, stats2, eff, summary, verdict) {
   return `
     <div class="compare-container">
-      <div class="pokemon-compare-card" style="--type-color-1: var(--type-${pokemon1.types[0]}); --type-color-2: var(--type-${pokemon1.types[1] || pokemon1.types[0]});">
-        ${this.generatePokemonCardHTML(pokemon1, stats1)}
-      </div>
-      <div class="vs-divider">
-        <div class="vs-circle">VS</div>
-      </div>
-      <div class="pokemon-compare-card" style="--type-color-1: var(--type-${pokemon2.types[0]}); --type-color-2: var(--type-${pokemon2.types[1] || pokemon2.types[0]});">
-        ${this.generatePokemonCardHTML(pokemon2, stats2)}
-      </div>
+      ${this.compareColumnHTML(p1, stats1)}
+      ${this.generateMatchupCoreHTML(verdict)}
+      ${this.compareColumnHTML(p2, stats2)}
     </div>
-    <div class="compare-stats-section">
-      <h3 class="compare-section-title">Base Stats Comparison</h3>
+    ${this.generateSummaryHTML(summary)}
+    <section class="compare-panel">
+      <h3 class="compare-section-title">Base Stats</h3>
       ${this.generateStatsComparisonHTML(stats1, stats2)}
-    </div>
-    <div class="type-effectiveness-section">
+    </section>
+    <section class="compare-panel">
       <h3 class="compare-section-title">Type Effectiveness</h3>
-      ${this.generateEffectivenessHTML(pokemon1, pokemon2, effectiveness)}
+      ${this.generateEffectivenessHTML(p1, p2, eff)}
+    </section>
+    <div class="compare-actions">
+      <button class="battle-action-btn" onclick="window.pokemonCompare.triggerBattle()">
+        <span class="battle-action-icon" aria-hidden="true">⚔</span>
+        Start Battle Simulation
+      </button>
     </div>
-    <button class="battle-trigger-btn" onclick="window.pokemonCompare.triggerBattle()">
-      ⚔️ Start Battle Simulation
-    </button>
+  `;
+};
+
+PokemonCompare.prototype.compareColumnHTML = function (pokemon, stats) {
+  const accent = `--type-accent: var(--type-${pokemon.types[0]}); --type-color-1: var(--type-${pokemon.types[0]}); --type-color-2: var(--type-${pokemon.types[1] || pokemon.types[0]});`;
+  return `
+    <div class="pokemon-compare-card lg-type-surface" style="${accent}">
+      ${this.generatePokemonCardHTML(pokemon, stats)}
+    </div>
+  `;
+};
+
+PokemonCompare.prototype.generateMatchupCoreHTML = function (verdict) {
+  return `
+    <div class="matchup-core">
+      <span class="matchup-link"></span>
+      <div class="matchup-chip tone-${verdict.tone}">
+        <span class="matchup-chip-label">Matchup</span>
+        <span class="matchup-chip-value">${verdict.text}</span>
+      </div>
+      <span class="matchup-link"></span>
+    </div>
+  `;
+};
+
+PokemonCompare.prototype.generateSummaryHTML = function (summary) {
+  const statDetail = `${summary.total1} vs ${summary.total2} base total`;
+  return `
+    <div class="matchup-readout">
+      ${this.summaryItemHTML('Stat Edge', summary.statEdge, statDetail)}
+      ${this.summaryItemHTML('Type Edge', summary.typeEdge, 'Offensive advantage')}
+    </div>
+  `;
+};
+
+PokemonCompare.prototype.summaryItemHTML = function (label, edge, detail) {
+  const value = edge.winner ? edge.winner.name : 'Even';
+  const stateClass = edge.winner ? 'has-edge' : 'is-even';
+  return `
+    <div class="readout-item ${stateClass}">
+      <span class="readout-label">${label}</span>
+      <span class="readout-value">${value}</span>
+      <span class="readout-detail">${detail}</span>
+    </div>
   `;
 };
 
@@ -60,6 +108,7 @@ PokemonCompare.prototype.generatePokemonCardHTML = function (pokemon, stats) {
       <h3 class="compare-pokemon-name">${pokemon.name}</h3>
       <p class="compare-pokemon-number">#${pokemon.id.toString().padStart(3, '0')}</p>
       <div class="compare-types">${typesBadges}</div>
+      <div class="compare-stat-total"><span>Total</span><strong>${this.sumStats(stats)}</strong></div>
     </div>
   `;
 };
@@ -128,9 +177,9 @@ PokemonCompare.prototype.showSelectionIndicator = function () {
   indicator.id = 'compareSelectionIndicator';
   indicator.className = 'compare-select-mode';
   indicator.innerHTML = `
-    <span>Select Pokemon to Compare</span>
+    <span>Select Pokémon to Compare</span>
     <span class="compare-count">0/${this.maxSelection}</span>
-    <button onclick="window.pokemonCompare.exitSelectionMode()" style="background: rgba(255,255,255,0.3); border: none; padding: 0.3rem 0.8rem; border-radius: 20px; color: white; cursor: pointer;">Cancel</button>
+    <button class="compare-cancel-btn" onclick="window.pokemonCompare.exitSelectionMode()">Cancel</button>
   `;
   document.body.appendChild(indicator);
 };

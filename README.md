@@ -1,79 +1,204 @@
-# Pokedex New
+# Pokédex New
 
-Ein interaktiver Pokedex mit Team-Builder, Team-Analyse, Pokemon-Vergleich, Battle-Simulator, Gym-Challenge und optionaler KI-Unterstuetzung ueber einen lokalen Express-Server.
+![Pokémon](https://img.shields.io/badge/Pok%C3%A9mon-Pok%C3%A9dex-ffcb05?style=for-the-badge&logo=pokemon&logoColor=2a75bb)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=fff)
+![Status](https://img.shields.io/badge/Status-Lernprojekt-4c8bf5?style=for-the-badge)
 
-## Projektstatus
+Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle-Simulator, Gym-Challenge und optionaler KI-Unterstützung über einen lokalen Express-Proxy.
 
-Stand: 19.03.2026
+---
 
-Die Anwendung laeuft als statische Frontend-App mit lokalem Node-/Express-Server. Der Server liefert die App aus und stellt einen AI-Proxy fuer Groq, Mistral und Gemini bereit. Ein grosser Teil des Zustands wird im Browser per `localStorage` gespeichert.
+## Inhaltsverzeichnis
 
-## Kernfunktionen
+- [Über das Projekt](#über-das-projekt)
+- [Highlights](#highlights)
+- [Features](#features)
+- [Demo-Vorschau](#demo-vorschau)
+- [Screenshots](#screenshots)
+- [Technologien](#technologien)
+- [Installation](#installation)
+- [Konfiguration](#konfiguration)
+- [Projektstruktur](#projektstruktur)
+- [Lokale Speicherung](#lokale-speicherung)
+- [API und AI-Proxy](#api-und-ai-proxy)
+- [Bekannte Einschränkungen](#bekannte-einschränkungen)
+- [Roadmap](#roadmap)
+- [Weiterführende Doku](#weiterführende-doku)
+- [Lizenz](#lizenz)
 
-- Pokedex mit Suche, Typ-Filtern, Pagination und `Load More`
-- Detailansichten fuer einzelne Pokemon
-- Favoriten und Ratings mit lokaler Persistenz
-- Power-/Strength-Anzeigen und GO-inspirierte Zusatzfunktionen
-- Team-Offcanvas und `Active Team`-Builder mit 6 Slots
-- Drag-and-Drop fuer Team-Zusammenstellung und Slot-Replacement
-- Team-Modal mit Export-, Share- und Preset-Funktionen
-- Team-Analyse mit statischen Checks und optionaler KI-Auswertung
-- Vergleich von zwei Pokemon im Modal
-- 1v1-Battle-Simulator mit Battle-Log und Export
-- Gym-Challenge gegen generierte Gegnerteams mit Kampfhistorie
-- AI-Dialoge und Strategiehilfen, wenn API-Keys oder Proxy verfuegbar sind
+---
 
-## Feature-Details
+## Über das Projekt
 
-### Pokedex und UI
+`Pokedex New` ist eine statische Frontend-App mit lokalem Node-/Express-Server. Das Frontend lädt Pokémon-Daten aus der PokéAPI, rendert Karten und Detailansichten im Browser und speichert benutzerbezogene Daten wie Team, Favoriten, Ratings und Battle-Historie in `localStorage`.
 
-- Pokemon-Daten werden aus der PokeAPI geladen und fuer Karten- und Detailansichten aufbereitet
-- Suche mit Dropdown-Vorschlaegen
-- Filter nach Typ, Favoritenstatus und Bewertungsstufe
-- Responsive Navigation und mobiles Filter-Menue
+Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bereit. Dadurch können Groq, Mistral und Gemini genutzt werden, ohne API-Keys direkt im Frontend-Code zu verankern.
+
+**Projektstatus:** Stand 17.06.2026
+
+## Highlights
+
+| Bereich | Beschreibung |
+| --- | --- |
+| Pokédex | Suche, Typ-Filter, Pagination, Load-More und Detailansichten |
+| Team-Builder | Aktives 6er-Team mit Drag-and-Drop, Slot-Replacement und Offcanvas |
+| Team-Analyse | Statische Checks für Coverage, Schwächen und Team-Zusammensetzung |
+| KI-Unterstützung | Optionale Teamberatung und Strategiehilfen über lokalen Proxy |
+| Battle-System | 1v1-Battle-Simulator, Battle-Log, Export und Gym-Challenge |
+| Persistenz | Favoriten, Ratings, Notizen, Presets und Battle-Historie im Browser |
+
+## Features
+
+### Pokédex und Oberfläche
+
+| Feature | Status |
+| --- | --- |
+| Pokémon-Daten aus der PokéAPI laden | Fertig |
+| Suche mit Dropdown-Vorschlägen | Fertig |
+| Filter nach Typ, Favoritenstatus und Bewertung | Fertig |
+| Karten- und Detailansichten | Fertig |
+| Responsive Navigation und mobiles Filter-Menü | Fertig |
+| Power-/Strength-Anzeigen und GO-inspirierte Zusatzfunktionen | Fertig |
 
 ### Team-System
 
-- Team-Offcanvas mit Mini-Cards und Team-Counter
-- Separater Team-Builder mit sechs festen Slots
-- Synchronisation zwischen Team-Builder, Offcanvas und `localStorage`
-- Live-Hinweise und Statusmeldungen fuer Team-Aenderungen
+| Feature | Status |
+| --- | --- |
+| Team-Offcanvas mit Mini-Cards und Counter | Fertig |
+| Active-Team-Builder mit sechs festen Slots | Fertig |
+| Drag-and-Drop für Team-Zusammenstellung | Fertig |
+| Slot-Replacement bei vollem Team | Fertig |
+| Synchronisation zwischen Builder, Offcanvas und `localStorage` | Fertig |
+| Statusmeldungen für Team-Änderungen | Fertig |
 
-### Team-Modal
+### Team-Modal und Presets
 
-- Uebersicht ueber aktuelles Team
-- Entfernen einzelner Pokemon
-- Team mischen
-- Nicht-Favoriten gesammelt entfernen
-- Team als JSON exportieren
-- Team ueber Share API oder Clipboard teilen
-- Team-Presets speichern
+| Feature | Status |
+| --- | --- |
+| Aktuelles Team anzeigen | Fertig |
+| Einzelne Pokémon entfernen | Fertig |
+| Team mischen | Fertig |
+| Nicht-Favoriten gesammelt entfernen | Fertig |
+| Team als JSON exportieren | Fertig |
+| Team über Share API oder Clipboard teilen | Fertig |
+| Team-Presets speichern | Teilweise |
 
-### Analyse und KI
+### Analyse, KI und Battle
 
-- Statische Team-Analyse fuer Coverage, Schwaechen und Zusammensetzung
-- KI-Teamberatung im Team-Builder
-- KI-gestuetzte Team-Analyse mit Provider-Fallback
-- Optionaler lokaler Proxy statt direktem Frontend-API-Zugriff
+| Feature | Status |
+| --- | --- |
+| Statische Team-Analyse | Fertig |
+| KI-Teamberatung im Team-Builder | Fertig |
+| KI-gestützte Analyse mit Provider-Fallback | Fertig |
+| Pokémon-Vergleich im Modal | Fertig |
+| 1v1-Battle-Simulator mit Rundensystem | Fertig |
+| Auto-Play und Battle-Log-Export | Fertig |
+| Gym-Challenge gegen generierte Gegnerteams | Fertig |
+| Lokale Battle-Statistiken mit Win-Rate, Damage und MVP | Fertig |
 
-### Battle
+## Demo-Vorschau
 
-- Pokemon-Vergleich mit direktem Start in den Battle-Simulator
-- Battle-Simulator mit Rundensystem, Auto-Play und Log-Export
-- Gym-Challenge mit Gegnerteam, Strategieauswertung und Kampfhistorie
-- Lokale Battle-Statistiken mit Win-Rate, Damage und MVP-Auswertung
+### Hauptworkflow
 
-## Lokale Speicherung
+```mermaid
+flowchart LR
+  A[Pokédex durchsuchen] --> B[Pokémon öffnen]
+  B --> C[Bewerten oder favorisieren]
+  B --> D[Zum Team hinzufügen]
+  D --> E[Team analysieren]
+  E --> F[Battle simulieren]
+  F --> G[Gym-Challenge spielen]
+```
 
-Im Browser werden unter anderem folgende Daten gespeichert:
+### Desktop-Skizze
 
-- `pokemonTeam`
-- `pokemonFavorites`
-- `pokemonRatings`
-- `pokemonNotes`
-- `pokemonTeamPresets`
-- `pokemonBattleHistory`
-- lokale AI-Key-Eintraege fuer Frontend-Nutzung ohne Proxy
+```text
+┌──────────────────────────────────────────────────────────────┐
+│                         POKÉDEX NEW                          │
+│        Suche, Typ-Filter, Favoriten, Ratings, Power           │
+├──────────────────────────────────────────────────────────────┤
+│ [Search Pokémon...] [Type] [Favorites] [Rating] [Load More]   │
+│                                                              │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
+│  │ #001     │ │ #004     │ │ #007     │ │ #025     │          │
+│  │ Bulbasaur│ │Charmander│ │ Squirtle │ │ Pikachu  │          │
+│  │ + Team   │ │ + Team   │ │ Compare  │ │ Details  │          │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+├──────────────────────────────────────────────────────────────┤
+│ Team-Builder │ Analyse │ Battle-Simulator │ Gym-Challenge     │
+└──────────────────────────────────────────────────────────────┘
+```
+
+## Screenshots
+
+Die Screenshots werden mit Playwright aus der laufenden App erzeugt:
+
+```powershell
+npm run screenshots
+```
+
+| Ansicht | Vorschau |
+| --- | --- |
+| Pokédex Desktop | ![Pokédex Desktop](./assets/screenshots/pokedex-desktop.png) |
+| Pokémon Detail | ![Pokémon Detail](./assets/screenshots/pokemon-detail.png) |
+| Team-Builder | ![Team-Builder](./assets/screenshots/team-builder.png) |
+| Gym-Challenge | ![Gym-Challenge](./assets/screenshots/gym-challenge.png) |
+| Mobile Ansicht | ![Mobile Ansicht](./assets/screenshots/mobile-view.png) |
+
+## Technologien
+
+| Technologie | Verwendung |
+| --- | --- |
+| HTML5 | Grundstruktur der App |
+| CSS3 | Layout, Responsive Design, Karten, Modal- und Battle-UI |
+| JavaScript ES6+ | Frontend-Logik, Module, State, DOM-Updates |
+| Node.js | Lokale Laufzeit für den Server |
+| Express | Statisches Hosting und AI-Proxy |
+| PokeAPI | Pokémon-Daten, Typen, Stats und Sprites |
+| Groq / Mistral / Gemini | Optionale KI-Provider für Analyse und Strategie |
+
+## Installation
+
+### Voraussetzungen
+
+- Node.js
+- npm
+- Optional: API-Key für mindestens einen KI-Provider
+
+### Setup
+
+```bash
+npm install
+```
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```bash
+npm start
+```
+
+Die App läuft danach standardmäßig unter:
+
+```text
+http://localhost:3000
+```
+
+## Konfiguration
+
+Die Datei `.env.example` enthält die verfügbaren Server-Optionen:
+
+```env
+GROQ_API_KEY=your-groq-api-key
+GROQ_MODEL=llama-3.1-8b-instant
+MISTRAL_API_KEY=your-mistral-api-key
+GEMINI_API_KEY=your-gemini-api-key
+PORT=3000
+```
+
+Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen über den lokalen Proxy genutzt werden sollen. Die reine Pokédex- und Team-Funktionalität läuft ohne AI-Key.
 
 ## Projektstruktur
 
@@ -82,65 +207,79 @@ Im Browser werden unter anderem folgende Daten gespeichert:
 | `index.html` | Grundlayout, Filter, Offcanvas, Team-Modal, Team-Builder |
 | `main.js` | Bootstrap und Initialisierung der Frontend-Module |
 | `server.js` | Express-Server und AI-Proxy |
-| `script/pokemon-*` | Pokedex, Karten, Detailansichten, GO-Features |
-| `script/team-*` | Team-Builder, Team-Modal, Team-Analyse, Gym-Battle |
+| `assets/css/*` | Modulare Styles für Pokédex, Karten, Team, Analyse und Battle |
+| `assets/icon/*` | SVG-Icons für Pokémon-Typen |
+| `assets/img/9.png` | Favicon / Pokéball-Asset |
+| `script/pokemon-*` | Pokédex, Karten, Detailansichten und GO-Features |
+| `script/team-*` | Team-Builder, Team-Modal, Team-Analyse und Gym-Battle |
 | `script/battle-*` | Battle-Simulator und Battle-Historie |
 | `script/services/*` | API-, Storage-, State- und Service-Schicht |
-| `js/ai-service.js` | Frontend-AI-Client fuer Kampfkommentare und Dialoge |
+| `js/ai-service.js` | Frontend-AI-Client für Kampfkommentare und Dialoge |
 
-## Installation
+## Lokale Speicherung
 
-1. Abhaengigkeiten installieren:
-   ```bash
-   npm install
-   ```
-2. `.env` auf Basis von `.env.example` anlegen
-3. Optional mindestens einen AI-Key hinterlegen
-4. Server starten:
-   ```bash
-   npm start
-   ```
-5. Anwendung im Browser unter `http://localhost:3000` oeffnen
+Die App speichert nutzerbezogene Daten im Browser:
 
-## .env-Beispiel
+| Key | Inhalt |
+| --- | --- |
+| `pokemonTeam` | Aktuelles Team |
+| `pokemonFavorites` | Favorisierte Pokémon |
+| `pokemonRatings` | Lokale Bewertungen |
+| `pokemonNotes` | Lokale Notizen |
+| `pokemonTeamPresets` | Gespeicherte Team-Presets |
+| `pokemonBattleHistory` | Verlauf und Statistiken der Kämpfe |
+| lokale AI-Key-Einträge | Optionale Frontend-Nutzung ohne Proxy |
 
-```env
-GROQ_API_KEY=your-groq-api-key
-GROQ_MODEL=llama-3.1-8b-instant
-MISTRAL_API_KEY=your-mistral-api-key
-PORT=3000
+## API und AI-Proxy
+
+### PokéAPI
+
+Die App nutzt die öffentliche PokéAPI:
+
+```text
+https://pokeapi.co/api/v2/
 ```
 
-Hinweis: Der Server unterstuetzt im Code neben Groq und Mistral auch Gemini ueber den Proxy. In `.env.example` ist dafuer aktuell kein Beispielwert hinterlegt.
+Typische Endpoints:
 
-## Scripts
-
-```bash
-npm start
+```text
+GET /pokemon?limit=20&offset=0
+GET /pokemon/{id-or-name}
+GET /type/{type-name}
 ```
 
-Startet den lokalen Express-Server und liefert die App unter `http://localhost:3000` aus.
+### Lokaler AI-Proxy
 
-## Technologien
+Der Express-Server stellt AI-Funktionen für Team-Analyse, Strategieauswertung und Dialoge bereit. Unterstützte Provider:
 
-- HTML5
-- CSS3
-- JavaScript (ES6+)
-- Node.js
-- Express
-- PokeAPI
-- Groq / Mistral / Gemini ueber lokalen Proxy
+- Groq
+- Mistral
+- Gemini
 
-## Bekannte Einschraenkungen
+Der Proxy ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben.
+
+## Bekannte Einschränkungen
 
 - Notizen sind im Datenmodell und in Teilen der Logik vorhanden, aber nicht als voll ausgebaute Hauptfunktion sichtbar.
-- Team-Presets koennen gespeichert werden, es gibt aber keine vollstaendige Preset-Verwaltung mit Laden und Loeschen.
-- Das Projekt enthaelt aeltere und neuere Modulbereiche parallel; `main.js` initialisiert den aktuell genutzten Satz.
+- Team-Presets können gespeichert werden, es gibt aber noch keine vollständige Preset-Verwaltung mit Laden und Löschen.
+- Das Projekt enthält ältere und neuere Modulbereiche parallel. `main.js` initialisiert den aktuell genutzten Satz.
+- Es gibt aktuell nur ein Start-Script und keine automatisierte Test-Suite im `package.json`.
 
-## Weiterfuehrende Doku
+## Roadmap
 
-- Ausfuehrliche Feature-Uebersicht: [FEATURES.md](./FEATURES.md)
+| Status | Thema |
+| --- | --- |
+| Geplant | Preset-Verwaltung mit Laden, Umbenennen und Löschen |
+| Geplant | Sichtbare Notizfunktion in Detailansichten |
+| Fertig | Automatisierte README-Screenshots mit Playwright |
+| Geplant | Automatisierte Tests für Team-State, Storage und Battle-Logik |
+| Optional | Deployment-Konzept für statisches Frontend plus AI-Proxy |
+
+## Weiterführende Doku
+
+- [FEATURES.md](./FEATURES.md) - ausführliche Feature-Übersicht
+- [.env.example](./.env.example) - Beispielkonfiguration für den lokalen Server
 
 ## Lizenz
 
-Das Projekt ist zu Lernzwecken entstanden.
+Das Projekt ist zu Lernzwecken entstanden. Pokémon und zugehörige Marken gehören Nintendo, Game Freak und The Pokémon Company. Die Pokémon-Daten werden über die PokéAPI bezogen.

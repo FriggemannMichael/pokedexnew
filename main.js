@@ -1,5 +1,20 @@
 import { ApiService } from "./script/services/ApiService.js";
 
+function initializeAppIntro() {
+  const intro = document.getElementById("appIntro");
+  if (!intro) return;
+
+  const removeIntro = () => intro.remove();
+  const dismissIntro = () => {
+    intro.classList.add("is-leaving");
+    window.setTimeout(removeIntro, 560);
+  };
+
+  window.setTimeout(dismissIntro, 6600);
+}
+
+initializeAppIntro();
+
 window.POKEMON_API_CONFIG = {
   baseUrl: "https://pokeapi.co/api/v2/pokemon",
   pokemonPerPage: 20,
@@ -15,10 +30,15 @@ window.fetchPokemonData = async (offset, limit) => {
     const result = await window.apiService.fetchPokemonList(offset, limit);
     return result.pokemon;
   } catch (error) {
-    console.error("Fehler in fetchPokemonData Brücke:", error);
+    AppError.log(AppError.CATEGORY.API, "fetchPokemonData Brücke Fehler", error);
     return [];
   }
 };
+
+async function fetchSinglePokemon(url) {
+  const data = await window.apiService.fetch(url);
+  return window.apiService.transformPokemonData(data);
+}
 
 window.fetchPokemonByTypeData = async (type) => {
   try {
@@ -26,16 +46,9 @@ window.fetchPokemonByTypeData = async (type) => {
     const pokemonUrls = typeData.pokemon
       .slice(0, window.POKEMON_API_CONFIG.pokemonPerPage)
       .map((p) => p.pokemon.url);
-
-    return await Promise.all(
-      pokemonUrls.map((url) =>
-        window.apiService.fetch(url).then((data) => {
-          return window.apiService.transformPokemonData(data);
-        }),
-      ),
-    );
+    return await Promise.all(pokemonUrls.map(fetchSinglePokemon));
   } catch (error) {
-    console.error(`Fehler in fetchPokemonByTypeData (${type}):`, error);
+    AppError.log(AppError.CATEGORY.API, `fetchPokemonByTypeData (${type}) Fehler`, error);
     return [];
   }
 };
@@ -69,7 +82,7 @@ function loadScript(path) {
       resolve();
     };
     script.onerror = (error) => {
-      console.error(`✗ Failed to load script: ${path}`, error);
+      AppError.log(AppError.CATEGORY.APP, `Script laden fehlgeschlagen: ${path}`, error);
       reject(new Error(`Failed to load ${path}`));
     };
     document.head.appendChild(script);
@@ -83,29 +96,35 @@ function isAlreadyLoaded(path) {
 function createScriptElement(path) {
   const script = document.createElement("script");
   script.src = path;
-  if (path.includes("ai-service.js")) {
-    script.type = "module";
-  }
   return script;
+}
+
+function runMainFunction() {
+  if (typeof initializeApp === "function") return initializeApp();
+  if (typeof loadPokemon === "function") return loadPokemon();
+  console.error("No main pokemon function found");
+  showError();
 }
 
 function startApp() {
   setTimeout(() => {
     try {
-      if (typeof initializeApp === "function") {
-        initializeApp();
-      } else if (typeof loadPokemon === "function") {
-        loadPokemon();
-      } else {
-        console.error("No main pokemon function found");
-        showError();
-      }
+      runMainFunction();
     } catch (error) {
-      console.error("Error starting app:", error);
+      AppError.log(AppError.CATEGORY.APP, "App-Start fehlgeschlagen", error);
       showError();
     }
     initializeComponents();
   }, 300);
+}
+
+function initComponent(comp) {
+  if (comp.coreKey && !window[comp.winKey] && window[comp.coreKey]) {
+    window[comp.winKey] = new window[comp.coreKey]();
+  }
+  if (window[comp.winKey] && typeof window[comp.winKey].init === "function") {
+    window[comp.winKey].init();
+  }
 }
 
 function initializeComponents() {
@@ -117,21 +136,9 @@ function initializeComponents() {
     { winKey: "battleSimulator" },
     { winKey: "teamBattle" },
   ];
-
   components.forEach((comp) => {
-    try {
-      if (comp.coreKey && !window[comp.winKey] && window[comp.coreKey]) {
-        window[comp.winKey] = new window[comp.coreKey]();
-      }
-      if (
-        window[comp.winKey] &&
-        typeof window[comp.winKey].init === "function"
-      ) {
-        window[comp.winKey].init();
-      }
-    } catch (e) {
-      console.warn(`Could not init component: ${comp.winKey}`, e);
-    }
+    try { initComponent(comp); }
+    catch (e) { console.warn(`Could not init component: ${comp.winKey}`, e); }
   });
 }
 
@@ -143,21 +150,33 @@ function showError() {
     : "<p>App Loading Failed. Check console.</p>";
 }
 
-function startPokemonApp() {
-  const scripts = [
+function getUtilScripts() {
+  return [
+    "./script/utils/error-handler.js",
     "./script/utils/fetch-retry.js",
     "./script/utils/type-constants.js",
     "./script/utils/modal-factory.js",
     "./script/utils/ui-helpers.js",
+    "./script/utils/team-actions.js",
     "./script/templates/error-template.js",
     "./script/dom-cache.js",
     "./script/template.js",
+  ];
+}
+
+function getPokemonScripts() {
+  return [
     "./script/pokemon-core.js",
     "./script/pokemon-detail.js",
     "./script/pokemon-modal.js",
     "./script/pokemon-ui.js",
     "./script/navigation.js",
     "./script/search.js",
+  ];
+}
+
+function getTeamCoreScripts() {
+  return [
     "./script/team-offcanvas-core.js",
     "./script/team-offcanvas-ui.js",
     "./script/drag-drop-enhanced.js",
@@ -165,27 +184,52 @@ function startPokemonApp() {
     "./script/team-builder.js",
     "./script/team-builder-ui.js",
     "./script/team-builder-events.js",
+  ];
+}
+
+function getPromptScripts() {
+  return [
     "./script/prompts/team-analysis-prompt.js",
     "./script/prompts/team-advice-prompt.js",
     "./script/prompts/battle-strategy-prompt.js",
     "./script/prompts/coach-prompt.js",
     "./script/team-ai-service.js",
+  ];
+}
+
+function getTeamModalScripts() {
+  return [
     "./script/team-modal-core.js",
     "./script/team-modal-render.js",
     "./script/team-modal-actions.js",
     "./script/team-modal-events.js",
+  ];
+}
+
+function getAnalyzerScripts() {
+  return [
     "./script/mypokedex-render.js",
     "./script/mypokedex-section.js",
     "./script/team-analyzer-core.js",
     "./script/team-analyzer-logic.js",
     "./script/team-analyzer-modal.js",
     "./script/team-analyzer-render.js",
+  ];
+}
+
+function getPokemonGoScripts() {
+  return [
     "./script/pokemon-go-core.js",
     "./script/pokemon-go-power.js",
     "./script/pokemon-go-dom.js",
     "./script/pokemon-go-favorites.js",
     "./script/pokemon-go-filters.js",
     "./script/pokemon-go-observer.js",
+  ];
+}
+
+function getBattleScripts() {
+  return [
     "./script/pokemon-compare.js",
     "./script/pokemon-compare-ui.js",
     "./script/battle-history.js",
@@ -196,9 +240,24 @@ function startPokemonApp() {
     "./script/team-battle-ui.js",
     "./script/team-battle-combat.js",
   ];
+}
 
-  loadAllScripts(scripts).catch((error) => {
-    console.error("Critical: Script loading failed:", error);
+function getAllScripts() {
+  return [
+    ...getUtilScripts(),
+    ...getPokemonScripts(),
+    ...getTeamCoreScripts(),
+    ...getPromptScripts(),
+    ...getTeamModalScripts(),
+    ...getAnalyzerScripts(),
+    ...getPokemonGoScripts(),
+    ...getBattleScripts(),
+  ];
+}
+
+function startPokemonApp() {
+  loadAllScripts(getAllScripts()).catch((error) => {
+    AppError.log(AppError.CATEGORY.APP, "Kritisch: Script-Laden fehlgeschlagen", error);
     showError();
   });
 }

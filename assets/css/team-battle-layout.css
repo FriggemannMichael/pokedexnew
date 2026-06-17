@@ -199,11 +199,6 @@
   position: relative;
 }
 
-.vs-icon {
-  font-size: 3rem;
-  animation: rotatePokeball 5s linear infinite;
-}
-
 .team-stats-comparison {
   background: white;
   border-radius: var(--radius-md);
@@ -256,6 +251,8 @@
 /* ===== GYM LEADER DIALOG ===== */
 .gym-leader-dialog-card {
   width: 230px;
+  align-self: center;
+  margin-inline: auto;
   padding: 0.75rem 0.85rem;
   border-radius: var(--radius-md);
   border: 1px solid rgba(78, 205, 196, 0.36);
@@ -266,6 +263,7 @@
     rgba(255, 255, 255, 0.92) 100%
   );
   box-shadow: var(--shadow-sm);
+  text-align: center;
 }
 
 .gym-leader-dialog-card.is-thinking {
@@ -275,8 +273,14 @@
 .gym-leader-dialog-head {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.6rem;
   margin-bottom: 0.35rem;
+}
+
+.gym-leader-head-text {
+  align-items: center;
+  text-align: center;
 }
 
 .gym-leader-name {
@@ -302,6 +306,7 @@
   font-weight: 600;
   color: #124469;
   line-height: 1.35;
+  text-align: center;
 }
 
 @keyframes gymLeaderThink {
@@ -368,4 +373,3 @@
 .start-battle-btn:active {
   transform: translateY(0) scale(0.98);
 }
-

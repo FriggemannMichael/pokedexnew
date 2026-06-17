@@ -124,12 +124,12 @@
     const totalCoverageTypes = Object.keys(coverage).length || 18;
 
     const weaknessSentence = weakestType
-      ? `Groesste Schwaeche: Gegen ${weakestType} fehlt dir aktuell die beste Absicherung.`
-      : "Groesste Schwaeche: Dein Team hat noch keine klare Defensiv-Achse.";
+      ? `Größte Schwäche: Gegen ${weakestType} fehlt dir aktuell die beste Absicherung.`
+      : "Größte Schwäche: Dein Team hat noch keine klare Defensiv-Achse.";
     const strengthSentence =
       coveredCount >= Math.max(8, Math.round(totalCoverageTypes * 0.45))
-        ? `Staerke: Deine Coverage trifft bereits ${coveredCount} von ${totalCoverageTypes} Typen.`
-        : `Staerke: Du nutzt schon ${teamTypes.size} verschiedene Typen fuer flexible Matchups.`;
+        ? `Stärke: Deine Coverage trifft bereits ${coveredCount} von ${totalCoverageTypes} Typen.`
+        : `Stärke: Du nutzt schon ${teamTypes.size} verschiedene Typen für flexible Matchups.`;
 
     return `${weaknessSentence} ${strengthSentence}`;
   };
@@ -150,8 +150,8 @@
     const fallbackParts = this.splitSentences(fallback);
     const parts = this.splitSentences(raw);
 
-    const first = parts[0] || fallbackParts[0] || "Groesste Schwaeche: Analyse unvollstaendig.";
-    const second = parts[1] || fallbackParts[1] || "Staerke: Dein Team zeigt trotzdem offensive Optionen.";
+    const first = parts[0] || fallbackParts[0] || "Größte Schwäche: Analyse unvollständig.";
+    const second = parts[1] || fallbackParts[1] || "Stärke: Dein Team zeigt trotzdem offensive Optionen.";
 
     return `${first} ${second}`.trim();
   };
@@ -214,7 +214,7 @@
           <div class="advisor-provider">Offline</div>
         </div>
       </div>
-      <p class="advisor-text">Analyse nicht verfuegbar. Team kurz aendern und erneut pruefen.</p>
+      <p class="advisor-text">Analyse nicht verfügbar. Team kurz ändern und erneut prüfen.</p>
     `;
   };
 

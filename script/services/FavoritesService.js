@@ -15,20 +15,20 @@ export class FavoritesService {
       favorites: new Set(),
       ratings: {},
       notes: {},
-      favoritesCount: 0
+      favoritesCount: 0,
     });
   }
 
   #loadFromStorage() {
-    const favorites = this.#storageService.get('favorites', []);
-    const ratings = this.#storageService.get('ratings', {});
-    const notes = this.#storageService.get('notes', {});
+    const favorites = this.#storageService.get("favorites", []);
+    const ratings = this.#storageService.get("ratings", {});
+    const notes = this.#storageService.get("notes", {});
 
     this.#stateManager.setState({
       favorites: new Set(favorites),
       ratings: ratings,
       notes: notes,
-      favoritesCount: favorites.length
+      favoritesCount: favorites.length,
     });
   }
 
@@ -79,7 +79,7 @@ export class FavoritesService {
   }
 
   getFavorites() {
-    return this.#stateManager.get('favorites') || new Set();
+    return this.#stateManager.get("favorites") || new Set();
   }
 
   getFavoritesArray() {
@@ -87,12 +87,12 @@ export class FavoritesService {
   }
 
   getFavoritesCount() {
-    return this.#stateManager.get('favoritesCount') || 0;
+    return this.#stateManager.get("favoritesCount") || 0;
   }
 
   setRating(pokemonId, rating) {
     if (rating < 1 || rating > 5) {
-      console.warn('⚠️ Rating must be between 1 and 5');
+      console.warn("⚠️ Rating must be between 1 and 5");
       return false;
     }
 
@@ -120,7 +120,7 @@ export class FavoritesService {
   }
 
   getRatings() {
-    return this.#stateManager.get('ratings') || {};
+    return this.#stateManager.get("ratings") || {};
   }
 
   setNote(pokemonId, note) {
@@ -148,25 +148,25 @@ export class FavoritesService {
   }
 
   getNotes() {
-    return this.#stateManager.get('notes') || {};
+    return this.#stateManager.get("notes") || {};
   }
 
   clearFavorites() {
     this.#updateFavoritesState(new Set());
     this.#saveFavoritesToStorage(new Set());
-    console.log('✅ Favorites cleared');
+    console.log("✅ Favorites cleared");
   }
 
   clearRatings() {
     this.#updateRatingsState({});
     this.#saveRatingsToStorage({});
-    console.log('✅ Ratings cleared');
+    console.log("✅ Ratings cleared");
   }
 
   clearNotes() {
     this.#updateNotesState({});
     this.#saveNotesToStorage({});
-    console.log('✅ Notes cleared');
+    console.log("✅ Notes cleared");
   }
 
   clearAll() {
@@ -178,12 +178,12 @@ export class FavoritesService {
   #updateFavoritesState(favorites) {
     this.#stateManager.setState({
       favorites: favorites,
-      favoritesCount: favorites.size
+      favoritesCount: favorites.size,
     });
   }
 
   #saveFavoritesToStorage(favorites) {
-    this.#storageService.set('favorites', Array.from(favorites));
+    this.#storageService.set("favorites", Array.from(favorites));
   }
 
   #updateRatingsState(ratings) {
@@ -191,7 +191,7 @@ export class FavoritesService {
   }
 
   #saveRatingsToStorage(ratings) {
-    this.#storageService.set('ratings', ratings);
+    this.#storageService.set("ratings", ratings);
   }
 
   #updateNotesState(notes) {
@@ -199,14 +199,16 @@ export class FavoritesService {
   }
 
   #saveNotesToStorage(notes) {
-    this.#storageService.set('notes', notes);
+    this.#storageService.set("notes", notes);
   }
 
   subscribe(listener) {
     return this.#stateManager.subscribe((state, changes) => {
-      if (changes.favorites !== undefined ||
-          changes.ratings !== undefined ||
-          changes.notes !== undefined) {
+      if (
+        changes.favorites !== undefined ||
+        changes.ratings !== undefined ||
+        changes.notes !== undefined
+      ) {
         listener(state);
       }
     });
@@ -216,7 +218,7 @@ export class FavoritesService {
     const data = {
       favorites: this.getFavoritesArray(),
       ratings: this.getRatings(),
-      notes: this.getNotes()
+      notes: this.getNotes(),
     };
     return JSON.stringify(data, null, 2);
   }
@@ -240,10 +242,10 @@ export class FavoritesService {
         this.#saveNotesToStorage(data.notes);
       }
 
-      console.log('✅ Data imported successfully');
+      console.log("✅ Data imported successfully");
       return true;
     } catch (error) {
-      console.error('❌ Error importing data:', error);
+      console.error(" Error importing data:", error);
       return false;
     }
   }

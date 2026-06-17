@@ -41,7 +41,7 @@ class TeamBattleSystem {
 
   createOverviewModal() {
     this.overviewModal = createBootstrapModal("teamBattleOverviewModal", "GYM CHALLENGE", {
-      modalClass: "team-battle-overview-modal",
+      modalClass: "team-battle-overview-modal glass-modal",
       size: "modal-xl",
       icon: "\uD83C\uDFC6",
     });
@@ -49,7 +49,7 @@ class TeamBattleSystem {
 
   createArenaModal() {
     this.arenaModal = createBootstrapModal("teamBattleArenaModal", "TEAM BATTLE", {
-      modalClass: "team-battle-overview-modal",
+      modalClass: "team-battle-overview-modal glass-modal",
       size: "modal-xl",
       icon: "\u2694\uFE0F",
       staticBackdrop: true,

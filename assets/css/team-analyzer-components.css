@@ -120,9 +120,8 @@
 }
 
 #teamAnalysisModal .modal-header {
-    background: linear-gradient(135deg, var(--primary-color), var(--accent));
+    /* header styling handled by the shared .glass-modal shell */
     color: white;
-    border-radius: 16px 16px 0 0;
     border-bottom: none;
 }
 
@@ -163,11 +162,9 @@
 }
 
 #teamAnalysisModal .modal-header {
-    background: var(--gradient);
+    /* header styling handled by the shared .glass-modal shell */
     color: white;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     border-bottom: none;
-    padding: var(--spacing-xl);
 }
 
 #teamAnalysisModal .modal-title {

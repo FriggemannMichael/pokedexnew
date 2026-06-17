@@ -23,7 +23,7 @@ class BattleSimulator {
 
   createBattleModal() {
     this.battleModal = createBootstrapModal("battleModal", "Pokemon Battle", {
-      modalClass: "battle-modal",
+      modalClass: "battle-modal glass-modal",
       icon: "⚔️",
     });
     this.modalElement = document.getElementById("battleModal");
