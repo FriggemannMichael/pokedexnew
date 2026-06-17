@@ -157,20 +157,37 @@ function createPokemonCard(pokemon) {
   const cardElement = document.createElement("div");
   cardElement.className = "col-md-4 col-lg-3 mb-4";
   cardElement.innerHTML = getPokemonCardTemplate(pokemon);
-
-  cardElement.addEventListener("click", (event) => {
-    if (
-      event.target.classList.contains("favorite-btn") ||
-      event.target.closest(".favorite-btn") ||
-      event.target.classList.contains("compare-btn") ||
-      event.target.closest(".compare-btn")
-    ) {
-      return;
-    }
-    openPokemonDetail(pokemon);
-  });
-
+  wireCardActivation(cardElement.querySelector(".pokemon-card"), pokemon);
   return cardElement;
+}
+
+function wireCardActivation(card, pokemon) {
+  if (!card) return;
+  card.setAttribute("role", "button");
+  card.setAttribute("tabindex", "0");
+  card.setAttribute("aria-label", `View details for ${pokemon.name}`);
+  card.addEventListener("click", (e) => activatePokemonCard(e, pokemon));
+  card.addEventListener("keydown", (e) => handleCardKeydown(e, pokemon));
+}
+
+function activatePokemonCard(event, pokemon) {
+  if (isCardActionTarget(event.target)) return;
+  openPokemonDetail(pokemon);
+}
+
+function isCardActionTarget(target) {
+  return Boolean(
+    target.closest(".favorite-btn") ||
+      target.closest(".compare-btn") ||
+      target.closest(".team-add-btn")
+  );
+}
+
+function handleCardKeydown(event, pokemon) {
+  if (event.target !== event.currentTarget) return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  activatePokemonCard(event, pokemon);
 }
 
 function clearPokemonContainer() {
