@@ -45,14 +45,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 16px;
 }
 
 :root {
-  --primary: #fbfbfb;
+  /* Brand-Akzent (Koralle). Muss zu --primary-color-rgb passen. */
+  --primary: #ff6b6b;
 
   --primary-color: var(--primary);
-  --primary-color-rgb: 255, 107, 107;
+  --primary-color-rgb: 255, 107, 107; /* = #ff6b6b */
   --secondary: #4ecdc4;
   --accent: #ffd93d;
   --dark: #2c3e50;
