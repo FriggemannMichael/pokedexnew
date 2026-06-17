@@ -91,15 +91,9 @@
 }
 
 .team-builder-actions.is-battle-ready .team-action-btn[data-action="battle"] {
-  background: var(--gradient);
-  border-color: transparent;
-  color: #fff;
-}
-
-.team-builder-actions.is-battle-ready
-  .team-action-btn[data-action="battle"]
-  i {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.4);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.18);
 }
 
 .team-builder-advisor {
