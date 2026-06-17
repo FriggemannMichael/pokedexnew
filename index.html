@@ -1,9 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="./assets/img/9.png" type="image/x-icon" />
+    <link rel="preload" href="./assets/img/9.png" as="image" />
+    <link
+      rel="preload"
+      href="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
+      as="image"
+    />
     <title>Pokédex - Discover all Pokemon</title>
 
     <link
@@ -12,6 +18,7 @@
     />
 
     <link rel="stylesheet" href="./assets/css/root.css" />
+    <link rel="stylesheet" href="./assets/css/app-intro.css" />
     <link rel="stylesheet" href="./assets/css/main.css" />
     <link rel="stylesheet" href="./assets/css/cards.css" />
     <link rel="stylesheet" href="./assets/css/pokemon-go-features.css" />
@@ -22,6 +29,8 @@
     <link rel="stylesheet" href="./assets/css/pokemon-compare.css" />
     <link rel="stylesheet" href="./assets/css/battle-simulator.css" />
     <link rel="stylesheet" href="./assets/css/team-battle.css" />
+    <!-- Loaded last so the unified .glass-modal shell wins over per-modal chrome -->
+    <link rel="stylesheet" href="./assets/css/glass-modal.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -30,17 +39,53 @@
     />
   </head>
   <body>
+    <div class="app-intro" id="appIntro" aria-hidden="true">
+      <div class="app-intro__stage">
+        <img class="app-intro__ball" src="./assets/img/9.png" alt="" decoding="sync" fetchpriority="high" />
+        <div class="app-intro__stars" aria-hidden="true">
+          <img src="./assets/icon/fire.svg" alt="" class="app-intro__star app-intro__star--fire" />
+          <img src="./assets/icon/water.svg" alt="" class="app-intro__star app-intro__star--water" />
+          <img src="./assets/icon/electric.svg" alt="" class="app-intro__star app-intro__star--electric" />
+          <img src="./assets/icon/grass.svg" alt="" class="app-intro__star app-intro__star--grass" />
+          <img src="./assets/icon/psychic.svg" alt="" class="app-intro__star app-intro__star--psychic" />
+          <img src="./assets/icon/dragon.svg" alt="" class="app-intro__star app-intro__star--dragon" />
+          <img src="./assets/icon/ghost.svg" alt="" class="app-intro__star app-intro__star--ghost" />
+          <img src="./assets/icon/fairy.svg" alt="" class="app-intro__star app-intro__star--fairy" />
+        </div>
+        <div class="app-intro__sparkles" aria-hidden="true">
+          <span class="app-intro__sparkle app-intro__sparkle--1"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--2"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--3"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--4"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--5"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--6"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--7"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--8"></span>
+        </div>
+        <div class="app-intro__brand">
+          <img
+            class="app-intro__pokeapi-logo"
+            src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
+            alt=""
+            decoding="async"
+          />
+          <div class="app-intro__title">Pokédex</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Team Offcanvas -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="teamOffcanvas">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title">
-          <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Team
+          <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein Team
           <span class="badge bg-primary ms-2" id="teamCounter">0/6</span>
         </h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="offcanvas"
+          aria-label="Schließen"
         ></button>
       </div>
 
@@ -79,7 +124,7 @@
 
     <!-- Team Modal (für Button-Klick) -->
     <div
-      class="modal fade"
+      class="modal fade glass-modal"
       id="teamModal"
       tabindex="-1"
       aria-hidden="true"
@@ -90,7 +135,8 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="teamModalLabel">
-              <img src="assets/img/9.png" alt="Team" class="icon-team"> Dein Pokemon Team
+              <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein
+              Pokemon Team
             </h5>
             <button
               type="button"
@@ -118,10 +164,20 @@
             <button class="btn btn-filter" onclick="openTeamAnalysis()">
               Team analysieren
             </button>
-            <button class="btn btn-filter" onclick="window.teamBattle.startChallenge(window.teamOffcanvas?.getTeam() || [])" style="background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%); color: white; font-weight: 700;">
+            <button
+              class="btn btn-filter"
+              onclick="
+                window.teamBattle.startChallenge(
+                  window.teamOffcanvas?.getTeam() || [],
+                )
+              "
+            >
               Challenge Gym
             </button>
-            <button class="btn btn-filter" onclick="window.teamBattle.showBattleHistory()" style="background: var(--dark); color: white; font-weight: 600;">
+            <button
+              class="btn btn-filter"
+              onclick="window.teamBattle.showBattleHistory()"
+            >
               Kampfhistorie
             </button>
             <button
@@ -185,11 +241,13 @@
                       id="searchInput"
                       placeholder="Search Pokemon... (min. 3 letters)"
                       autocomplete="off"
+                      aria-label="Search Pokemon by name"
                     />
                     <button
                       class="btn btn-light btn-lg"
                       type="button"
                       id="searchBtn"
+                      aria-label="Search"
                       disabled
                     >
                       🔍
@@ -297,6 +355,7 @@
                   id="ratingFilter"
                   class="form-select me-2"
                   style="width: auto; display: inline-block"
+                  aria-label="Filter by rating"
                 >
                   <option value="">All Ratings</option>
                   <option value="4">4* (Perfect)</option>
@@ -460,45 +519,67 @@
           </div>
         </div>
       </div>
-    </section>
-    <!-- Central Team Builder -->
-    <section class="team-builder-section" aria-label="Active Team Builder">
-      <div class="container">
-        <div class="team-builder-panel" id="activeTeamBuilder">
-          <div class="team-builder-header">
-            <div class="team-builder-title-wrap">
-              <h2 class="team-builder-title">Active Team</h2>
-              <p class="team-builder-subtitle">
-                Drag Pokemon cards into the six team slots.
-              </p>
+      <section class="team-builder-section" aria-label="Active Team Builder">
+        <div class="container">
+          <div class="team-builder-panel" id="activeTeamBuilder">
+            <div class="team-builder-header">
+              <div class="team-builder-title-wrap">
+                <h2 class="team-builder-title">Active Team</h2>
+                <p class="team-builder-subtitle">
+                  Drag Pokemon cards into the six team slots.
+                </p>
+              </div>
+              <div
+                class="team-builder-counter"
+                id="activeTeamCounter"
+                aria-live="polite"
+              >
+                0/6
+              </div>
+            </div>
+
+            <div
+              class="active-team-grid"
+              id="activeTeamGrid"
+              role="list"
+              aria-label="Active Team Slots"
+            ></div>
+            <p class="team-builder-hint">
+              Tip: Drop on a filled slot to replace it instantly.
+            </p>
+            <div
+              class="team-builder-actions d-none"
+              id="teamBuilderActions"
+              role="group"
+              aria-label="Team actions"
+            >
+              <button type="button" class="team-action-btn" data-action="analyze">
+                <i class="fas fa-chart-simple" aria-hidden="true"></i>
+                <span>Analysieren</span>
+              </button>
+              <button type="button" class="team-action-btn" data-action="battle">
+                <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                <span>Gym-Challenge</span>
+              </button>
+              <button type="button" class="team-action-btn" data-action="history">
+                <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                <span>Historie</span>
+              </button>
             </div>
             <div
-              class="team-builder-counter"
-              id="activeTeamCounter"
+              id="teamBuilderAdvisor"
+              class="team-builder-advisor is-waiting"
+              data-role="ai-advice"
               aria-live="polite"
-            >
-              0/6
-            </div>
+            ></div>
+            <div
+              class="visually-hidden"
+              id="teamBuilderLiveRegion"
+              aria-live="polite"
+            ></div>
           </div>
-
-          <div
-            class="active-team-grid"
-            id="activeTeamGrid"
-            role="list"
-            aria-label="Active Team Slots"
-          ></div>
-          <p class="team-builder-hint">
-            Tip: Drop on a filled slot to replace it instantly.
-          </p>
-          <div
-            id="teamBuilderAdvisor"
-            class="team-builder-advisor is-waiting"
-            data-role="ai-advice"
-            aria-live="polite"
-          ></div>
-          <div class="visually-hidden" id="teamBuilderLiveRegion" aria-live="polite"></div>
         </div>
-      </div>
+      </section>
     </section>
 
     <!-- Pokemon Grid -->
@@ -567,7 +648,7 @@
       <div class="container footer-content">
         <div class="row">
           <div class="col-md-8 mb-3">
-            <h6 class="footer-heading">Image Sources</h6>
+            <div class="footer-heading">Image Sources</div>
             <div class="footer-sources">
               <div class="source-item">
                 <div class="source-icon">🎨</div>
@@ -626,7 +707,7 @@
 
           <div class="col-md-4 mb-3 text-md-end">
             <div class="footer-creator">
-              <h6 class="footer-heading">Created by</h6>
+              <div class="footer-heading">Created by</div>
               <p class="footer-creator-name">Michael Friggemann</p>
               <p class="footer-subtitle">Developer Akademie • Module 8</p>
               <p class="footer-subtitle">Trainee Fullstack Web Developer</p>

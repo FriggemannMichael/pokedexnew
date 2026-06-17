@@ -1,4 +1,3 @@
-// Team Analyzer Render - HTML creation
 (function () {
   const Core = window.PokemonTeamAnalyzerCore;
   if (!Core) {
@@ -58,8 +57,8 @@
     if (!Object.keys(weaknesses).length) {
       return `
   <div class="analysis-section">
-    <h6><i class="fas fa-shield-alt text-success"></i> Schwaechen</h6>
-    <p class="text-success">Keine kritischen Schwaechen gefunden.</p>
+    <h6><i class="fas fa-shield-alt text-success"></i> Schwächen</h6>
+    <p class="text-success">Keine kritischen Schwächen gefunden.</p>
   </div>`;
     }
 
@@ -81,7 +80,7 @@
 
     return `
   <div class="analysis-section">
-    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Team-Schwaechen</h6>
+    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Team-Schwächen</h6>
     <div class="weaknesses-list">${weaknessItems}</div>
   </div>`;
   };
@@ -97,13 +96,13 @@
     const immunityItems = Object.entries(immunities)
       .map(
         ([type, details]) =>
-          `<div class="strength-item immunity"><span class="type-badge type-${type}">${type.toUpperCase()}</span><span class="strength-count">${details.count}x Immunitaet</span></div>`
+          `<div class="strength-item immunity"><span class="type-badge type-${type}">${type.toUpperCase()}</span><span class="strength-count">${details.count}x Immunität</span></div>`
       )
       .join('');
 
     return `
   <div class="analysis-section">
-    <h6><i class="fas fa-shield-alt text-success"></i> Team-Staerken</h6>
+    <h6><i class="fas fa-shield-alt text-success"></i> Team-Stärken</h6>
     <div class="strengths-list">${resistanceItems}${immunityItems}</div>
   </div>`;
   };

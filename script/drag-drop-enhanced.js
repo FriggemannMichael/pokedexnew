@@ -1,4 +1,3 @@
-// Enhanced drag-and-drop behavior for Pokemon cards
 function handlePokemonDragStart(event) {
   const pokemonCard = event.target.closest(".pokemon-card");
   if (!pokemonCard) return;

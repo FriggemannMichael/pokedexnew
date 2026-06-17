@@ -1,4 +1,3 @@
-// Team Modal Events
 (function(){ const Core=window.PokemonTeamModalCore; if(!Core){ console.error('Modal Core missing'); return; }
   Core.prototype.attachEventListeners=function(){ document.addEventListener('click',e=>{ if(e.target.id==='exportTeamBtn') this.exportTeam(); if(e.target.classList.contains('team-pokemon-detail-btn')) this.showPokemonDetail(parseInt(e.target.dataset.pokemonId)); if(e.target.classList.contains('team-pokemon-remove-btn')) this.removePokemonFromTeam(parseInt(e.target.dataset.pokemonId)); }); this.attachModalEventListeners(); };
   Core.prototype.attachModalEventListeners=function(){ const modal=document.getElementById('pokemonTeamModal'); if(!modal) return; modal.addEventListener('shown.bs.modal',()=>{ const c=modal.querySelector('.btn-close'); if(c) c.focus(); modal.removeAttribute('aria-hidden'); }); modal.addEventListener('hide.bs.modal',()=>{ if(modal.contains(document.activeElement)) document.activeElement.blur(); }); };

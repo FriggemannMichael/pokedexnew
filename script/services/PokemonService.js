@@ -1,13 +1,3 @@
-/**
- * PokemonService - Business Logic für Pokemon Management
- *
- * Features:
- * - Pokemon Liste verwalten
- * - Filtern & Suchen
- * - Integration mit StateManager
- * - Koordination zwischen API und State
- */
-
 export class PokemonService {
   #stateManager;
   #apiService;
@@ -21,10 +11,6 @@ export class PokemonService {
     this.#initializeState();
   }
 
-  /**
-   * Initialisiert den Pokemon State
-   * @private
-   */
   #initializeState() {
     this.#stateManager.setState({
       pokemonList: [],
@@ -41,12 +27,6 @@ export class PokemonService {
     });
   }
 
-  /**
-   * Lädt Pokemon von der API
-   * @param {number} offset - Start Index
-   * @param {number} limit - Anzahl Pokemon
-   * @returns {Promise<void>}
-   */
   async loadPokemon(offset = 0, limit = 20) {
     this.#stateManager.setState({ isLoading: true, error: null });
 
@@ -76,11 +56,6 @@ export class PokemonService {
     }
   }
 
-  /**
-   * Lädt ein einzelnes Pokemon
-   * @param {number|string} idOrName - Pokemon ID oder Name
-   * @returns {Promise<Object>}
-   */
   async loadPokemonDetail(idOrName) {
     try {
       return await this.#apiService.fetchPokemon(idOrName);
@@ -90,10 +65,6 @@ export class PokemonService {
     }
   }
 
-  /**
-   * Filtert Pokemon nach Typ
-   * @param {string} type - Pokemon Typ ('all' für alle)
-   */
   filterByType(type) {
     const allPokemon = this.#stateManager.get('allPokemonList');
 
@@ -115,14 +86,8 @@ export class PokemonService {
     return filtered;
   }
 
-  /**
-   * Sucht Pokemon nach Name
-   * @param {string} query - Suchbegriff
-   * @returns {Promise<Object[]>}
-   */
   async searchPokemon(query) {
     if (!query || query.length < 2) {
-      // Reset zu gefilterter Liste
       const filtered = this.#stateManager.get('filteredPokemonList');
       this.#stateManager.setState({
         pokemonList: filtered,
@@ -133,7 +98,6 @@ export class PokemonService {
 
     this.#stateManager.setState({ searchQuery: query });
 
-    // Suche zuerst in bereits geladenen Pokemon
     const allPokemon = this.#stateManager.get('allPokemonList');
     const localResults = allPokemon.filter(pokemon =>
       pokemon.name.toLowerCase().includes(query.toLowerCase())
@@ -144,7 +108,6 @@ export class PokemonService {
       return localResults;
     }
 
-    // Wenn keine lokalen Ergebnisse, suche in API
     try {
       const results = await this.#apiService.searchPokemon(query);
       this.#stateManager.setState({ pokemonList: results });
@@ -155,27 +118,15 @@ export class PokemonService {
     }
   }
 
-  /**
-   * Gibt Pokemon Liste zurück
-   * @returns {Object[]}
-   */
   getPokemonList() {
     return this.#stateManager.get('pokemonList');
   }
 
-  /**
-   * Gibt ein Pokemon nach ID zurück
-   * @param {number} id - Pokemon ID
-   * @returns {Object|undefined}
-   */
   getPokemonById(id) {
     const allPokemon = this.#stateManager.get('allPokemonList');
     return allPokemon.find(p => p.id === id);
   }
 
-  /**
-   * Resettet Filter und Suche
-   */
   resetFilters() {
     const allPokemon = this.#stateManager.get('allPokemonList');
     this.#stateManager.setState({
@@ -186,35 +137,18 @@ export class PokemonService {
     });
   }
 
-  /**
-   * Gibt den aktuellen Loading State zurück
-   * @returns {boolean}
-   */
   isLoading() {
     return this.#stateManager.get('isLoading');
   }
 
-  /**
-   * Gibt an ob mehr Pokemon geladen werden können
-   * @returns {boolean}
-   */
   hasMore() {
     return this.#stateManager.get('hasMore');
   }
 
-  /**
-   * Abonniert Pokemon State Changes
-   * @param {Function} listener - Callback Funktion
-   * @returns {Function} Unsubscribe Funktion
-   */
   subscribe(listener) {
     return this.#stateManager.subscribe(listener);
   }
 
-  /**
-   * Gibt den vollständigen State zurück
-   * @returns {Object}
-   */
   getState() {
     return this.#stateManager.getState();
   }

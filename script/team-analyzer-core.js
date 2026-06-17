@@ -1,6 +1,3 @@
-// Team Analyzer Core
-// Aufgeteilt aus team-analyzer.js
-// Enthält Klasse, Basis-Init, TypeChart, öffentliche Einstiegspunkte
 class PokemonTeamAnalyzerCore {
   constructor(){
     this.typeChart = this.initializeTypeChart();
@@ -43,7 +40,6 @@ class PokemonTeamAnalyzerCore {
   }
   openTeamAnalysis(){ const team=this.getCurrentTeam(); if(team.length===0){ alert('Füge erst Pokemon zu deinem Team hinzu!'); return; }
     const modal=document.getElementById('teamAnalysisModal'); if(!modal){ console.error('Team Analysis Modal not found'); return; }
-    // Andere offene Modals schließen & Fokus entfernen um aria-hidden Warnung zu vermeiden
     document.querySelectorAll('.modal.show').forEach(mo=>{ if(mo!==modal){ if(mo.contains(document.activeElement)) document.activeElement.blur(); const inst=bootstrap.Modal.getInstance(mo); if(inst) inst.hide(); }});
     let m=bootstrap.Modal.getInstance(modal); if(!m) m=new bootstrap.Modal(modal,{backdrop:true,keyboard:true,focus:true});
     this.displayTeamAnalysis(team); m.show(); }

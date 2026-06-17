@@ -127,15 +127,21 @@ function switchToTab(targetTab, tabButtons, tabPanels) {
 }
 
 function deactivateAllTabs(tabButtons, tabPanels) {
-    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabButtons.forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+    });
     tabPanels.forEach(panel => panel.classList.remove('active'));
 }
 
 function activateSelectedTab(targetTab) {
     const activeButton = document.querySelector(`[data-tab="${targetTab}"]`);
     const activePanel = document.getElementById(`tab-${targetTab}`);
-    
-    if (activeButton) activeButton.classList.add('active');
+
+    if (activeButton) {
+        activeButton.classList.add('active');
+        activeButton.setAttribute('aria-selected', 'true');
+    }
     if (activePanel) activePanel.classList.add('active');
 }
 

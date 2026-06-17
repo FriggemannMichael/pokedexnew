@@ -1,4 +1,3 @@
-// Team Modal Render
 (function(){ const Core=window.PokemonTeamModalCore; if(!Core){ console.error('Modal Core missing'); return; }
   Core.prototype.renderTeamModal=function(){ const c=document.getElementById('teamModalContent'); if(c) c.innerHTML=this.createTeamModalContent(); };
   Core.prototype.createTeamModalContent=function(){ const s=this.calculateTeamStats(); return `<div class="team-modal-container">${this.createTeamStatsHTML(s)}${this.createTeamGridHTML()}${this.createTeamActionsHTML()}</div>`; };

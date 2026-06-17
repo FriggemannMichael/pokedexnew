@@ -1,0 +1,300 @@
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.recommendation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid #6c757d;
+    background: rgba(108, 117, 125, 0.05);
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.recommendation-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.recommendation-item.priority-high {
+    border-left-color: var(--primary);
+    background: rgba(255, 107, 107, 0.05);
+}
+
+.recommendation-item.priority-medium {
+    border-left-color: var(--accent);
+    background: rgba(255, 217, 61, 0.05);
+}
+
+.recommendation-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.recommendation-text {
+    flex: 1;
+    color: var(--text-color);
+    line-height: 1.4;
+}
+
+/* Typ-Badges in der Analyse */
+.analysis-section .type-badge {
+    font-size: 0.625rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-transform: uppercase;
+    display: inline-block;
+    margin: 1px;
+    font-family: var(--font-ui);
+    transition: var(--transition-fast);
+}
+
+.analysis-section .type-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Loading-Animation */
+.analysis-loading {
+    text-align: center;
+    padding: var(--spacing-xxl);
+    color: #666;
+    font-family: var(--font-body);
+}
+
+.analysis-loading .spinner-border {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .team-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .team-analysis-results {
+        padding: var(--spacing-md);
+    }
+    
+    .analysis-section {
+        padding: var(--spacing-lg);
+    }
+    
+    .weakness-header {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .coverage-percentage {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-xs);
+    }
+    
+    .recommendation-item {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .team-member-image img {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* Modal-Anpassungen */
+#teamAnalysisModal .modal-dialog {
+    max-width: 90vw;
+    margin: 1.75rem auto;
+}
+
+#teamAnalysisModal .modal-content {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+#teamAnalysisModal .modal-header {
+    /* header styling handled by the shared .glass-modal shell */
+    color: white;
+    border-bottom: none;
+}
+
+#teamAnalysisModal .modal-title {
+    font-weight: 600;
+}
+
+#teamAnalysisModal .btn-close {
+    filter: invert(1);
+}
+
+/* Animation für Schwächen-Items */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.weakness-item,
+.recommendation-item {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+/* Modal-Anpassungen für Team-Analyse */
+#teamAnalysisModal .modal-dialog {
+    max-width: 95vw;
+}
+
+#teamAnalysisModal .modal-content {
+    border-radius: var(--radius-lg);
+    border: none;
+    box-shadow: var(--shadow-xl);
+}
+
+#teamAnalysisModal .modal-header {
+    /* header styling handled by the shared .glass-modal shell */
+    color: white;
+    border-bottom: none;
+}
+
+#teamAnalysisModal .modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    font-family: var(--font-title);
+}
+
+#teamAnalysisModal .btn-close {
+    filter: invert(1);
+}
+
+#teamAnalysisModal .modal-body {
+    padding: 0;
+    font-family: var(--font-body);
+}
+
+/* Animationen */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.recommendation-item {
+    animation: slideInLeft 0.3s ease-out;
+}
+
+/* Hover-Effekte */
+.weakness-item:hover,
+.strength-item:hover,
+.coverage-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Team-Analyse-Button im Droppoint */
+.drop-point .btn-info {
+    background: var(--gradient);
+    border: none;
+    border-radius: var(--radius-circle);
+    font-weight: 600;
+    transition: var(--transition-cubic);
+    position: relative;
+    overflow: hidden;
+    font-family: var(--font-ui);
+}
+
+.drop-point .btn-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.drop-point .btn-info:hover::before {
+    left: 100%;
+}
+
+.drop-point .btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.4);
+}
+
+/* ===== AI Advisor in Analysis ===== */
+.analysis-ai-advisor {
+    background: linear-gradient(135deg, rgba(78, 205, 196, 0.12) 0%, rgba(52, 152, 219, 0.08) 100%);
+    border: 1px solid rgba(78, 205, 196, 0.3);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.ai-advisor-loading {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+}
+
+.ai-advisor-result {
+    font-family: var(--font-body);
+}
+
+.ai-advisor-provider {
+    font-family: var(--font-ui);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1f6fb2;
+    text-transform: uppercase;
+    margin-bottom: var(--spacing-sm);
+}
+
+.ai-advisor-text {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--dark);
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.ai-advisor-section {
+    font-size: 0.88rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--dark);
+}
+
+.ai-advisor-section strong {
+    color: #124469;
+}
+
+.ai-advisor-section ul {
+    margin: var(--spacing-xs) 0 0 var(--spacing-lg);
+    padding: 0;
+}
+
+.ai-advisor-section li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.ai-advisor-types {
+    display: inline-flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
