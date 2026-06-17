@@ -195,6 +195,12 @@
   animation: shimmer 7s ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-fill::after {
+    animation: none;
+  }
+}
+
 /* =========================
    Description Section
    ========================= */
