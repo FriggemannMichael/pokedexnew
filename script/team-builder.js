@@ -211,6 +211,7 @@
       this.counter = document.getElementById("activeTeamCounter");
       this.advisor = document.getElementById("teamBuilderAdvisor") || document.getElementById("ai-advice");
       this.liveRegion = document.getElementById("teamBuilderLiveRegion");
+      this.actions = document.getElementById("teamBuilderActions");
       this.state = new TeamBuilderState(MAX_TEAM_SIZE, (payload) => this.onStateChange(payload));
       this.lastAdvisorSignature = "";
       this.cachedAdvisorAssessment = null;
@@ -221,9 +222,11 @@
       if (!this.root || !this.grid) return;
       this.attachGridEvents();
       this.attachGlobalEvents();
+      this.attachActionEvents();
       this.hydrateInitialState();
       this.render();
       this.updateCounter();
+      this.updateActionBar();
       this.refreshAdvisor();
       this.syncToOffcanvas();
       window.teamBuilder = this;
@@ -249,6 +252,7 @@
     onStateChange() {
       this.render();
       this.updateCounter();
+      this.updateActionBar();
       this.refreshAdvisor();
       this.syncToOffcanvas();
     }

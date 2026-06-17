@@ -41,6 +41,67 @@
   color: rgba(44, 62, 80, 0.75);
 }
 
+.team-builder-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.team-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-circle);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--dark);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.team-action-btn i {
+  color: var(--primary);
+}
+
+.team-action-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shadow-md);
+}
+
+.team-action-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.team-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.team-builder-actions.is-battle-ready .team-action-btn[data-action="battle"] {
+  background: var(--gradient);
+  border-color: transparent;
+  color: #fff;
+}
+
+.team-builder-actions.is-battle-ready
+  .team-action-btn[data-action="battle"]
+  i {
+  color: #fff;
+}
+
 .team-builder-advisor {
   position: relative;
   z-index: 1;
