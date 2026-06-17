@@ -171,6 +171,11 @@
 }
 
 .pokemon-name {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
   font-family: var(--font-ui);
   font-size: 1.6rem;
   font-weight: 600;
@@ -181,6 +186,16 @@
   transition: var(--transition-base);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
   text-align: center;
+}
+
+.pokemon-detail-trigger {
+  cursor: pointer;
+}
+
+.pokemon-detail-trigger:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 4px;
+  border-radius: var(--radius-md);
 }
 
 .pokemon-types {

@@ -163,11 +163,14 @@ function createPokemonCard(pokemon) {
 
 function wireCardActivation(card, pokemon) {
   if (!card) return;
-  card.setAttribute("role", "button");
-  card.setAttribute("tabindex", "0");
-  card.setAttribute("aria-label", `View details for ${pokemon.name}`);
+  const detailTrigger = card.querySelector(".pokemon-detail-trigger");
+  if (detailTrigger) {
+    detailTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      openPokemonDetail(pokemon);
+    });
+  }
   card.addEventListener("click", (e) => activatePokemonCard(e, pokemon));
-  card.addEventListener("keydown", (e) => handleCardKeydown(e, pokemon));
 }
 
 function activatePokemonCard(event, pokemon) {
@@ -177,17 +180,11 @@ function activatePokemonCard(event, pokemon) {
 
 function isCardActionTarget(target) {
   return Boolean(
-    target.closest(".favorite-btn") ||
+      target.closest(".favorite-btn") ||
       target.closest(".compare-btn") ||
-      target.closest(".team-add-btn")
+      target.closest(".team-add-btn") ||
+      target.closest(".pokemon-detail-trigger")
   );
-}
-
-function handleCardKeydown(event, pokemon) {
-  if (event.target !== event.currentTarget) return;
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  activatePokemonCard(event, pokemon);
 }
 
 function clearPokemonContainer() {

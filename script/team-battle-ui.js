@@ -30,7 +30,6 @@ TeamBattleSystem.prototype.renderOverview = function () {
       </div>
       <div class="team-vs-divider">
         <div class="vs-badge">VS</div>
-        <div class="vs-icon">BATTLE</div>
         ${this.renderStatsComparison(playerAvg, gymAvg)}
         ${this.renderLeaderDialogueCard()}
       </div>
@@ -99,8 +98,11 @@ TeamBattleSystem.prototype.renderArena = function () {
       </div>
       ${this.renderLeaderDialogueCard()}
       <div class="battle-progress">
-        <div class="progress-label"><span>Battle Progress</span><span id="progressText">0/6 Pokemon Defeated</span></div>
-        <div class="progress-bar-container"><div class="progress-bar-fill" id="progressBarFill" style="width: 0%">0%</div></div>
+        <div class="progress-label"><span>Battle Status</span><span id="progressText">Gym: 0/6 defeated · Your losses: 0/6</span></div>
+        <div class="progress-bar-container battle-status-track" aria-hidden="true">
+          <div class="progress-bar-fill progress-bar-fill--gym" id="progressGymFill" style="width: 0%"></div>
+          <div class="progress-bar-fill progress-bar-fill--player" id="progressPlayerLossFill" style="width: 0%"></div>
+        </div>
       </div>
       <div class="main-battle-container" id="mainBattleContainer"></div>
     </div>
@@ -124,15 +126,25 @@ TeamBattleSystem.prototype.updateStatusIcons = function () {
 };
 
 TeamBattleSystem.prototype.updateProgress = function () {
-  const defeated = this.gymTeam.filter((p) => p.currentHp <= 0).length;
-  const total = this.gymTeam.length;
+  const gymDefeated = this.gymTeam.filter((p) => p.currentHp <= 0).length;
+  const gymTotal = this.gymTeam.length;
+  const playerDefeated = this.playerTeam.filter((p) => p.currentHp <= 0).length;
+  const playerTotal = this.playerTeam.length;
   const text = document.getElementById("progressText");
-  const bar = document.getElementById("progressBarFill");
-  if (text) text.textContent = `${defeated}/${total} Gym Pokemon Defeated`;
-  if (bar) {
-    const pct = (defeated / total) * 100;
-    bar.style.width = `${pct}%`;
-    bar.textContent = `${Math.round(pct)}%`;
+  const gymBar = document.getElementById("progressGymFill");
+  const playerBar = document.getElementById("progressPlayerLossFill");
+  if (text) {
+    text.textContent = `Gym: ${gymDefeated}/${gymTotal} defeated · Your losses: ${playerDefeated}/${playerTotal}`;
+  }
+  if (gymBar) {
+    const gymPct = gymTotal > 0 ? (gymDefeated / gymTotal) * 100 : 0;
+    gymBar.style.width = `${gymPct}%`;
+    gymBar.setAttribute("aria-label", `${gymDefeated} of ${gymTotal} Gym Pokemon defeated`);
+  }
+  if (playerBar) {
+    const playerPct = playerTotal > 0 ? (playerDefeated / playerTotal) * 100 : 0;
+    playerBar.style.width = `${playerPct}%`;
+    playerBar.setAttribute("aria-label", `${playerDefeated} of ${playerTotal} player Pokemon defeated`);
   }
 };
 
@@ -207,10 +219,10 @@ TeamBattleSystem.prototype.requestLeaderDialogue = async function (eventText) {
 TeamBattleSystem.prototype.createLocalLeaderLine = function (eventText) {
   const text = String(eventText || "").toLowerCase();
   const name = this.gymLeader?.name || "Gym Leader";
-  if (text.includes("staerkstes")) return `${name}: Das war nur der Anfang, ich habe noch Reserven!`;
-  if (text.includes("besiegt")) return `${name}: Du triffst hart, aber meine Arena faellt nicht!`;
-  if (text.includes("spieler")) return `${name}: Deine Offensive stockt, jetzt uebernehme ich!`;
-  return `${name}: Willkommen in meiner Arena. Kaempfe entschlossen!`;
+  if (text.includes("stärkstes")) return `${name}: Das war nur der Anfang, ich habe noch Reserven!`;
+  if (text.includes("besiegt")) return `${name}: Du triffst hart, aber meine Arena fällt nicht!`;
+  if (text.includes("spieler")) return `${name}: Deine Offensive stockt, jetzt übernehme ich!`;
+  return `${name}: Willkommen in meiner Arena. Kämpfe entschlossen!`;
 };
 
 TeamBattleSystem.prototype.renderBattleFighter = function (fighter, fighterId) {
@@ -251,10 +263,11 @@ TeamBattleSystem.prototype.showResultScreen = function (isVictory) {
       pokemonUsed: this.currentPlayerIndex + 1,
     });
   }
+  const primaryType = this.playerTeam?.[0]?.types?.[0] || "normal";
   const html = `
     <div class="battle-result-screen">
       ${isVictory ? this.createConfetti() : ""}
-      <div class="battle-result-content">
+      <div class="battle-result-content lg-type-surface" style="--type-accent: var(--type-${primaryType});">
         <div class="result-title ${isVictory ? "victory" : "defeat"}">${isVictory ? "\uD83C\uDFC6 VICTORY!" : "\uD83D\uDC80 DEFEAT"}</div>
         <div class="result-subtitle">${isVictory ? "You defeated the Gym Leader!" : "The Gym Leader defeated you!"}</div>
         <div class="result-stats">
@@ -331,16 +344,16 @@ TeamBattleSystem.prototype.showBattleHistory = function () {
     : "";
 
   const modalHTML = `
-    <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+    <div class="modal fade glass-modal" id="${modalId}" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-xl">
-        <div class="modal-content" style="background:var(--glass-95,#f8f9fa);border-radius:var(--radius-xxl);">
-          <div class="modal-header" style="border-bottom:1px solid rgba(0,0,0,0.08);">
-            <h5 class="modal-title" style="font-family:var(--font-title);font-weight:700;">Kampfhistorie</h5>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Kampfhistorie</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="battle-history-stats">
-              <div class="history-stat-card"><div class="history-stat-value">${stats.totalBattles}</div><div class="history-stat-label">Kaempfe</div></div>
+              <div class="history-stat-card"><div class="history-stat-value">${stats.totalBattles}</div><div class="history-stat-label">Kämpfe</div></div>
               <div class="history-stat-card"><div class="history-stat-value">${stats.wins}</div><div class="history-stat-label">Siege</div></div>
               <div class="history-stat-card"><div class="history-stat-value">${stats.losses}</div><div class="history-stat-label">Niederlagen</div></div>
               <div class="history-stat-card"><div class="history-stat-value">${stats.winRate}%</div><div class="history-stat-label">Siegrate</div></div>
@@ -351,7 +364,7 @@ TeamBattleSystem.prototype.showBattleHistory = function () {
             <div class="battle-history-table-wrapper">
               <table class="battle-history-table">
                 <thead><tr><th>Datum</th><th>Arenaleiter</th><th>Ergebnis</th><th>Schaden</th><th>Runden</th><th>MVP</th></tr></thead>
-                <tbody>${rows || '<tr><td colspan="6">Keine Kaempfe bisher.</td></tr>'}</tbody>
+                <tbody>${rows || '<tr><td colspan="6">Keine Kämpfe bisher.</td></tr>'}</tbody>
               </table>
             </div>
           </div>

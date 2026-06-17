@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="shortcut icon" href="./assets/img/9.png" type="image/x-icon" />
+    <link rel="preload" href="./assets/img/9.png" as="image" />
+    <link
+      rel="preload"
+      href="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
+      as="image"
+    />
     <title>Pokédex - Discover all Pokemon</title>
 
     <link
@@ -12,6 +18,7 @@
     />
 
     <link rel="stylesheet" href="./assets/css/root.css" />
+    <link rel="stylesheet" href="./assets/css/app-intro.css" />
     <link rel="stylesheet" href="./assets/css/main.css" />
     <link rel="stylesheet" href="./assets/css/cards.css" />
     <link rel="stylesheet" href="./assets/css/pokemon-go-features.css" />
@@ -22,6 +29,8 @@
     <link rel="stylesheet" href="./assets/css/pokemon-compare.css" />
     <link rel="stylesheet" href="./assets/css/battle-simulator.css" />
     <link rel="stylesheet" href="./assets/css/team-battle.css" />
+    <!-- Loaded last so the unified .glass-modal shell wins over per-modal chrome -->
+    <link rel="stylesheet" href="./assets/css/glass-modal.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -30,6 +39,41 @@
     />
   </head>
   <body>
+    <div class="app-intro" id="appIntro" aria-hidden="true">
+      <div class="app-intro__stage">
+        <img class="app-intro__ball" src="./assets/img/9.png" alt="" decoding="sync" fetchpriority="high" />
+        <div class="app-intro__stars" aria-hidden="true">
+          <img src="./assets/icon/fire.svg" alt="" class="app-intro__star app-intro__star--fire" />
+          <img src="./assets/icon/water.svg" alt="" class="app-intro__star app-intro__star--water" />
+          <img src="./assets/icon/electric.svg" alt="" class="app-intro__star app-intro__star--electric" />
+          <img src="./assets/icon/grass.svg" alt="" class="app-intro__star app-intro__star--grass" />
+          <img src="./assets/icon/psychic.svg" alt="" class="app-intro__star app-intro__star--psychic" />
+          <img src="./assets/icon/dragon.svg" alt="" class="app-intro__star app-intro__star--dragon" />
+          <img src="./assets/icon/ghost.svg" alt="" class="app-intro__star app-intro__star--ghost" />
+          <img src="./assets/icon/fairy.svg" alt="" class="app-intro__star app-intro__star--fairy" />
+        </div>
+        <div class="app-intro__sparkles" aria-hidden="true">
+          <span class="app-intro__sparkle app-intro__sparkle--1"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--2"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--3"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--4"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--5"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--6"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--7"></span>
+          <span class="app-intro__sparkle app-intro__sparkle--8"></span>
+        </div>
+        <div class="app-intro__brand">
+          <img
+            class="app-intro__pokeapi-logo"
+            src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
+            alt=""
+            decoding="async"
+          />
+          <div class="app-intro__title">Pokédex</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Team Offcanvas -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="teamOffcanvas">
       <div class="offcanvas-header">
@@ -80,7 +124,7 @@
 
     <!-- Team Modal (für Button-Klick) -->
     <div
-      class="modal fade"
+      class="modal fade glass-modal"
       id="teamModal"
       tabindex="-1"
       aria-hidden="true"
@@ -604,7 +648,7 @@
       <div class="container footer-content">
         <div class="row">
           <div class="col-md-8 mb-3">
-            <h6 class="footer-heading">Image Sources</h6>
+            <div class="footer-heading">Image Sources</div>
             <div class="footer-sources">
               <div class="source-item">
                 <div class="source-icon">🎨</div>
@@ -663,7 +707,7 @@
 
           <div class="col-md-4 mb-3 text-md-end">
             <div class="footer-creator">
-              <h6 class="footer-heading">Created by</h6>
+              <div class="footer-heading">Created by</div>
               <p class="footer-creator-name">Michael Friggemann</p>
               <p class="footer-subtitle">Developer Akademie • Module 8</p>
               <p class="footer-subtitle">Trainee Fullstack Web Developer</p>

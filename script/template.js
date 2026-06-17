@@ -130,6 +130,7 @@ function createDescriptionTabTemplate() {
 
 function getPokemonCardTemplate(pokemon) {
     const pokemonNumber = formatPokemonNumber(pokemon.id);
+    const pokemonName = formatPokemonDisplayName(pokemon.name);
     const typeBadges = createTypeBadges(pokemon.types);
 
     const favoriteBtn = window.pokemonGoFeatures ?
@@ -148,10 +149,10 @@ function getPokemonCardTemplate(pokemon) {
             <div class="pokemon-image-wrapper">
                 ${favoriteBtn}
                 <span class="pokemon-number">${pokemonNumber}</span>
-                <img src="${pokemon.image}" alt="${pokemon.name}" class="pokemon-image" loading="lazy">
+                <img src="${pokemon.image}" alt="${pokemonName}" class="pokemon-image" loading="lazy">
             </div>
             <div class="pokemon-card-content">
-                <h5 class="pokemon-name">${pokemon.name}</h5>
+                <button class="pokemon-name pokemon-detail-trigger" id="pokemon-name-${pokemon.id}" type="button">${pokemonName}</button>
                 <div class="pokemon-types">${typeBadges}</div>
                 ${ratingStars}
                 ${powerLevel}
@@ -159,13 +160,20 @@ function getPokemonCardTemplate(pokemon) {
                     <button class="compare-btn" data-pokemon-id="${pokemon.id}" title="Compare Pokemon">
                         <i class="fas fa-exchange-alt"></i> Compare
                     </button>
-                    <button class="team-add-btn" data-action="add-team" data-pokemon-id="${pokemon.id}" title="Add ${pokemon.name} to team" aria-label="Add ${pokemon.name} to team">
+                    <button class="team-add-btn" data-action="add-team" data-pokemon-id="${pokemon.id}" title="Add ${pokemonName} to team" aria-label="Add ${pokemonName} to team">
                         <i class="fas fa-plus"></i> Team
                     </button>
                 </div>
             </div>
         </div>
     `;
+}
+
+function formatPokemonDisplayName(name) {
+    return String(name || "")
+        .split("-")
+        .map((part) => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+        .join("-");
 }
 
 function createNoResultsTemplate(searchQuery) {

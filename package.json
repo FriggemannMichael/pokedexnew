@@ -12,6 +12,7 @@
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.0"
+    "@playwright/test": "^1.61.0",
+    "lighthouse": "^12.8.2"
   }
 }

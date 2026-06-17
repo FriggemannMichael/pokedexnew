@@ -1,75 +1,21 @@
 class TeamAIService {
+  _createProviders() {
+    return {
+      mistral: { name: "mistral", label: "Mistral", endpoint: "https://api.mistral.ai/v1/chat/completions", model: "mistral-small-latest" },
+      groq: { name: "groq", label: "Groq", endpoint: "https://api.groq.com/openai/v1/chat/completions", model: "llama-3.1-8b-instant" },
+    };
+  }
+
   constructor() {
-    this.providers = {
-      mistral: {
-        name: "mistral",
-        label: "Mistral",
-        endpoint: "https://api.mistral.ai/v1/chat/completions",
-        model: "mistral-small-latest",
-      },
-      groq: {
-        name: "groq",
-        label: "Groq",
-        endpoint: "https://api.groq.com/openai/v1/chat/completions",
-        model: "llama-3.1-8b-instant",
-      },
-    };
-
-    this.storageKeys = {
-      mistralApiKey: "pokedex_ai_mistral_api_key",
-      groqApiKey: "pokedex_ai_groq_api_key",
-    };
-
+    this.providers = this._createProviders();
     this.proxyEndpoint = "/api/ai";
     this.useProxy = false;
     this._proxyChecked = false;
     this._throttleFn = window.createThrottler(2000);
   }
 
-  getConfig() {
-    const runtimeConfig = window.POKE_AI_CONFIG || {};
-    const runtimeMistral = String(runtimeConfig.mistralApiKey || "").trim();
-    const runtimeGroq = String(runtimeConfig.groqApiKey || "").trim();
-
-    if (runtimeMistral || runtimeGroq) {
-      return {
-        mistralApiKey: runtimeMistral,
-        groqApiKey: runtimeGroq,
-      };
-    }
-
-    return {
-      mistralApiKey: localStorage.getItem(this.storageKeys.mistralApiKey) || "",
-      groqApiKey: localStorage.getItem(this.storageKeys.groqApiKey) || "",
-    };
-  }
-
-  saveConfig({ mistralApiKey, groqApiKey }) {
-    this.persistValue(this.storageKeys.mistralApiKey, mistralApiKey);
-    this.persistValue(this.storageKeys.groqApiKey, groqApiKey);
-  }
-
-  persistValue(key, value) {
-    if (!value || !String(value).trim()) {
-      localStorage.removeItem(key);
-      return;
-    }
-
-    localStorage.setItem(key, String(value).trim());
-  }
-
   hasAnyKey() {
-    if (this.useProxy) return true;
-    const cfg = this.getConfig();
-    return Boolean(cfg.mistralApiKey || cfg.groqApiKey);
-  }
-
-  getSafeConfigStatus() {
-    const cfg = this.getConfig();
-    return {
-      mistralConfigured: Boolean(cfg.mistralApiKey),
-      groqConfigured: Boolean(cfg.groqApiKey),
-    };
+    return this.useProxy;
   }
 
   async detectProxy() {
@@ -98,7 +44,6 @@ class TeamAIService {
       staticAnalysis: staticAnalysis || {},
     };
     const prompt = window.getTeamAnalysisPrompt(payload);
-
     return this.requestWithFallback({
       prompt,
       payload,
@@ -113,7 +58,6 @@ class TeamAIService {
       staticAnalysis: staticAnalysis || {},
     };
     const prompt = window.getTeamAdvicePrompt();
-
     return this.requestWithFallback({
       prompt,
       payload,
@@ -122,17 +66,19 @@ class TeamAIService {
     });
   }
 
-  async requestGymStrategy({ playerTeam, gymTeam, playerAvgStats, gymAvgStats }) {
-    const payload = {
+  _buildGymStrategyPayload(playerTeam, gymTeam, playerAvgStats, gymAvgStats) {
+    return {
       playerTeam: this.sanitizeTeam(playerTeam),
       gymTeam: this.sanitizeTeam(gymTeam),
       playerAvgStats: playerAvgStats || {},
       gymAvgStats: gymAvgStats || {},
     };
-    const prompt = window.getBattleStrategyPrompt();
+  }
 
+  async requestGymStrategy({ playerTeam, gymTeam, playerAvgStats, gymAvgStats }) {
+    const payload = this._buildGymStrategyPayload(playerTeam, gymTeam, playerAvgStats, gymAvgStats);
     return this.requestWithFallback({
-      prompt,
+      prompt: window.getBattleStrategyPrompt(),
       payload,
       temperature: 0.25,
       maxTokens: 700,
@@ -140,44 +86,42 @@ class TeamAIService {
   }
 
   getProviderList() {
-    if (this.useProxy) {
-      return [{ ...this.providers.mistral }, { ...this.providers.groq }];
-    }
-    const config = this.getConfig();
-    const providers = [
-      { ...this.providers.mistral, apiKey: config.mistralApiKey },
-      { ...this.providers.groq, apiKey: config.groqApiKey },
-    ].filter((provider) => Boolean(provider.apiKey));
-    if (!providers.length) {
-      throw new Error("Bitte API-Key fuer Mistral oder Groq speichern.");
-    }
-    return providers;
+    if (!this.useProxy) throw AppError.create(AppError.CATEGORY.AI, "Proxy nicht verfügbar.");
+    return [{ ...this.providers.mistral }, { ...this.providers.groq }];
+  }
+
+  _buildResult(provider, content) {
+    return {
+      provider: provider.name,
+      providerLabel: provider.label,
+      rawContent: content,
+      parsed: this.tryParseJSON(content),
+    };
+  }
+
+  async _tryCallProvider(provider, prompt, payload, temperature, maxTokens) {
+    const content = await this.callProvider({ provider, prompt, payload, temperature, maxTokens });
+    return this._buildResult(provider, content);
   }
 
   async requestWithFallback({ prompt, payload, temperature = 0.3, maxTokens = 700 }) {
     await this.detectProxy();
     const providers = this.getProviderList();
-
     let lastError = null;
     for (const provider of providers) {
       try {
-        const content = await this.callProvider({ provider, prompt, payload, temperature, maxTokens });
-        return {
-          provider: provider.name,
-          providerLabel: provider.label,
-          rawContent: content,
-          parsed: this.tryParseJSON(content),
-        };
+        return await this._tryCallProvider(provider, prompt, payload, temperature, maxTokens);
       } catch (error) {
         lastError = error;
-        console.warn(`[AI] ${provider.label} failed, trying fallback`, error);
+        AppError.warn(AppError.CATEGORY.AI, `${provider.label} fehlgeschlagen, versuche Fallback`, error);
       }
     }
-    throw new Error(lastError?.message || "AI request failed on all providers.");
+    throw AppError.create(AppError.CATEGORY.AI, "Alle Provider fehlgeschlagen.", lastError);
   }
 
   buildRequestBody(provider, prompt, payload, temperature, maxTokens) {
-    const body = {
+    return {
+      provider: provider.name,
       model: provider.model,
       temperature,
       max_tokens: maxTokens,
@@ -186,8 +130,39 @@ class TeamAIService {
         { role: "user", content: `${prompt}\n\nInput:\n${JSON.stringify(payload)}` },
       ],
     };
-    if (this.useProxy) body.provider = provider.name;
-    return body;
+  }
+
+  _buildProxyHeaders() {
+    return { "Content-Type": "application/json" };
+  }
+
+  async _handleProviderResponse(response, label) {
+    if (!response.ok) {
+      const body = await response.text();
+      throw AppError.create(AppError.CATEGORY.AI, `${label} API ${response.status}: ${(body || "no-body").slice(0, 280)}`);
+    }
+    return this.extractProviderContent(await response.json(), label);
+  }
+
+  async _makeProviderRequest(controller, provider, prompt, payload, temperature, maxTokens) {
+    return this._fetchWithRetry(this.proxyEndpoint, {
+      method: "POST",
+      headers: this._buildProxyHeaders(),
+      body: JSON.stringify(this.buildRequestBody(provider, prompt, payload, temperature, maxTokens)),
+      signal: controller.signal,
+    });
+  }
+
+  async callProvider({ provider, prompt, payload, temperature, maxTokens }) {
+    await this._throttle();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+    try {
+      const response = await this._makeProviderRequest(controller, provider, prompt, payload, temperature, maxTokens);
+      return await this._handleProviderResponse(response, provider.label);
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
 
   extractProviderContent(data, label) {
@@ -195,42 +170,12 @@ class TeamAIService {
     const content = Array.isArray(messageContent)
       ? messageContent.map((part) => part?.text || "").join(" ").trim()
       : messageContent;
-    if (!content) throw new Error(`${label} API returned no content.`);
+    if (!content) throw AppError.create(AppError.CATEGORY.AI, `${label} API returned no content.`);
     return String(content).trim();
-  }
-
-  async callProvider({ provider, prompt, payload, temperature, maxTokens }) {
-    await this._throttle();
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
-
-    const url = this.useProxy ? this.proxyEndpoint : provider.endpoint;
-    const headers = { "Content-Type": "application/json" };
-    if (!this.useProxy) headers["Authorization"] = `Bearer ${provider.apiKey}`;
-
-    try {
-      const response = await this._fetchWithRetry(url, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(this.buildRequestBody(provider, prompt, payload, temperature, maxTokens)),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(`${provider.label} API ${response.status}: ${(body || "no-body").slice(0, 280)}`);
-      }
-
-      return this.extractProviderContent(await response.json(), provider.label);
-    } finally {
-      clearTimeout(timeoutId);
-    }
   }
 
   sanitizeTeam(team) {
     if (!Array.isArray(team)) return [];
-
     return team.map((pokemon) => ({
       id: pokemon?.id || null,
       name: pokemon?.name || "",
@@ -241,19 +186,10 @@ class TeamAIService {
 
   tryParseJSON(rawContent) {
     if (!rawContent) return null;
-
-    try {
-      return JSON.parse(rawContent);
-    } catch {
-      const extracted = this.extractJSONObject(rawContent);
-      if (!extracted) return null;
-
-      try {
-        return JSON.parse(extracted);
-      } catch {
-        return null;
-      }
-    }
+    try { return JSON.parse(rawContent); } catch { /* continue */ }
+    const extracted = this.extractJSONObject(rawContent);
+    if (!extracted) return null;
+    try { return JSON.parse(extracted); } catch { return null; }
   }
 
   extractJSONObject(text) {

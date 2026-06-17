@@ -233,24 +233,46 @@
 
 .progress-bar-container {
   width: 100%;
-  height: 20px;
-  background: #e0e0e0;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: var(--radius-circle);
   overflow: hidden;
   position: relative;
+  box-shadow:
+    inset 0 1px 3px rgba(44, 62, 80, 0.1),
+    0 10px 28px rgba(44, 62, 80, 0.08);
 }
 
 .progress-bar-fill {
+  position: absolute;
+  top: 0;
   height: 100%;
-  background: var(--gradient);
   border-radius: var(--radius-circle);
-  transition: width 0.5s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: white;
+  transition: width 0.45s ease;
+}
+
+.progress-bar-fill--gym {
+  left: 0;
+  background: linear-gradient(90deg, rgba(78, 205, 196, 0.95), rgba(46, 204, 113, 0.95));
+  box-shadow: 0 0 18px rgba(78, 205, 196, 0.32);
+}
+
+.progress-bar-fill--player {
+  right: 0;
+  background: linear-gradient(90deg, rgba(255, 174, 121, 0.95), rgba(255, 107, 107, 0.95));
+  box-shadow: 0 0 18px rgba(255, 107, 107, 0.28);
+}
+
+.battle-status-track::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: rgba(44, 62, 80, 0.16);
+  z-index: 1;
 }
 
 /* ===== VICTORY/DEFEAT SCREEN ===== */
@@ -429,4 +451,3 @@
     opacity: 0;
   }
 }
-

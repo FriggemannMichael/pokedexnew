@@ -23,8 +23,8 @@ class PokemonCompare {
   }
 
   createCompareModal() {
-    this.compareModal = createBootstrapModal("compareModal", '<span class="vs-icon">VS</span> Pokemon Comparison', {
-      modalClass: "compare-modal",
+    this.compareModal = createBootstrapModal("compareModal", '<span class="matchup-icon" aria-hidden="true">⚖</span> Matchup Analysis', {
+      modalClass: "compare-modal glass-modal",
     });
     this.modalElement = document.getElementById("compareModal");
   }
@@ -232,6 +232,42 @@ class PokemonCompare {
       fairy: { superEffective: ['fighting', 'dragon', 'dark'], notVeryEffective: ['fire', 'poison', 'steel'] },
       normal: { notVeryEffective: ['rock', 'steel'], noEffect: ['ghost'] }
     };
+  }
+
+  sumStats(stats) {
+    const keys = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+    return keys.reduce((sum, key) => sum + (stats[key] || 0), 0);
+  }
+
+  edgeFrom(value1, value2, pokemon1, pokemon2) {
+    if (value1 === value2) return { winner: null };
+    return value1 > value2 ? { winner: pokemon1 } : { winner: pokemon2 };
+  }
+
+  buildMatchupSummary(pokemon1, pokemon2, stats1, stats2, effectiveness) {
+    const total1 = this.sumStats(stats1);
+    const total2 = this.sumStats(stats2);
+    return {
+      total1,
+      total2,
+      statEdge: this.edgeFrom(total1, total2, pokemon1, pokemon2),
+      typeEdge: this.edgeFrom(effectiveness.pokemon1ToPokemon2, effectiveness.pokemon2ToPokemon1, pokemon1, pokemon2)
+    };
+  }
+
+  applyMatchupTheme(pokemon1, pokemon2) {
+    if (!this.modalElement) return;
+    this.modalElement.style.setProperty('--matchup-type-1', `var(--type-${pokemon1.types[0]})`);
+    this.modalElement.style.setProperty('--matchup-type-2', `var(--type-${pokemon2.types[0]})`);
+    this.modalElement.style.setProperty('--type-accent', `var(--type-${pokemon1.types[0]})`);
+  }
+
+  matchupVerdict(summary) {
+    const stat = summary.statEdge.winner;
+    const type = summary.typeEdge.winner;
+    if (!stat && !type) return { tone: 'balanced', text: 'Balanced Matchup' };
+    if (stat && type && stat.id === type.id) return { tone: 'favored', text: `${stat.name} Favored` };
+    return { tone: 'mixed', text: 'Contested Matchup' };
   }
 
   triggerBattle() {
