@@ -51,13 +51,13 @@ function createDetailImageTemplate() {
 
 function createTabNavigationTemplate() {
     return `
-        <div class="pokemon-tabs">
-            <button class="tab-btn active" data-tab="info">INFO</button>
-            <button class="tab-btn" data-tab="stats">STATS</button>
-            <button class="tab-btn" data-tab="breeding">BREEDING</button>
-            <button class="tab-btn" data-tab="moves">MOVES</button>
-            <button class="tab-btn" data-tab="evolution">EVOLUTION</button>
-            <button class="tab-btn" data-tab="description">DESCRIPTION</button>
+        <div class="pokemon-tabs" role="tablist" aria-label="Pokémon details">
+            <button class="tab-btn active" data-tab="info" role="tab" id="tabbtn-info" aria-controls="tab-info" aria-selected="true">INFO</button>
+            <button class="tab-btn" data-tab="stats" role="tab" id="tabbtn-stats" aria-controls="tab-stats" aria-selected="false">STATS</button>
+            <button class="tab-btn" data-tab="breeding" role="tab" id="tabbtn-breeding" aria-controls="tab-breeding" aria-selected="false">BREEDING</button>
+            <button class="tab-btn" data-tab="moves" role="tab" id="tabbtn-moves" aria-controls="tab-moves" aria-selected="false">MOVES</button>
+            <button class="tab-btn" data-tab="evolution" role="tab" id="tabbtn-evolution" aria-controls="tab-evolution" aria-selected="false">EVOLUTION</button>
+            <button class="tab-btn" data-tab="description" role="tab" id="tabbtn-description" aria-controls="tab-description" aria-selected="false">DESCRIPTION</button>
         </div>
     `;
 }
@@ -77,7 +77,7 @@ function createTabContentTemplate() {
 
 function createInfoTabTemplate() {
     return `
-        <div class="tab-panel active" id="tab-info">
+        <div class="tab-panel active" id="tab-info" role="tabpanel" aria-labelledby="tabbtn-info" tabindex="0">
             <div id="detailTypes" class="pokemon-types-display"></div>
             <div class="pokemon-stats">
                 <div id="detailStats" class="stats-grid"></div>
@@ -88,7 +88,7 @@ function createInfoTabTemplate() {
 
 function createStatsTabTemplate() {
     return `
-        <div class="tab-panel" id="tab-stats">
+        <div class="tab-panel" id="tab-stats" role="tabpanel" aria-labelledby="tabbtn-stats" tabindex="0">
             <div id="detailBaseStats" class="base-stats-container"></div>
         </div>
     `;
@@ -96,7 +96,7 @@ function createStatsTabTemplate() {
 
 function createBreedingTabTemplate() {
     return `
-        <div class="tab-panel" id="tab-breeding">
+        <div class="tab-panel" id="tab-breeding" role="tabpanel" aria-labelledby="tabbtn-breeding" tabindex="0">
             <div id="detailBreeding" class="breeding-info"></div>
         </div>
     `;
@@ -104,7 +104,7 @@ function createBreedingTabTemplate() {
 
 function createMovesTabTemplate() {
     return `
-        <div class="tab-panel" id="tab-moves">
+        <div class="tab-panel" id="tab-moves" role="tabpanel" aria-labelledby="tabbtn-moves" tabindex="0">
             <div id="detailMoves" class="moves-container"></div>
         </div>
     `;
@@ -112,7 +112,7 @@ function createMovesTabTemplate() {
 
 function createEvolutionTabTemplate() {
     return `
-        <div class="tab-panel" id="tab-evolution">
+        <div class="tab-panel" id="tab-evolution" role="tabpanel" aria-labelledby="tabbtn-evolution" tabindex="0">
             <div id="detailEvolutions" class="evolution-display"></div>
         </div>
     `;
@@ -120,7 +120,7 @@ function createEvolutionTabTemplate() {
 
 function createDescriptionTabTemplate() {
     return `
-        <div class="tab-panel" id="tab-description">
+        <div class="tab-panel" id="tab-description" role="tabpanel" aria-labelledby="tabbtn-description" tabindex="0">
             <div class="description-container">
                 <p id="detailDescription" class="pokemon-description">Loading description...</p>
             </div>
@@ -158,6 +158,9 @@ function getPokemonCardTemplate(pokemon) {
                 <div class="card-actions">
                     <button class="compare-btn" data-pokemon-id="${pokemon.id}" title="Compare Pokemon">
                         <i class="fas fa-exchange-alt"></i> Compare
+                    </button>
+                    <button class="team-add-btn" data-action="add-team" data-pokemon-id="${pokemon.id}" title="Add ${pokemon.name} to team" aria-label="Add ${pokemon.name} to team">
+                        <i class="fas fa-plus"></i> Team
                     </button>
                 </div>
             </div>

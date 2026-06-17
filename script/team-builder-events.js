@@ -67,6 +67,14 @@
       this.clearHoveredSlots();
     });
 
+    document.addEventListener("click", (event) => {
+      const addButton = event.target.closest(
+        'button[data-action="add-team"][data-pokemon-id]',
+      );
+      if (!addButton) return;
+      this.addPokemonById(addButton.dataset.pokemonId);
+    });
+
     window.addEventListener(TEAM_EVENT_NAME, (event) => {
       const source = event.detail?.source;
       if (source === "team-builder") return;
@@ -76,6 +84,15 @@
       this.updateCounter();
       this.refreshAdvisor();
     });
+  };
+
+  TeamBuilderUI.prototype.addPokemonById = function (pokemonId) {
+    const emptyIndex = this.state.getSlots().findIndex((slot) => !slot);
+    if (emptyIndex === -1) {
+      this.announce("Team is full. Remove a Pokemon first.");
+      return;
+    }
+    this.handleDrop(emptyIndex, pokemonId);
   };
 
   TeamBuilderUI.prototype.handleDrop = async function (slotIndex, pokemonId) {
