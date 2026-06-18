@@ -31,7 +31,7 @@
         <div class="team-member-number">${pokemonNumber}</div>
         <div class="team-member-name">${pokemon.name}</div>
         <div class="team-member-types">
-          ${pokemon.types.map((type) => `<span class=\"type-badge type-${type}\">${type.toUpperCase()}</span>`).join('')}
+          ${pokemon.types.map((type) => `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`).join('')}
         </div>
       </div>
     </div>`;

@@ -122,7 +122,9 @@ function setupStrengthToggle(container, { exclusive = true } = {}) {
   function toggle(btn) {
     const panel = getPanel(btn);
     if (!panel) return;
-    if (recently(btn)) { }
+    if (recently(btn)) {
+      /* TODO: Debounce unvollstaendig - aktuell kein Effekt, Verhalten bewusst belassen */
+    }
     stamp(btn);
 
     const expanding = panel.classList.contains("is-hidden");

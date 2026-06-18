@@ -1,3 +1,4 @@
+/* global appState */ // wird in page.evaluate()-Callbacks im Browser-Kontext genutzt
 const fs = require("fs");
 const http = require("http");
 const path = require("path");
