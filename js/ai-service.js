@@ -114,19 +114,27 @@
       return content;
     }
 
+    _professorRules() {
+      return [
+        "Wähle GENAU EINEN Schwerpunkt: Typen-Abdeckung ODER Synergie ODER Defensiv-Werte.",
+        "Nutze Fachbegriffe (STAB, Coverage, Schwächen).",
+        "Stütze dich AUSSCHLIESSLICH auf die übergebenen Teamdaten; erfinde keine Pokémon, Typen oder Schwächen.",
+        "Erlaubte Typen-Namen (keine anderen verwenden): Normal, Feuer, Wasser, Elektro, Pflanze, Eis, Kampf, Gift, Boden, Flug, Psycho, Käfer, Gestein, Geist, Drache, Unlicht, Stahl, Fee.",
+        "Antworte als Fließtext in maximal 3 vollständigen Sätzen auf Deutsch. Keine Aufzählungen, kein Markdown. Professionell.",
+      ];
+    }
+
     _buildProfessorSystemPrompt(teamSize) {
       const isComplete = teamSize >= 6;
       const sizeRule = isComplete
         ? "Das Team ist VOLLSTÄNDIG (6/6). Schlage NIEMALS vor, weitere Mitglieder hinzuzufügen."
         : "Beginne mit einer väterlichen Ermutigung, das Team auf 6 Mitglieder zu vervollständigen.";
-      return [
+      const intro = [
         "Du bist Professor Eich, der legendäre Pokémon-Experte.",
         `Das Team hat aktuell ${teamSize} von 6 Mitgliedern.`,
         sizeRule,
-        "Wähle GENAU EINEN Schwerpunkt: Typen-Abdeckung ODER Synergie ODER Defensiv-Werte.",
-        "Nutze Fachbegriffe (STAB, Coverage, Schwächen).",
-        "Antworte als Fließtext in maximal 3 vollständigen Sätzen auf Deutsch. Keine Aufzählungen, kein Markdown. Professionell.",
-      ].join("\n");
+      ];
+      return [...intro, ...this._professorRules()].join("\n");
     }
 
     async requestProfessorTeamAdvice({ team = [], staticAnalysis = null } = {}) {
@@ -138,14 +146,14 @@
     async requestBattleCommentary({ attackerName, moveName, defenderName, effectiveness } = {}) {
       const userPrompt = `${attackerName} nutzt ${moveName} gegen ${defenderName}. Es ist ${effectiveness}.`;
       return this.askGroq(
-        "Du bist ein leidenschaftlicher Kampf-Kommentator. Beschreibe das Ergebnis eines Spielzugs in einem einzigen, actionreichen Satz. Nutze dramatische Worte. Antworte auf Deutsch.",
+        "Du bist ein leidenschaftlicher Kampf-Kommentator. Beschreibe das Ergebnis eines Spielzugs in einem einzigen, actionreichen Satz. Nutze dramatische Worte. Verwende nur die genannten Namen und die genannte Wirkung; erfinde keine Pokémon oder Typen. Antworte auf Deutsch.",
         userPrompt,
         { temperature: 0.8, maxTokens: 90, useCache: true },
       );
     }
 
     async requestGymLeaderDialogue({ leaderName, leaderType, leaderStyle, eventText } = {}) {
-      const systemPrompt = `Du bist ${leaderName}, der ${leaderType}-Arenaleiter. Dein Stil ist ${leaderStyle}. Antworte dem Spieler basierend auf seinem aktuellen Zug. Max. 12 Woerter.`;
+      const systemPrompt = `Du bist ${leaderName}, der ${leaderType}-Arenaleiter. Dein Stil ist ${leaderStyle}. Antworte dem Spieler basierend auf seinem aktuellen Zug. Bleibe in der Rolle und erfinde keine Fakten. Max. 12 Woerter.`;
       const result = await this.askGroq(
         systemPrompt,
         String(eventText || "").trim(),

@@ -57,76 +57,92 @@ app.get("/api/ai/ping", (req, res) => {
   res.json({ status: "ok" });
 });
 
+function openAiStyleConfig({ endpoint, apiKey, model, temperature, max_tokens, messages }) {
+  return {
+    endpoint,
+    apiKey,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model,
+      temperature: temperature ?? 0.7,
+      max_tokens: max_tokens ?? 320,
+      messages: messages || [],
+    }),
+  };
+}
+
+function groqConfig(b) {
+  return openAiStyleConfig({
+    endpoint: "https://api.groq.com/openai/v1/chat/completions",
+    apiKey: process.env.GROQ_API_KEY,
+    model: b.model || process.env.GROQ_MODEL || "llama-3.1-8b-instant",
+    ...b,
+  });
+}
+
+function mistralConfig(b) {
+  return openAiStyleConfig({
+    endpoint: "https://api.mistral.ai/v1/chat/completions",
+    apiKey: process.env.MISTRAL_API_KEY,
+    model: b.model || "mistral-small-latest",
+    ...b,
+  });
+}
+
+function splitGeminiMessages(messages) {
+  const list = messages || [];
+  const system = list.filter((m) => m.role === "system").map((m) => m.content).join("\n");
+  const parts = list.filter((m) => m.role !== "system").map((m) => ({ text: m.content }));
+  return { system, parts };
+}
+
+function geminiConfig(b) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const id = b.model || process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const { system, parts } = splitGeminiMessages(b.messages);
+  const payload = {
+    contents: [{ role: "user", parts }],
+    generationConfig: {
+      temperature: b.temperature ?? 0.7,
+      maxOutputTokens: b.max_tokens ?? 320,
+      thinkingConfig: { thinkingBudget: 0 },
+    },
+  };
+  if (system) payload.system_instruction = { parts: [{ text: system }] };
+  return {
+    endpoint: `https://generativelanguage.googleapis.com/v1beta/models/${id}:generateContent?key=${apiKey}`,
+    apiKey,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  };
+}
+
+function getProviderConfig(provider, body) {
+  if (provider === "mistral") return mistralConfig(body);
+  if (provider === "gemini") return geminiConfig(body);
+  return groqConfig(body);
+}
+
+function normalizeResponse(provider, data) {
+  if (provider !== "gemini") return data;
+  const content = (data?.candidates?.[0]?.content?.parts || [])
+    .map((p) => p?.text || "")
+    .join("")
+    .trim();
+  return { choices: [{ message: { content } }] };
+}
+
 app.post("/api/ai", rateLimiter, async (req, res) => {
-  const { provider, model, messages, temperature, max_tokens } = req.body;
-
-  let endpoint, apiKey, headers, body;
-
-  if (provider === "mistral") {
-    endpoint = "https://api.mistral.ai/v1/chat/completions";
-    apiKey = process.env.MISTRAL_API_KEY;
-    headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    };
-    body = JSON.stringify({
-      model: model || "mistral-small",
-      temperature: temperature ?? 0.7,
-      max_tokens: max_tokens ?? 320,
-      messages: messages || [],
-    });
-  } else if (provider === "gemini") {
-    endpoint =
-      "https://generativelanguage.googleapis.com/v1beta/models/" +
-      (model || "gemini-pro") +
-      ":generateContent";
-    apiKey = process.env.GEMINI_API_KEY;
-    headers = {
-      "Content-Type": "application/json",
-    };
-    body = JSON.stringify({
-      contents: [
-        {
-          parts: (messages || []).map((m) => ({ text: m.content })),
-        },
-      ],
-    });
-    endpoint += `?key=${apiKey}`;
-  } else {
-    endpoint = "https://api.groq.com/openai/v1/chat/completions";
-    apiKey = process.env.GROQ_API_KEY;
-    headers = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    };
-    body = JSON.stringify({
-      model: model || process.env.GROQ_MODEL || "llama-3.1-8b-instant",
-      temperature: temperature ?? 0.7,
-      max_tokens: max_tokens ?? 320,
-      messages: messages || [],
-    });
+  const { provider } = req.body;
+  const cfg = getProviderConfig(provider, req.body);
+  if (!cfg.apiKey) {
+    return res.status(500).json({ error: `No API key configured for provider: ${provider || "groq"}` });
   }
-
-  if (!apiKey) {
-    return res.status(500).json({
-      error: `No API key configured for provider: ${provider || "groq"}`,
-    });
-  }
-
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers,
-      body,
-    });
-
+    const response = await fetch(cfg.endpoint, { method: "POST", headers: cfg.headers, body: cfg.body });
     const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json(data);
-    }
-
-    res.json(data);
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(normalizeResponse(provider, data));
   } catch (error) {
     console.error("[Proxy] AI request failed:", error.message);
     res.status(502).json({ error: "AI proxy request failed" });
