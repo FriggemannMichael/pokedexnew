@@ -18,8 +18,8 @@ BattleSimulator.prototype.renderBattle = function () {
         </div>
       </div>
       <div class="battle-controls">
-        <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${this.currentBattle.isFinished ? "disabled" : ""}>Next Round</button>
-        <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${this.currentBattle.isFinished ? "disabled" : ""}>
+        <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${this.currentBattle.isFinished || this.roundInProgress ? "disabled" : ""}>Next Round</button>
+        <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${this.currentBattle.isFinished || this.roundInProgress ? "disabled" : ""}>
           ${this.isAutoPlaying ? "Pause" : "Auto Play"}</button>
         <button class="battle-btn danger" onclick="window.battleSimulator.resetBattle()">Reset</button>
       </div>
@@ -41,7 +41,7 @@ BattleSimulator.prototype.renderFighter = function (fighter, fighterId) {
 	        ${fighter.types.map((t) => `<span class="type-badge type-${t}">${t.toUpperCase()}</span>`).join("")}
 	      </div>
 	      ${this.renderStatStageBadges(fighter)}
-	      ${this.renderMoveList(fighter)}
+	      ${this.renderMoveList(fighter, fighterId)}
 	      <div class="hp-bar-container">
 	        <div class="hp-label"><span>HP</span><span class="hp-current">${Math.max(0, Math.round(fighter.currentHp))} / ${fighter.maxHp}</span></div>
 	        <div class="hp-bar"><div class="hp-fill ${hpClass}" style="width: ${Math.max(0, hpPct)}%"></div></div>
@@ -72,22 +72,40 @@ BattleSimulator.prototype.renderStatStageBadges = function (fighter) {
   return badges ? `<div class="stat-stage-badges">${badges}</div>` : "";
 };
 
-BattleSimulator.prototype.renderMoveList = function (fighter) {
+BattleSimulator.prototype.renderMoveList = function (fighter, fighterId) {
   const moves = Array.isArray(fighter.moves) ? fighter.moves : [];
   if (!moves.length) return "";
+  const canSelect = fighterId === "fighter1"
+    && !this.currentBattle?.isFinished
+    && !this.isAutoPlaying;
 
   return `
     <div class="fighter-move-list">
-      ${moves.map((move) => this.renderMoveChip(move)).join("")}
+      ${moves.map((move, index) => this.renderMoveChip(move, index, canSelect)).join("")}
     </div>
   `;
 };
 
-BattleSimulator.prototype.renderMoveChip = function (move) {
+BattleSimulator.prototype.renderMoveChip = function (move, index, canSelect = false) {
   const name = this.escapeHtml(move.displayName || move.name || "MOVE");
   const type = this.escapeHtml(move.type || "normal");
   const power = Number(move.power) > 0 ? move.power : "-";
   const priority = Number(move.priority) > 0 ? `<span class="move-priority">+${move.priority}</span>` : "";
+  const content = `
+      <span class="move-name">${name}</span>
+      <span class="move-meta">${type.toUpperCase()} &middot; ${power}${priority}</span>
+  `;
+  if (canSelect) {
+    const disabled = this.roundInProgress ? "disabled" : "";
+    return `
+      <button
+        type="button"
+        class="fighter-move-chip fighter-move-button type-${type}"
+        onclick="window.battleSimulator.playRoundWithMove(${index})"
+        ${disabled}
+      >${content}</button>
+    `;
+  }
   return `
     <div class="fighter-move-chip type-${type}">
       <span class="move-name">${name}</span>
