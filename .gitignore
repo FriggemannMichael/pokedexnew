@@ -40,7 +40,6 @@ yarn-error.log*
 .env.development.local
 
 # Claude und ENEV
-# Claude und ENEV
 .claude/
 enev/
 
