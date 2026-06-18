@@ -8,6 +8,8 @@ function getBattleStrategyPrompt() {
     "- Maximal 5 Eintraege je Liste.",
     "- Beruecksichtige Typen und Basiswerte.",
     "- Sprache: Deutsch.",
+    "- Nutze AUSSCHLIESSLICH diese deutschen Typen-Bezeichnungen (keine anderen erfinden):",
+    "  Normal, Feuer, Wasser, Elektro, Pflanze, Eis, Kampf, Gift, Boden, Flug, Psycho, Kaefer, Gestein, Geist, Drache, Unlicht, Stahl, Fee.",
   ].join("\n");
 }
 

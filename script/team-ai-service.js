@@ -1,6 +1,7 @@
 class TeamAIService {
   _createProviders() {
     return {
+      gemini: { name: "gemini", label: "Gemini", endpoint: "/api/ai", model: "gemini-2.5-flash" },
       mistral: { name: "mistral", label: "Mistral", endpoint: "https://api.mistral.ai/v1/chat/completions", model: "mistral-small-latest" },
       groq: { name: "groq", label: "Groq", endpoint: "https://api.groq.com/openai/v1/chat/completions", model: "llama-3.1-8b-instant" },
     };
@@ -87,7 +88,7 @@ class TeamAIService {
 
   getProviderList() {
     if (!this.useProxy) throw AppError.create(AppError.CATEGORY.AI, "Proxy nicht verfügbar.");
-    return [{ ...this.providers.mistral }, { ...this.providers.groq }];
+    return [{ ...this.providers.gemini }, { ...this.providers.mistral }, { ...this.providers.groq }];
   }
 
   _buildResult(provider, content) {

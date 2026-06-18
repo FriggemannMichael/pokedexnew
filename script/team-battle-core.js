@@ -147,7 +147,7 @@ class TeamBattleSystem {
   }
 
   extractStats(details) {
-    if (!details?.stats) return { hp: 100, attack: 50, defense: 50, speed: 50 };
+    if (!details?.stats) return { hp: 100, attack: 50, defense: 50, speed: 50, specialAttack: 50, specialDefense: 50 };
     const stats = {};
     details.stats.forEach((s) => {
       const n = s.stat.name;
@@ -155,6 +155,8 @@ class TeamBattleSystem {
       if (n === "attack") stats.attack = s.base_stat;
       if (n === "defense") stats.defense = s.base_stat;
       if (n === "speed") stats.speed = s.base_stat;
+      if (n === "special-attack") stats.specialAttack = s.base_stat;
+      if (n === "special-defense") stats.specialDefense = s.base_stat;
     });
     return stats;
   }
