@@ -168,6 +168,8 @@ function getPokemonScripts() {
   return [
     "./script/pokemon-core.js",
     "./script/pokemon-detail.js",
+    "./script/pokemon-detail-sections.js",
+    "./script/pokemon-detail-evolution.js",
     "./script/pokemon-modal.js",
     "./script/pokemon-ui.js",
     "./script/navigation.js",
