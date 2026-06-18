@@ -117,6 +117,27 @@
   box-shadow: var(--shadow-md);
 }
 
+.mini-pokemon-card.is-ace {
+  border: 2px solid rgba(255, 193, 7, 0.85);
+  box-shadow: 0 10px 24px rgba(255, 193, 7, 0.22);
+}
+
+.mini-ace-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 3px 7px;
+  border-radius: var(--radius-sm);
+  background: #ffc107;
+  color: #2b2500;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1;
+}
+
 .mini-pokemon-image {
   width: 80px;
   height: 80px;
@@ -215,6 +236,58 @@
   text-align: center;
   margin-bottom: var(--spacing-md);
   text-transform: uppercase;
+}
+
+.gym-intel-panel {
+  width: 200px;
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.gym-intel-panel h6 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+  text-transform: uppercase;
+}
+
+.gym-intel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+}
+
+.gym-intel-row:last-child {
+  border-bottom: 0;
+}
+
+.gym-intel-row span {
+  color: #666;
+}
+
+.gym-intel-row strong {
+  color: var(--dark);
+  font-weight: 800;
+  text-align: right;
+  min-width: 0;
+}
+
+.gym-intel-ace {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .team-stat-row {

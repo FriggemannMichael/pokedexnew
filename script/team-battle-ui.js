@@ -17,6 +17,7 @@ TeamBattleSystem.prototype.renderOverview = function () {
   const leaderName = this.gymLeader?.name || "Gym Leader";
   const leaderType = this.getTypeLabel(this.gymLeader?.type || "normal");
   const initials = this.gymLeaders[leaderName]?.initials || leaderName.slice(0, 2).toUpperCase();
+  const gymIntel = this.getGymIntel();
 
   body.innerHTML = `
     <div class="team-battle-preview">
@@ -31,6 +32,7 @@ TeamBattleSystem.prototype.renderOverview = function () {
       <div class="team-vs-divider">
         <div class="vs-badge">VS</div>
         ${this.renderStatsComparison(playerAvg, gymAvg)}
+        ${this.renderGymIntel(gymIntel)}
         ${this.renderLeaderDialogueCard()}
       </div>
       <div class="team-side gym-side">
@@ -39,9 +41,43 @@ TeamBattleSystem.prototype.renderOverview = function () {
           <div class="team-side-title">${leaderName}</div>
           <div class="team-side-subtitle"><span>${leaderType}-Arena</span></div>
         </div>
-        ${this.gymTeam.map((p) => this.renderMiniCard(p)).join("")}
+        ${this.gymTeam.map((p) => this.renderMiniCard(p, { isAce: Number(p.id) === Number(this.strongestGymPokemonId) })).join("")}
       </div>
       <button class="start-battle-btn" onclick="window.teamBattle.startBattle()"><span>START BATTLE</span></button>
+    </div>
+  `;
+};
+
+TeamBattleSystem.prototype.getGymIntel = function () {
+  const leaderType = this.gymLeader?.type || "normal";
+  const typeMatches = this.gymTeam.filter((pokemon) => pokemon.types.includes(leaderType)).length;
+  const totalStrength = this.gymTeam.reduce((sum, pokemon) => sum + this.calculatePokemonStrength(pokemon), 0);
+  const averageStrength = this.gymTeam.length ? Math.round(totalStrength / this.gymTeam.length) : 0;
+  const ace = this.gymTeam.find((pokemon) => Number(pokemon.id) === Number(this.strongestGymPokemonId));
+  return {
+    typeMatches,
+    total: this.gymTeam.length,
+    averageStrength,
+    difficulty: this.getGymDifficultyLabel(averageStrength),
+    aceName: ace?.name || "-",
+  };
+};
+
+TeamBattleSystem.prototype.getGymDifficultyLabel = function (averageStrength) {
+  if (averageStrength >= 520) return "Elite";
+  if (averageStrength >= 450) return "Hard";
+  if (averageStrength >= 360) return "Standard";
+  return "Training";
+};
+
+TeamBattleSystem.prototype.renderGymIntel = function (intel) {
+  return `
+    <div class="gym-intel-panel">
+      <h6>Gym Intel</h6>
+      <div class="gym-intel-row"><span>Theme</span><strong>${intel.typeMatches}/${intel.total}</strong></div>
+      <div class="gym-intel-row"><span>Power</span><strong>${intel.averageStrength}</strong></div>
+      <div class="gym-intel-row"><span>Level</span><strong>${intel.difficulty}</strong></div>
+      <div class="gym-intel-row"><span>Ace</span><strong class="gym-intel-ace">${intel.aceName}</strong></div>
     </div>
   `;
 };
@@ -62,9 +98,12 @@ TeamBattleSystem.prototype.renderStatsComparison = function (playerAvg, gymAvg) 
     </div>`;
 };
 
-TeamBattleSystem.prototype.renderMiniCard = function (pokemon) {
+TeamBattleSystem.prototype.renderMiniCard = function (pokemon, options = {}) {
+  const aceBadge = options.isAce ? '<div class="mini-ace-badge">ACE</div>' : "";
+  const aceClass = options.isAce ? " is-ace" : "";
   return `
-    <div class="mini-pokemon-card">
+    <div class="mini-pokemon-card${aceClass}">
+      ${aceBadge}
       <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-pokemon-image">
       <div class="mini-pokemon-name">${pokemon.name}</div>
       <div class="mini-pokemon-types">

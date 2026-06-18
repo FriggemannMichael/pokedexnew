@@ -17,6 +17,7 @@ class TeamBattleSystem {
     this.gymLeader = null;
     this.strongestGymPokemonId = null;
     this.gymLeaderDialogRequestId = 0;
+    this.gymCandidateSpeciesCache = new Map();
     this.gymLeaders = {
       Rocko: { type: "rock", style: "hart und unnachgiebig", initials: "RO" },
       Misty: { type: "water", style: "temperamentvoll und direkt", initials: "MI" },
@@ -115,31 +116,197 @@ class TeamBattleSystem {
   }
 
   async generateGymTeam() {
-    const randomIds = [];
-    while (randomIds.length < 6) {
-      const id = Math.floor(Math.random() * 300) + 1;
-      if (!randomIds.includes(id)) randomIds.push(id);
-    }
-    this.gymTeam = await Promise.all(
-      randomIds.map(async (id) => {
-        const details = await this.fetchPokemonDetails(id);
-        const stats = this.extractStats(details);
-        return {
-          id: details.id, name: details.name,
-          image: details.sprites.other["official-artwork"].front_default,
-          types: details.types.map((t) => t.type.name),
-          details, stats, maxHp: stats.hp, currentHp: stats.hp, damageDealt: 0,
-        };
-      }),
-    );
-    this.assignGymLeaderProfile();
+    this.assignRandomGymLeaderProfile();
+    const candidateIds = await this.fetchPokemonIdsByType(this.gymLeader.type);
+    const selectedIds = await this.selectGymPokemonIds(candidateIds, this.gymLeader.type);
+    this.gymTeam = (await Promise.all(selectedIds.map((id) => this.loadGymPokemon(id))))
+      .filter(Boolean)
+      .sort((a, b) => this.calculatePokemonStrength(a) - this.calculatePokemonStrength(b));
     this.strongestGymPokemonId = this.findStrongestPokemonId(this.gymTeam);
+  }
+
+  async loadGymPokemon(id) {
+    const details = await this.fetchPokemonDetails(id);
+    if (!details) return null;
+    const stats = this.extractStats(details);
+    return {
+      id: details.id, name: details.name,
+      image: details.sprites.other["official-artwork"].front_default,
+      types: details.types.map((t) => t.type.name),
+      details, stats, maxHp: stats.hp, currentHp: stats.hp, damageDealt: 0,
+    };
+  }
+
+  assignRandomGymLeaderProfile() {
+    const entries = Object.entries(this.gymLeaders);
+    const [name, profile] = entries[Math.floor(Math.random() * entries.length)];
+    this.gymLeader = { name, type: profile.type, style: profile.style };
+  }
+
+  async fetchPokemonIdsByType(type) {
+    try {
+      const typeData = await this.fetchFromPokeApi(`/type/${type}`);
+      return typeData.pokemon
+        .map((entry) => this.extractPokemonIdFromUrl(entry.pokemon?.url))
+        .filter((id) => Number.isInteger(id) && id <= 649);
+    } catch (error) {
+      console.warn(`[TeamBattle] Failed to load ${type} candidates, using random fallback`, error);
+      return [];
+    }
+  }
+
+  extractPokemonIdFromUrl(url) {
+    const match = String(url || "").match(/\/pokemon\/(\d+)\/?$/);
+    return match ? Number(match[1]) : null;
+  }
+
+  async selectGymPokemonIds(candidateIds, type) {
+    const uniqueCandidates = await this.filterStandardGymCandidateIds(candidateIds);
+    const corePool = await this.filterStandardGymCandidateIds(
+      this.selectCandidatesByStrengthBand(uniqueCandidates, type),
+    );
+    const core = this.sampleArray(corePool, Math.min(4, corePool.length));
+    const coverage = this.getGymCoverageTypePool(type)
+      .filter((coverageType) => coverageType !== type);
+    const coverageIds = (await this.filterStandardGymCandidateIds(
+      coverage.flatMap((coverageType) => this.getLocalTypeFallbackIds(coverageType)),
+    )).filter((id) => !core.includes(id));
+    const selected = [...core, ...this.sampleArray(coverageIds, 6 - core.length)];
+
+    if (selected.length < 6) {
+      const fallback = this.sampleArray(
+        (await this.filterStandardGymCandidateIds(this.getLocalTypeFallbackIds(type)))
+          .filter((id) => !selected.includes(id)),
+        6 - selected.length,
+      );
+      selected.push(...fallback);
+    }
+
+    return selected.slice(0, 6);
+  }
+
+  async filterStandardGymCandidateIds(ids) {
+    const unique = [...new Set(ids)];
+    const inspected = await Promise.all(
+      unique.map(async (id) => ({
+        id,
+        species: await this.fetchPokemonSpecies(id),
+      })),
+    );
+
+    return inspected
+      .filter(({ id, species }) => this.isStandardGymSpecies(id, species))
+      .map(({ id }) => id);
+  }
+
+  async fetchPokemonSpecies(id) {
+    if (this.gymCandidateSpeciesCache.has(id)) {
+      return this.gymCandidateSpeciesCache.get(id);
+    }
+
+    try {
+      const species = window.apiService?.fetchPokemonSpecies
+        ? await window.apiService.fetchPokemonSpecies(id)
+        : await this.fetchFromPokeApi(`/pokemon-species/${id}`);
+      this.gymCandidateSpeciesCache.set(id, species);
+      return species;
+    } catch (error) {
+      console.warn(`[TeamBattle] Failed to load species for #${id}`, error);
+      this.gymCandidateSpeciesCache.set(id, null);
+      return null;
+    }
+  }
+
+  isStandardGymSpecies(id, species) {
+    if (this.isKnownRestrictedPokemon(id)) return false;
+    if (!species) return true;
+    return !species.is_legendary && !species.is_mythical && !species.is_baby;
+  }
+
+  isKnownRestrictedPokemon(id) {
+    const restrictedIds = new Set([
+      144, 145, 146, 150, 151, 172, 173, 174, 175, 236, 238, 239, 240,
+      243, 244, 245, 249, 250, 251, 298, 360, 377, 378, 379, 380, 381,
+      382, 383, 384, 385, 386, 406, 433, 438, 439, 440, 446, 447, 458,
+      480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492,
+      493, 494,
+    ]);
+    return restrictedIds.has(Number(id));
+  }
+
+  selectCandidatesByStrengthBand(candidateIds, type) {
+    const fallbackIds = this.getLocalTypeFallbackIds(type);
+    const merged = [...new Set([...candidateIds, ...fallbackIds])];
+    const maxIdByLeader = this.getLeaderMaxPokemonId();
+    return merged.filter((id) => id <= maxIdByLeader);
+  }
+
+  getLeaderMaxPokemonId() {
+    const order = Object.keys(this.gymLeaders);
+    const leaderIndex = Math.max(0, order.indexOf(this.gymLeader?.name));
+    if (leaderIndex <= 1) return 151;
+    if (leaderIndex <= 3) return 251;
+    if (leaderIndex <= 5) return 386;
+    return 649;
+  }
+
+  getGymCoverageTypePool(type) {
+    const coverage = {
+      rock: ["ground", "steel"],
+      water: ["ice", "psychic"],
+      electric: ["steel", "flying"],
+      grass: ["poison", "bug"],
+      poison: ["bug", "dark"],
+      psychic: ["fairy", "ghost"],
+      fire: ["flying", "rock"],
+      ground: ["rock", "dark"],
+    };
+    return coverage[type] || ["normal"];
+  }
+
+  getLocalTypeFallbackIds(type) {
+    const ids = {
+      rock: [74, 75, 76, 95, 111, 112, 138, 140, 142, 185, 213, 246, 247, 248],
+      water: [7, 8, 9, 54, 55, 60, 61, 62, 72, 73, 79, 80, 90, 91, 98, 99, 116, 117, 118, 119, 120, 121, 130, 131, 134],
+      electric: [25, 26, 81, 82, 100, 101, 125, 135, 145, 170, 171, 179, 180, 181],
+      grass: [1, 2, 3, 43, 44, 45, 69, 70, 71, 102, 103, 114, 152, 153, 154],
+      poison: [1, 2, 3, 13, 14, 15, 23, 24, 29, 30, 31, 32, 33, 34, 41, 42, 88, 89, 109, 110],
+      psychic: [63, 64, 65, 79, 80, 96, 97, 102, 103, 121, 122, 124, 150, 151, 196],
+      fire: [4, 5, 6, 37, 38, 58, 59, 77, 78, 126, 136, 146, 155, 156, 157],
+      ground: [27, 28, 31, 34, 50, 51, 74, 75, 76, 95, 104, 105, 111, 112],
+      steel: [81, 82, 95, 205, 208, 212, 227, 303, 304, 305, 306],
+      ice: [87, 91, 124, 131, 144, 215, 220, 221, 225],
+      flying: [6, 12, 16, 17, 18, 21, 22, 41, 42, 83, 84, 85, 123, 130, 142, 144, 145, 146],
+      bug: [10, 11, 12, 13, 14, 15, 46, 47, 48, 49, 123, 127, 165, 166, 167, 168],
+      dark: [197, 198, 215, 228, 229, 248, 261, 262, 302],
+      ghost: [92, 93, 94, 200, 292, 302, 353, 354, 355, 356],
+      fairy: [35, 36, 39, 40, 122, 173, 174, 175, 176, 183, 184],
+      normal: [19, 20, 39, 40, 52, 53, 83, 84, 85, 108, 113, 115, 128, 133],
+    };
+    return ids[type] || ids.normal;
+  }
+
+  sampleArray(values, count) {
+    const pool = [...new Set(values)].sort(() => Math.random() - 0.5);
+    return pool.slice(0, Math.max(0, count));
+  }
+
+  async fetchFromPokeApi(endpoint) {
+    if (window.apiService?.fetch) {
+      return await window.apiService.fetch(endpoint);
+    }
+
+    const url = endpoint.startsWith("http")
+      ? endpoint
+      : `https://pokeapi.co/api/v2${endpoint}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`PokeAPI Error: ${response.status}`);
+    return await response.json();
   }
 
   async fetchPokemonDetails(pokemonId) {
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
-      return await response.json();
+      return await this.fetchFromPokeApi(`/pokemon/${pokemonId}`);
     } catch (error) {
       console.error("[TeamBattle] Failed to fetch Pokemon details:", error);
       return null;
@@ -195,11 +362,21 @@ class TeamBattleSystem {
   findStrongestPokemonId(team) {
     if (!Array.isArray(team) || !team.length) return null;
     const strongest = [...team].sort((a, b) => {
-      const ap = (a?.stats?.hp || 0) + (a?.stats?.attack || 0) + (a?.stats?.defense || 0) + (a?.stats?.speed || 0);
-      const bp = (b?.stats?.hp || 0) + (b?.stats?.attack || 0) + (b?.stats?.defense || 0) + (b?.stats?.speed || 0);
-      return bp - ap;
+      return this.calculatePokemonStrength(b) - this.calculatePokemonStrength(a);
     })[0];
     return strongest?.id || null;
+  }
+
+  calculatePokemonStrength(pokemon) {
+    const stats = pokemon?.stats || {};
+    return (
+      (stats.hp || 0) +
+      (stats.attack || 0) +
+      (stats.defense || 0) +
+      (stats.specialAttack || 0) +
+      (stats.specialDefense || 0) +
+      (stats.speed || 0)
+    );
   }
 
   calculateAverageStats(team) {
