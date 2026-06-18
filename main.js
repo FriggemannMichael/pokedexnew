@@ -155,6 +155,8 @@ function getUtilScripts() {
     "./script/utils/error-handler.js",
     "./script/utils/fetch-retry.js",
     "./script/utils/type-constants.js",
+    "./script/utils/type-effectiveness.js",
+    "./script/type-chart-sync.js",
     "./script/utils/modal-factory.js",
     "./script/utils/ui-helpers.js",
     "./script/utils/team-actions.js",

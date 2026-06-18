@@ -49,7 +49,11 @@ module.exports = [
 
   // Dual-Env (UMD-Wrapper: nutzen module UND window).
   {
-    files: ["script/dom-cache.js", "script/utils/team-actions.js"],
+    files: [
+      "script/dom-cache.js",
+      "script/utils/team-actions.js",
+      "script/utils/type-effectiveness.js",
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
