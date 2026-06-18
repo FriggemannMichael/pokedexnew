@@ -172,6 +172,82 @@
   margin-bottom: var(--spacing-md);
 }
 
+.stat-stage-badges {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stat-stage-badge {
+  border-radius: var(--radius-sm);
+  padding: 3px 7px;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stat-stage-badge.buff {
+  background: rgba(46, 204, 113, 0.16);
+  color: #176c3a;
+  border: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+.stat-stage-badge.debuff {
+  background: rgba(231, 76, 60, 0.14);
+  color: #8f2418;
+  border: 1px solid rgba(231, 76, 60, 0.34);
+}
+
+.fighter-move-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 auto var(--spacing-md);
+  max-width: 320px;
+}
+
+.fighter-move-chip {
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  text-align: left;
+  min-width: 0;
+}
+
+.fighter-move-chip .move-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+.fighter-move-chip .move-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #666;
+}
+
+.move-priority {
+  border-radius: 999px;
+  padding: 1px 5px;
+  background: rgba(255, 193, 7, 0.24);
+  color: #6c5200;
+}
+
 /* HP Bar */
 .hp-bar-container {
   background: rgba(0, 0, 0, 0.05);

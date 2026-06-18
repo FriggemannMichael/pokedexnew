@@ -234,6 +234,8 @@ TeamBattleSystem.prototype.renderBattleFighter = function (fighter, fighterId) {
       <div class="fighter-image-wrapper"><img src="${fighter.image}" alt="${fighter.name}" class="fighter-image"></div>
       <div class="fighter-name">${fighter.name}</div>
       <div class="fighter-types">${fighter.types.map((t) => `<span class="type-badge type-${t}">${t.toUpperCase()}</span>`).join("")}</div>
+      ${window.battleSimulator.renderStatStageBadges(fighter)}
+      ${window.battleSimulator.renderMoveList(fighter)}
       <div class="hp-bar-container">
         <div class="hp-label"><span>HP</span><span class="hp-current">${Math.max(0, Math.round(fighter.currentHp))} / ${fighter.maxHp}</span></div>
         <div class="hp-bar"><div class="hp-fill ${hpClass}" style="width: ${Math.max(0, hpPct)}%"></div></div>

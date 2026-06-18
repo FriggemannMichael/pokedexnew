@@ -37,13 +37,61 @@ BattleSimulator.prototype.renderFighter = function (fighter, fighterId) {
         <img src="${fighter.image}" alt="${fighter.name}" class="fighter-image">
       </div>
       <div class="fighter-name">${fighter.name}</div>
-      <div class="fighter-types">
-        ${fighter.types.map((t) => `<span class="type-badge type-${t}">${t.toUpperCase()}</span>`).join("")}
-      </div>
-      <div class="hp-bar-container">
-        <div class="hp-label"><span>HP</span><span class="hp-current">${Math.max(0, Math.round(fighter.currentHp))} / ${fighter.maxHp}</span></div>
-        <div class="hp-bar"><div class="hp-fill ${hpClass}" style="width: ${Math.max(0, hpPct)}%"></div></div>
-      </div>
+	      <div class="fighter-types">
+	        ${fighter.types.map((t) => `<span class="type-badge type-${t}">${t.toUpperCase()}</span>`).join("")}
+	      </div>
+	      ${this.renderStatStageBadges(fighter)}
+	      ${this.renderMoveList(fighter)}
+	      <div class="hp-bar-container">
+	        <div class="hp-label"><span>HP</span><span class="hp-current">${Math.max(0, Math.round(fighter.currentHp))} / ${fighter.maxHp}</span></div>
+	        <div class="hp-bar"><div class="hp-fill ${hpClass}" style="width: ${Math.max(0, hpPct)}%"></div></div>
+	      </div>
+	    </div>
+	  `;
+	};
+
+BattleSimulator.prototype.renderStatStageBadges = function (fighter) {
+  const stages = fighter.statStages || {};
+  const labels = {
+    attack: "ATK",
+    defense: "DEF",
+    specialAttack: "SPA",
+    specialDefense: "SPD",
+    speed: "SPE",
+  };
+  const badges = Object.entries(labels)
+    .map(([key, label]) => ({ label, value: stages[key] || 0 }))
+    .filter((entry) => entry.value !== 0)
+    .map((entry) => {
+      const sign = entry.value > 0 ? "+" : "";
+      const cls = entry.value > 0 ? "buff" : "debuff";
+      return `<span class="stat-stage-badge ${cls}">${entry.label} ${sign}${entry.value}</span>`;
+    })
+    .join("");
+
+  return badges ? `<div class="stat-stage-badges">${badges}</div>` : "";
+};
+
+BattleSimulator.prototype.renderMoveList = function (fighter) {
+  const moves = Array.isArray(fighter.moves) ? fighter.moves : [];
+  if (!moves.length) return "";
+
+  return `
+    <div class="fighter-move-list">
+      ${moves.map((move) => this.renderMoveChip(move)).join("")}
+    </div>
+  `;
+};
+
+BattleSimulator.prototype.renderMoveChip = function (move) {
+  const name = this.escapeHtml(move.displayName || move.name || "MOVE");
+  const type = this.escapeHtml(move.type || "normal");
+  const power = Number(move.power) > 0 ? move.power : "-";
+  const priority = Number(move.priority) > 0 ? `<span class="move-priority">+${move.priority}</span>` : "";
+  return `
+    <div class="fighter-move-chip type-${type}">
+      <span class="move-name">${name}</span>
+      <span class="move-meta">${type.toUpperCase()} · ${power}${priority}</span>
     </div>
   `;
 };
@@ -65,13 +113,20 @@ BattleSimulator.prototype.showAttackAnimation = function (attackerId, defenderId
   if (defEl) {
     defEl.classList.add("hit");
     setTimeout(() => defEl.classList.remove("hit"), 500);
-    const popup = document.createElement("div");
-    popup.className = "damage-popup";
-    popup.textContent = `-${damage}`;
-    const wrapper = defEl.querySelector(".fighter-image-wrapper");
-    if (wrapper) wrapper.appendChild(popup);
-    setTimeout(() => popup.remove(), 1000);
+    this.showFighterPopup(defenderId, `-${damage}`, "damage");
   }
+};
+
+BattleSimulator.prototype.showFighterPopup = function (fighterId, text, variant = "damage") {
+  const fighterEl = document.getElementById(fighterId);
+  const wrapper = fighterEl?.querySelector(".fighter-image-wrapper");
+  if (!wrapper) return;
+
+  const popup = document.createElement("div");
+  popup.className = `damage-popup ${variant}`;
+  popup.textContent = text;
+  wrapper.appendChild(popup);
+  setTimeout(() => popup.remove(), 1000);
 };
 
 BattleSimulator.prototype.exportBattleLog = function () {
