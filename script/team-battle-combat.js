@@ -77,9 +77,8 @@ TeamBattleSystem.prototype.buildBattleControls = function (sim) {
 
 TeamBattleSystem.prototype.patchBattleSimulatorWinner = function (playerPokemon, gymPokemon) {
   const self = this;
-  const originalCheckWinner = window.battleSimulator.checkWinner.bind(window.battleSimulator);
   window.battleSimulator.checkWinner = function () {
-    originalCheckWinner();
+    BattleSimulator.prototype.checkWinner.call(this);
     if (!this.currentBattle.isFinished) return;
     self.totalTurns += this.roundCounter;
     const { fighter1, fighter2 } = this.currentBattle;
@@ -114,6 +113,9 @@ TeamBattleSystem.prototype.startBattleWithMoves = async function (playerPokemon,
   }
   const fighter1 = this.createFighter(playerPokemon);
   const fighter2 = this.createFighter(gymPokemon);
+  window.battleSimulator.prepareFighterState(fighter1);
+  window.battleSimulator.prepareFighterState(fighter2);
+  await window.battleSimulator.preloadTypeRelationsForBattle([fighter1, fighter2]);
 
   window.battleSimulator.currentBattle = { fighter1, fighter2, winner: null, isFinished: false };
   window.battleSimulator.battleLog = [];
