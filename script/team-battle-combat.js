@@ -61,13 +61,14 @@ TeamBattleSystem.prototype.patchBattleSimulatorRender = function (playerPokemon,
 
 TeamBattleSystem.prototype.buildBattleControls = function (sim) {
   const finished = sim.currentBattle.isFinished;
+  const locked = finished || sim.roundInProgress;
   if (this.aiAutoPilotEnabled) {
-    return `<button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${finished ? "disabled" : ""}>
+    return `<button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${locked ? "disabled" : ""}>
       ${sim.isAutoPlaying ? "Pause AI" : "Resume AI"}</button>`;
   }
   let html = `
-    <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${finished ? "disabled" : ""}>Next Round</button>
-    <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${finished ? "disabled" : ""}>
+    <button class="battle-btn primary" id="nextRoundBtn" onclick="window.battleSimulator.playRound()" ${locked ? "disabled" : ""}>Next Round</button>
+    <button class="battle-btn secondary" id="autoPlayBtn" onclick="window.battleSimulator.toggleAutoPlay()" ${locked ? "disabled" : ""}>
       ${sim.isAutoPlaying ? "Pause" : "Auto Play"}</button>`;
   if (finished) {
     html += `<button class="battle-btn success" onclick="window.teamBattle.handleBattleEnd()">Continue</button>`;
@@ -121,6 +122,7 @@ TeamBattleSystem.prototype.startBattleWithMoves = async function (playerPokemon,
   window.battleSimulator.battleLog = [];
   window.battleSimulator.roundCounter = 0;
   window.battleSimulator.isAutoPlaying = false;
+  window.battleSimulator.roundInProgress = false;
   window.battleSimulator.renderBattle();
 
   if (this.aiAutoPilotEnabled && !window.battleSimulator.currentBattle.isFinished) {

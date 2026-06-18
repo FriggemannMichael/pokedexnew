@@ -197,6 +197,7 @@ BattleSimulator.prototype.startBattle = async function (pokemon1, pokemon2) {
   this.battleLog = [];
   this.roundCounter = 0;
   this.isAutoPlaying = false;
+  this.roundInProgress = false;
   this.pendingCommentaryRequests = 0;
   const accentType = (pokemon1.types && pokemon1.types[0]) || "normal";
   if (this.modalElement) this.modalElement.style.setProperty("--type-accent", `var(--type-${accentType})`);
@@ -205,13 +206,29 @@ BattleSimulator.prototype.startBattle = async function (pokemon1, pokemon2) {
 };
 
 BattleSimulator.prototype.playRound = function () {
-  if (this.currentBattle.isFinished) return;
+  this.playRoundInternal();
+};
+
+BattleSimulator.prototype.playRoundWithMove = function (moveIndex) {
+  if (!this.currentBattle || this.currentBattle.isFinished || this.isAutoPlaying) return;
+  const move = this.currentBattle.fighter1?.moves?.[moveIndex];
+  if (!move) return;
+  this.playRoundInternal(move);
+};
+
+BattleSimulator.prototype.playRoundInternal = function (playerMove = null) {
+  if (!this.currentBattle || this.currentBattle.isFinished || this.roundInProgress) return;
+  this.roundInProgress = true;
   this.roundCounter++;
   const { fighter1, fighter2 } = this.currentBattle;
   fighter1.flinched = false;
   fighter2.flinched = false;
-  const move1 = this.chooseMove(fighter1);
+  const move1 = playerMove || this.chooseMove(fighter1);
   const move2 = this.chooseMove(fighter2);
+  if (!move1 || !move2) {
+    this.roundInProgress = false;
+    return;
+  }
   const first = this.compareTurnOrder(fighter1, move1, fighter2, move2) >= 0
     ? { atk: fighter1, def: fighter2, atkId: "fighter1", defId: "fighter2", move: move1 }
     : { atk: fighter2, def: fighter1, atkId: "fighter2", defId: "fighter1", move: move2 };
@@ -229,6 +246,7 @@ BattleSimulator.prototype.playRound = function () {
       }
       setTimeout(() => {
         this.checkWinner();
+        this.roundInProgress = false;
         this.renderBattle();
         if (this.isAutoPlaying && !this.currentBattle.isFinished) {
           setTimeout(() => this.playRound(), 1500);
@@ -236,7 +254,11 @@ BattleSimulator.prototype.playRound = function () {
       }, 800);
     }, 1000);
   } else {
-    setTimeout(() => { this.checkWinner(); this.renderBattle(); }, 800);
+    setTimeout(() => {
+      this.checkWinner();
+      this.roundInProgress = false;
+      this.renderBattle();
+    }, 800);
   }
   this.renderBattle();
 };
@@ -405,6 +427,7 @@ BattleSimulator.prototype.resetBattle = function () {
   this.battleLog = [];
   this.roundCounter = 0;
   this.isAutoPlaying = false;
+  this.roundInProgress = false;
   this.pendingCommentaryRequests = 0;
   this.renderBattle();
 };
