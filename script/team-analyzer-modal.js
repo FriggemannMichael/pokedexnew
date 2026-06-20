@@ -136,7 +136,7 @@
             : advice;
         container.innerHTML = `
           <div class="ai-advisor-result">
-            <div class="ai-advisor-provider">Professor Eich (Groq)</div>
+            <div class="ai-advisor-provider">Professor Eich (KI-Proxy)</div>
             <p class="ai-advisor-text">${normalizedAdvice}</p>
           </div>`;
         return;

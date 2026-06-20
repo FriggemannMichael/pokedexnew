@@ -33,7 +33,7 @@ Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle
 
 `Pokedex New` ist eine statische Frontend-App mit lokalem Node-/Express-Server. Das Frontend lädt Pokémon-Daten aus der PokéAPI, rendert Karten und Detailansichten im Browser und speichert benutzerbezogene Daten wie Team, Favoriten, Ratings und Battle-Historie in `localStorage`.
 
-Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bereit. Dadurch können Groq, Mistral und Gemini genutzt werden, ohne API-Keys direkt im Frontend-Code zu verankern.
+Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bereit. Dadurch können Groq, Mistral, Gemini und OpenRouter genutzt werden, ohne API-Keys direkt im Frontend-Code zu verankern.
 
 **Projektstatus:** Stand 17.06.2026
 
@@ -156,7 +156,7 @@ npm run screenshots
 | Node.js | Lokale Laufzeit für den Server |
 | Express | Statisches Hosting und AI-Proxy |
 | PokeAPI | Pokémon-Daten, Typen, Stats und Sprites |
-| Groq / Mistral / Gemini | Optionale KI-Provider für Analyse und Strategie |
+| Groq / Mistral / Gemini / OpenRouter | Optionale KI-Provider für Analyse und Strategie |
 
 ## Installation
 
@@ -195,6 +195,10 @@ GROQ_API_KEY=your-groq-api-key
 GROQ_MODEL=llama-3.1-8b-instant
 MISTRAL_API_KEY=your-mistral-api-key
 GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct
+AI_PROVIDER=
 PORT=3000
 ```
 
@@ -255,6 +259,9 @@ Der Express-Server stellt AI-Funktionen für Team-Analyse, Strategieauswertung u
 - Groq
 - Mistral
 - Gemini
+- OpenRouter
+
+Optional kann `AI_PROVIDER` auf `groq`, `mistral`, `gemini` oder `openrouter` gesetzt werden. Bleibt der Wert leer, nutzt der Proxy den vom Frontend angefragten Provider bzw. standardmäßig Groq.
 
 Der Proxy ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben.
 

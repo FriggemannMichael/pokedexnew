@@ -91,5 +91,7 @@ Dann im Browser:
 
 ## Status
 
-Aktuell ist nur der **Plan** festgehalten. M1 (das Gerüst) wird als Nächstes
-gebaut – siehe die offenen Issues unter dem Meilenstein „M1 – Backend-Gerüst".
+M1 ist gebaut: Django, Django REST Framework, Health-Endpoint, Swagger/OpenAPI
+und CORS liegen unter `backend/`. Die naechsten Schritte sind M2 bis M4:
+PokeAPI-/KI-Proxy ins Backend umziehen, Login und echte Persistenz einfuehren
+sowie Docker, CI/CD, Deployment und Security vorbereiten.

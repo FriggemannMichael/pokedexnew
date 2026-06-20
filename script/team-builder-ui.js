@@ -89,7 +89,7 @@
       try {
         const aiAdvice = await aiService.requestProfessorTeamAdvice({ team, staticAnalysis });
         return {
-          providerLabel: "Professor Eich (Groq)",
+          providerLabel: "Professor Eich (KI-Proxy)",
           adviceText: this.normalizeProfessorAdvice(aiAdvice, localFallback, team.length),
         };
       } catch (error) {

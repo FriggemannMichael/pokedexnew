@@ -16,6 +16,30 @@
   font-size: 1.1rem;
 }
 
+#searchBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+}
+
+#searchBtn.btn-primary {
+  color: #fff;
+  background: var(--gradient-horizontal);
+  border-color: rgba(var(--primary-color-rgb), 0.35);
+}
+
+#searchBtn.btn-light {
+  color: var(--dark);
+  background: var(--light);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.search-btn-icon {
+  display: inline-block;
+  line-height: 1;
+}
+
 #searchBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

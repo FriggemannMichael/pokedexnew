@@ -80,6 +80,15 @@ function groqConfig(b) {
   });
 }
 
+function openRouterConfig(b) {
+  return openAiStyleConfig({
+    endpoint: "https://openrouter.ai/api/v1/chat/completions",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    ...b,
+    model: process.env.OPENROUTER_MODEL || b.model || "meta-llama/llama-3.1-8b-instruct",
+  });
+}
+
 function mistralConfig(b) {
   return openAiStyleConfig({
     endpoint: "https://api.mistral.ai/v1/chat/completions",
@@ -98,7 +107,7 @@ function splitGeminiMessages(messages) {
 
 function geminiConfig(b) {
   const apiKey = process.env.GEMINI_API_KEY;
-  const id = b.model || process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const id = process.env.GEMINI_MODEL || b.model || "gemini-2.5-flash";
   const { system, parts } = splitGeminiMessages(b.messages);
   const payload = {
     contents: [{ role: "user", parts }],
@@ -118,9 +127,14 @@ function geminiConfig(b) {
 }
 
 function getProviderConfig(provider, body) {
+  if (provider === "openrouter") return openRouterConfig(body);
   if (provider === "mistral") return mistralConfig(body);
   if (provider === "gemini") return geminiConfig(body);
   return groqConfig(body);
+}
+
+function resolveProvider(requested) {
+  return (process.env.AI_PROVIDER || requested || "groq").toLowerCase();
 }
 
 function normalizeResponse(provider, data) {
@@ -133,7 +147,7 @@ function normalizeResponse(provider, data) {
 }
 
 app.post("/api/ai", rateLimiter, async (req, res) => {
-  const { provider } = req.body;
+  const provider = resolveProvider(req.body.provider);
   const cfg = getProviderConfig(provider, req.body);
   if (!cfg.apiKey) {
     return res.status(500).json({ error: `No API key configured for provider: ${provider || "groq"}` });

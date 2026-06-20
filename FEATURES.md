@@ -73,7 +73,7 @@ Das Projekt ist ein interaktiver Pokedex mit lokalem Team-Management, Team-Analy
 
 - Lokaler Express-Server fuer statische Auslieferung und AI-Proxy
 - `/api/ai/ping` zur Proxy-Erkennung im Frontend
-- `/api/ai` als Proxy fuer Groq, Mistral und Gemini
+- `/api/ai` als Proxy fuer Groq, Mistral, Gemini und OpenRouter
 - Rate Limiting fuer AI-Requests
 - Frontend-Fallback zwischen direktem API-Zugriff und Proxy-Nutzung
 - Caching, Retry-Logik, Timeout und Throttling fuer KI-Anfragen
