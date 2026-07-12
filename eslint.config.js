@@ -8,7 +8,13 @@ const unusedVars = ["warn", { argsIgnorePattern: "^_" }];
 
 module.exports = [
   {
-    ignores: ["node_modules/**", "assets/**", "package-lock.json", "*.min.js"],
+    ignores: [
+      "node_modules/**",
+      "assets/**",
+      "backend/**",
+      "package-lock.json",
+      "*.min.js",
+    ],
   },
 
   // Klassische Browser-Skripte: teilen Funktionen ueber window-Globals.
@@ -32,7 +38,12 @@ module.exports = [
 
   // ESM-Dateien (import/export): echtes Modul-Scope -> unused-vars als Warnung.
   {
-    files: ["main.js", "script/app.js", "script/services/**/*.js"],
+    files: [
+      "main.js",
+      "script/app.js",
+      "script/services/**/*.js",
+      "script/utils/pokeapi-client.js",
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",

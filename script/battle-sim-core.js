@@ -32,8 +32,7 @@ class BattleSimulator {
 
   async fetchPokemonDetails(pokemonId) {
     try {
-      const resp = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
-      return await resp.json();
+      return await this.fetchFromPokeApi(`/pokemon/${pokemonId}`);
     } catch (error) {
       console.error("[Battle] Failed to fetch Pokemon details:", error);
       return null;
@@ -44,13 +43,7 @@ class BattleSimulator {
     if (window.apiService?.fetch) {
       return await window.apiService.fetch(endpoint);
     }
-
-    const url = endpoint.startsWith("http")
-      ? endpoint
-      : `https://pokeapi.co/api/v2${endpoint}`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`PokeAPI Error: ${resp.status}`);
-    return await resp.json();
+    return await window.PokeApi.fetch(endpoint);
   }
 
   extractStats(details) {

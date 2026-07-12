@@ -1,36 +1,27 @@
+import { PokeApi } from "../utils/pokeapi-client.js";
+
 export class ApiService {
-  #baseUrl = "https://pokeapi.co/api/v2";
   #cache = new Map();
   #cacheEnabled = true;
   #cacheDuration = 1000 * 60 * 30;
 
   constructor(config = {}) {
-    if (config.baseUrl) this.#baseUrl = config.baseUrl;
     if (config.cacheEnabled !== undefined)
       this.#cacheEnabled = config.cacheEnabled;
     if (config.cacheDuration) this.#cacheDuration = config.cacheDuration;
   }
 
+  // Das Holen (und Cachen ueber das Backend) uebernimmt PokeApi. Der Cache
+  // hier drin spart zusaetzlich die HTTP-Anfrage innerhalb einer Sitzung.
   async fetch(endpoint) {
-    const url = endpoint.startsWith("http")
-      ? endpoint
-      : `${this.#baseUrl}${endpoint}`;
-
     if (this.#cacheEnabled) {
-      const cached = this.#getFromCache(url);
+      const cached = this.#getFromCache(endpoint);
       if (cached) return cached;
     }
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-
-      if (this.#cacheEnabled) {
-        this.#addToCache(url, data);
-      }
+      const data = await PokeApi.fetch(endpoint);
+      if (this.#cacheEnabled) this.#addToCache(endpoint, data);
       return data;
     } catch (error) {
       console.error("❌ API Fetch Error:", error);
@@ -39,17 +30,11 @@ export class ApiService {
   }
 
   async fetchPokemonList(offset = 0, limit = 20) {
-    const data = await this.fetch(`/pokemon?offset=${offset}&limit=${limit}`);
-
-    const pokemonDetails = await Promise.all(
-      data.results.map((pokemon) => this.fetch(pokemon.url)),
-    );
-
+    const { results, count } = await PokeApi.list(offset, limit);
     return {
-      pokemon: pokemonDetails.map((p) => this.transformPokemonData(p)),
-      total: data.count,
-      next: data.next,
-      previous: data.previous,
+      pokemon: results,
+      total: count,
+      next: offset + limit < count ? offset + limit : null,
     };
   }
 
@@ -76,37 +61,31 @@ export class ApiService {
     return details.map((p) => this.transformPokemonData(p));
   }
 
+  #extraSprites(rawPokemon) {
+    const sprites = rawPokemon.sprites || {};
+    const artwork = sprites.other?.["official-artwork"] || {};
+    const animated =
+      sprites.versions?.["generation-v"]?.["black-white"]?.animated;
+    return {
+      default: artwork.front_default || sprites.front_default,
+      shiny: artwork.front_shiny || sprites.front_shiny,
+      animated: animated?.front_default,
+    };
+  }
+
+  // Baut auf dem schlanken Format des Backends auf (stats als Liste,
+  // base_experience) und ergaenzt nur die Felder der Detailansicht.
   transformPokemonData(rawPokemon) {
     return {
-      id: rawPokemon.id,
-      name: rawPokemon.name,
-      image:
-        rawPokemon.sprites.other["official-artwork"].front_default ||
-        rawPokemon.sprites.front_default,
-      types: rawPokemon.types.map((t) => t.type.name),
-      sprites: {
-        default:
-          rawPokemon.sprites.other["official-artwork"].front_default ||
-          rawPokemon.sprites.front_default,
-        shiny:
-          rawPokemon.sprites.other["official-artwork"].front_shiny ||
-          rawPokemon.sprites.front_shiny,
-        animated:
-          rawPokemon.sprites.versions?.["generation-v"]?.["black-white"]
-            ?.animated?.front_default,
-      },
-      stats: rawPokemon.stats.reduce((acc, stat) => {
-        acc[stat.stat.name] = stat.base_stat;
-        return acc;
-      }, {}),
-      abilities: rawPokemon.abilities.map((a) => ({
+      ...PokeApi.slimPokemon(rawPokemon),
+      sprites: this.#extraSprites(rawPokemon),
+      abilities: (rawPokemon.abilities || []).map((a) => ({
         name: a.ability.name,
         isHidden: a.is_hidden,
       })),
       height: rawPokemon.height,
       weight: rawPokemon.weight,
-      baseExperience: rawPokemon.base_experience,
-      moves: rawPokemon.moves.map((m) => m.move.name),
+      moves: (rawPokemon.moves || []).map((m) => m.move.name),
     };
   }
 

@@ -24,9 +24,7 @@
   }
 
   async function fetchType(name) {
-    const res = await fetch(`https://pokeapi.co/api/v2/type/${name}`);
-    if (!res.ok) throw new Error(`type ${name}: HTTP ${res.status}`);
-    return res.json();
+    return window.PokeApi.fetch(`/type/${name}`);
   }
 
   async function syncFromApi() {

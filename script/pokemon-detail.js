@@ -163,8 +163,7 @@ function resolveDetailFromState(id) {
 }
 
 function fetchDetailFallback(id) {
-  fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-    .then((r) => r.json())
+  window.PokeApi.fetch(`/pokemon/${id}`)
     .then((data) => {
       const pokemon = {
         id: data.id,

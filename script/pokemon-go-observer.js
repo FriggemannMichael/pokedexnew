@@ -11,11 +11,14 @@
                 const id = parseInt(card.dataset.pokemonId);
                 if (id && !card.dataset.powerLevelLoaded) {
                   card.dataset.powerLevelLoaded = "true";
-                  setTimeout(() => {
-                    this.updatePowerLevelWithStats(id);
-                    this.applyTypeClassToPowerLevels(card);
-                    this.syncPowerLevelTypes(card);
-                  }, Math.random() * 2000 + 500);
+                  setTimeout(
+                    () => {
+                      this.updatePowerLevelWithStats(id);
+                      this.applyTypeClassToPowerLevels(card);
+                      this.syncPowerLevelTypes(card);
+                    },
+                    Math.random() * 2000 + 500,
+                  );
                 }
               });
             this.applyTypeClassToPowerLevels(node);
@@ -27,31 +30,26 @@
     const cont = document.getElementById("pokemonContainer");
     if (cont) obs.observe(cont, { childList: true, subtree: true });
   };
-  PGF.updatePowerLevelWithStats = async function (id) {
-    try {
-      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-      const data = await res.json();
-      if (data.stats) {
-        const lvl = this.calculatePowerLevel(data);
-        const perf = this.getPerformanceRating(lvl);
-        document
-          .querySelectorAll(`[data-pokemon-id="${id}"] .power-level`)
-          .forEach((el) => {
-            const v = el.querySelector(".power-value");
-            const r = el.querySelector(".performance-rating");
-            if (v && r) {
-              v.textContent = `${lvl}%`;
-              r.textContent = perf.rating;
-              const keep = [...el.classList].filter((c) =>
-                c.startsWith("type-")
-              );
-              el.className = ["power-level", ...keep, perf.class].join(" ");
-            }
-          });
-        this.syncPowerLevelTypes();
-      }
-    } catch (e) {
-      console.error("Power-Level Update fehlgeschlagen", id, e);
-    }
+  function applyPowerLevel(el, lvl, perf) {
+    const value = el.querySelector(".power-value");
+    const rating = el.querySelector(".performance-rating");
+    if (!value || !rating) return;
+
+    value.textContent = `${lvl}%`;
+    rating.textContent = perf.rating;
+    const keptTypes = [...el.classList].filter((c) => c.startsWith("type-"));
+    el.className = ["power-level", ...keptTypes, perf.class].join(" ");
+  }
+
+  // Das Power-Level haengt allein an der ID (siehe calculatePowerLevel: es
+  // leitet Basiswerte, IVs und Level aus der ID ab). Frueher wurde dafuer pro
+  // Karte das komplette Pokemon nachgeladen - ein HTTP-Request fuer nichts.
+  PGF.updatePowerLevelWithStats = function (id) {
+    const lvl = this.calculatePowerLevel({ id });
+    const perf = this.getPerformanceRating(lvl);
+    document
+      .querySelectorAll(`[data-pokemon-id="${id}"] .power-level`)
+      .forEach((el) => applyPowerLevel(el, lvl, perf));
+    this.syncPowerLevelTypes();
   };
 })();

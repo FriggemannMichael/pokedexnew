@@ -41,12 +41,7 @@ BattleSimulator.prototype.selectMoveCandidates = function (details) {
 
 BattleSimulator.prototype.normalizeMoveEntry = function (entry) {
   if (typeof entry === "string") {
-    return {
-      move: {
-        name: entry,
-        url: `https://pokeapi.co/api/v2/move/${entry}`,
-      },
-    };
+    return { move: { name: entry, url: `/move/${entry}` } };
   }
 
   return entry;

@@ -12,8 +12,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Die .env liegt im Projektwurzelverzeichnis (eine Ebene ueber backend/) und
+# wird mit dem Frontend geteilt. Dort stehen die KI-API-Keys.
+load_dotenv(BASE_DIR.parent / '.env')
 
 
 # Quick-start development settings - unsuitable for production
@@ -84,6 +90,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            # SQLite erlaubt nur EINEN Schreiber gleichzeitig. Das Frontend holt
+            # beim Start aber alle 18 Typen parallel - die wollen alle cachen.
+            # WAL: Lesen und Schreiben blockieren sich nicht mehr gegenseitig.
+            'init_command': 'PRAGMA journal_mode=WAL;',
+            # Ein wartender Schreiber gibt nicht sofort auf, sondern 20 Sekunden.
+            'timeout': 20,
+        },
     }
 }
 
@@ -129,6 +143,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework: drf-spectacular als Schema-Generator nutzen.
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Bremse fuer den KI-Proxy (siehe api/throttling.py). Ohne sie koennte eine
+    # einzige Seite das Guthaben des API-Keys leerlaufen lassen.
+    'DEFAULT_THROTTLE_RATES': {
+        'ai': '30/min',
+    },
 }
 
 # Swagger / OpenAPI (drf-spectacular)
@@ -141,6 +160,14 @@ SPECTACULAR_SETTINGS = {
 
 # CORS: erlaubt dem lokalen Frontend, das Backend aufzurufen.
 CORS_ALLOWED_ORIGINS = [
+    # server.js (npm start)
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    # VS Code Live Server
+    'http://localhost:5500',
+    'http://127.0.0.1:5500',
 ]
+
+# PokeAPI-Cache: So viele Tage gilt eine gespeicherte Antwort als frisch.
+# Pokemon-Daten aendern sich praktisch nie, darum ist eine Woche grosszuegig.
+POKEAPI_CACHE_TTL_DAYS = 7

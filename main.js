@@ -1,4 +1,5 @@
 import { ApiService } from "./script/services/ApiService.js";
+import { PokeApi } from "./script/utils/pokeapi-client.js";
 
 function initializeAppIntro() {
   const intro = document.getElementById("appIntro");
@@ -16,42 +17,50 @@ function initializeAppIntro() {
 initializeAppIntro();
 
 window.POKEMON_API_CONFIG = {
-  baseUrl: "https://pokeapi.co/api/v2/pokemon",
   pokemonPerPage: 20,
   defaultOffset: 0,
 };
 
-window.apiService = new ApiService({
-  baseUrl: "https://pokeapi.co/api/v2",
-});
+window.apiService = new ApiService();
 
+// Beide Bruecken holen ihre Daten fertig aufbereitet vom Backend. Das Nachladen
+// der Detailseiten passiert dort - hier reicht eine einzige Anfrage.
 window.fetchPokemonData = async (offset, limit) => {
   try {
-    const result = await window.apiService.fetchPokemonList(offset, limit);
-    return result.pokemon;
+    const { results } = await PokeApi.list(offset, limit);
+    return results;
   } catch (error) {
-    AppError.log(AppError.CATEGORY.API, "fetchPokemonData Brücke Fehler", error);
+    AppError.log(
+      AppError.CATEGORY.API,
+      "fetchPokemonData Brücke Fehler",
+      error,
+    );
     return [];
   }
 };
 
-async function fetchSinglePokemon(url) {
-  const data = await window.apiService.fetch(url);
-  return window.apiService.transformPokemonData(data);
+async function fetchTypePage(type, offset) {
+  try {
+    const { results } = await PokeApi.byType(
+      type,
+      offset,
+      window.POKEMON_API_CONFIG.pokemonPerPage,
+    );
+    return results;
+  } catch (error) {
+    AppError.log(
+      AppError.CATEGORY.API,
+      `Typ-Seite (${type}, ab ${offset}) Fehler`,
+      error,
+    );
+    return [];
+  }
 }
 
-window.fetchPokemonByTypeData = async (type) => {
-  try {
-    const typeData = await window.apiService.fetch(`/type/${type}`);
-    const pokemonUrls = typeData.pokemon
-      .slice(0, window.POKEMON_API_CONFIG.pokemonPerPage)
-      .map((p) => p.pokemon.url);
-    return await Promise.all(pokemonUrls.map(fetchSinglePokemon));
-  } catch (error) {
-    AppError.log(AppError.CATEGORY.API, `fetchPokemonByTypeData (${type}) Fehler`, error);
-    return [];
-  }
-};
+window.fetchPokemonByTypeData = (type) => fetchTypePage(type, 0);
+
+// Wird von navigation.js und pokemon-core.js fuers Nachladen gebraucht.
+window.fetchMorePokemonByType = (type, offset) => fetchTypePage(type, offset);
 
 window.toggleDropdown = function (className) {
   const section = document.querySelector("." + className);
@@ -82,7 +91,11 @@ function loadScript(path) {
       resolve();
     };
     script.onerror = (error) => {
-      AppError.log(AppError.CATEGORY.APP, `Script laden fehlgeschlagen: ${path}`, error);
+      AppError.log(
+        AppError.CATEGORY.APP,
+        `Script laden fehlgeschlagen: ${path}`,
+        error,
+      );
       reject(new Error(`Failed to load ${path}`));
     };
     document.head.appendChild(script);
@@ -137,17 +150,21 @@ function initializeComponents() {
     { winKey: "teamBattle" },
   ];
   components.forEach((comp) => {
-    try { initComponent(comp); }
-    catch (e) { console.warn(`Could not init component: ${comp.winKey}`, e); }
+    try {
+      initComponent(comp);
+    } catch (e) {
+      console.warn(`Could not init component: ${comp.winKey}`, e);
+    }
   });
 }
 
 function showError() {
   const container =
     document.getElementById("pokemonContainer") || document.body;
-  container.innerHTML = typeof createAppErrorTemplate === "function"
-    ? createAppErrorTemplate()
-    : "<p>App Loading Failed. Check console.</p>";
+  container.innerHTML =
+    typeof createAppErrorTemplate === "function"
+      ? createAppErrorTemplate()
+      : "<p>App Loading Failed. Check console.</p>";
 }
 
 function getUtilScripts() {
@@ -261,7 +278,11 @@ function getAllScripts() {
 
 function startPokemonApp() {
   loadAllScripts(getAllScripts()).catch((error) => {
-    AppError.log(AppError.CATEGORY.APP, "Kritisch: Script-Laden fehlgeschlagen", error);
+    AppError.log(
+      AppError.CATEGORY.APP,
+      "Kritisch: Script-Laden fehlgeschlagen",
+      error,
+    );
     showError();
   });
 }

@@ -1,7 +1,8 @@
 (function () {
   class PokedexAIService {
     constructor() {
-      this.proxyEndpoint = "/api/ai";
+      // Der Proxy liegt im Django-Backend - dort (und nur dort) liegt der API-Key.
+      this.proxyEndpoint = `${window.BACKEND_URL || ""}/api/ai`;
       this.useProxy = false;
       this._proxyChecked = false;
       this.model = "llama-3.1-8b-instant";
@@ -40,8 +41,12 @@
     _resolveOptions(options) {
       return {
         model: String(options.model || this.model).trim(),
-        temperature: Number.isFinite(Number(options.temperature)) ? Number(options.temperature) : 0.7,
-        maxTokens: Number.isFinite(Number(options.maxTokens)) ? Number(options.maxTokens) : 320,
+        temperature: Number.isFinite(Number(options.temperature))
+          ? Number(options.temperature)
+          : 0.7,
+        maxTokens: Number.isFinite(Number(options.maxTokens))
+          ? Number(options.maxTokens)
+          : 320,
         useCache: options.useCache !== false,
       };
     }
@@ -55,14 +60,19 @@
 
     _extractContent(data, label) {
       const content = String(data?.choices?.[0]?.message?.content || "").trim();
-      if (!content) throw AppError.create(AppError.CATEGORY.AI, `${label} returned empty content.`);
+      if (!content)
+        throw AppError.create(
+          AppError.CATEGORY.AI,
+          `${label} returned empty content.`,
+        );
       return content;
     }
 
     async askGroq(systemPrompt, userPrompt, options = {}) {
       await this._throttle();
       await this.detectProxy();
-      if (!this.useProxy) throw AppError.create(AppError.CATEGORY.AI, "Proxy nicht verfügbar.");
+      if (!this.useProxy)
+        throw AppError.create(AppError.CATEGORY.AI, "Proxy nicht verfügbar.");
       return this._askViaProxy(systemPrompt, userPrompt, options);
     }
 
@@ -85,7 +95,9 @@
       return this._fetchWithRetry(this.proxyEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(this._buildProxyBody(systemPrompt, userPrompt, opts)),
+        body: JSON.stringify(
+          this._buildProxyBody(systemPrompt, userPrompt, opts),
+        ),
         signal: controller.signal,
       });
     }
@@ -94,8 +106,17 @@
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), this.timeoutMs);
       try {
-        const res = await this._makeProxyRequest(controller, systemPrompt, userPrompt, opts);
-        if (!res.ok) throw AppError.create(AppError.CATEGORY.AI, await this._buildResponseError(res, "Proxy"));
+        const res = await this._makeProxyRequest(
+          controller,
+          systemPrompt,
+          userPrompt,
+          opts,
+        );
+        if (!res.ok)
+          throw AppError.create(
+            AppError.CATEGORY.AI,
+            await this._buildResponseError(res, "Proxy"),
+          );
         return this._extractContent(await res.json(), "Proxy");
       } finally {
         clearTimeout(timeoutId);
@@ -104,12 +125,22 @@
 
     async _askViaProxy(systemPrompt, userPrompt, options = {}) {
       const opts = this._resolveOptions(options);
-      const cacheKey = this.getCacheKey(opts.model, systemPrompt, userPrompt, opts.temperature, opts.maxTokens);
+      const cacheKey = this.getCacheKey(
+        opts.model,
+        systemPrompt,
+        userPrompt,
+        opts.temperature,
+        opts.maxTokens,
+      );
       if (opts.useCache) {
         const cached = this.getCached(cacheKey);
         if (cached) return cached;
       }
-      const content = await this._fetchFromProxy(systemPrompt, userPrompt, opts);
+      const content = await this._fetchFromProxy(
+        systemPrompt,
+        userPrompt,
+        opts,
+      );
       if (opts.useCache) this.setCached(cacheKey, content);
       return content;
     }
@@ -137,13 +168,25 @@
       return [...intro, ...this._professorRules()].join("\n");
     }
 
-    async requestProfessorTeamAdvice({ team = [], staticAnalysis = null } = {}) {
+    async requestProfessorTeamAdvice({
+      team = [],
+      staticAnalysis = null,
+    } = {}) {
       const systemPrompt = this._buildProfessorSystemPrompt(team.length);
       const userPrompt = `Teamdaten: ${JSON.stringify(team)}\nStatische Analyse: ${JSON.stringify(staticAnalysis)}`;
-      return this.askGroq(systemPrompt, userPrompt, { temperature: 0.8, maxTokens: 400, useCache: false });
+      return this.askGroq(systemPrompt, userPrompt, {
+        temperature: 0.8,
+        maxTokens: 400,
+        useCache: false,
+      });
     }
 
-    async requestBattleCommentary({ attackerName, moveName, defenderName, effectiveness } = {}) {
+    async requestBattleCommentary({
+      attackerName,
+      moveName,
+      defenderName,
+      effectiveness,
+    } = {}) {
       const userPrompt = `${attackerName} nutzt ${moveName} gegen ${defenderName}. Es ist ${effectiveness}.`;
       return this.askGroq(
         "Du bist ein leidenschaftlicher Kampf-Kommentator. Beschreibe das Ergebnis eines Spielzugs in einem einzigen, actionreichen Satz. Nutze dramatische Worte. Verwende nur die genannten Namen und die genannte Wirkung; erfinde keine Pokémon oder Typen. Antworte auf Deutsch.",
@@ -152,7 +195,12 @@
       );
     }
 
-    async requestGymLeaderDialogue({ leaderName, leaderType, leaderStyle, eventText } = {}) {
+    async requestGymLeaderDialogue({
+      leaderName,
+      leaderType,
+      leaderStyle,
+      eventText,
+    } = {}) {
       const systemPrompt = `Du bist ${leaderName}, der ${leaderType}-Arenaleiter. Dein Stil ist ${leaderStyle}. Antworte dem Spieler basierend auf seinem aktuellen Zug. Bleibe in der Rolle und erfinde keine Fakten. Max. 12 Woerter.`;
       const result = await this.askGroq(
         systemPrompt,
@@ -195,7 +243,10 @@
       this._clearTypewriterTimer(element);
       element.textContent = "";
       return new Promise((resolve) => {
-        if (!finalText.length) { resolve(); return; }
+        if (!finalText.length) {
+          resolve();
+          return;
+        }
         this._typewriterTick(element, finalText, 0, speed, resolve);
       });
     }
@@ -225,7 +276,10 @@
         const oldestKey = this.cache.keys().next().value;
         if (oldestKey) this.cache.delete(oldestKey);
       }
-      this.cache.set(cacheKey, { value, expiresAt: Date.now() + this.cacheTtlMs });
+      this.cache.set(cacheKey, {
+        value,
+        expiresAt: Date.now() + this.cacheTtlMs,
+      });
     }
   }
 

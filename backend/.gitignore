@@ -5,6 +5,9 @@ __pycache__/
 *.py[cod]
 *.sqlite3
 db.sqlite3
+# Begleitdateien des WAL-Modus
+*.sqlite3-wal
+*.sqlite3-shm
 
 # Lokale Konfiguration / Secrets
 .env

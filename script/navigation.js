@@ -157,7 +157,7 @@ async function calculateTotalPagesForType(type) {
 }
 
 async function fetchTotalPokemonForType(type) {
-    const typeResponse = await fetchFromPokeAPI(`https://pokeapi.co/api/v2/type/${type}`);
+    const typeResponse = await window.PokeApi.fetch(`/type/${type}`);
     return typeResponse.pokemon.length;
 }
 

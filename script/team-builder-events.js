@@ -158,20 +158,19 @@
       !pokemon.base_experience ||
       pokemon.base_experience === 0;
 
+    // Greift nur noch bei alten localStorage-Eintraegen: frische Listendaten
+    // bringen stats und base_experience bereits vom Backend mit.
     if (needsApi) {
       try {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${numericId}`);
-        if (response.ok) {
-          const apiData = await response.json();
-          pokemon = {
-            ...pokemon,
-            stats: Array.isArray(apiData.stats) ? apiData.stats : [],
-            base_experience: apiData.base_experience || 0,
-            types: Array.isArray(apiData.types)
-              ? apiData.types.map((t) => t.type.name)
-              : pokemon.types,
-          };
-        }
+        const apiData = await window.PokeApi.fetch(`/pokemon/${numericId}`);
+        pokemon = {
+          ...pokemon,
+          stats: Array.isArray(apiData.stats) ? apiData.stats : [],
+          base_experience: apiData.base_experience || 0,
+          types: Array.isArray(apiData.types)
+            ? apiData.types.map((t) => t.type.name)
+            : pokemon.types,
+        };
       } catch (err) {
         console.warn("[TeamBuilder] Konnte Daten nicht nachladen:", err);
       }

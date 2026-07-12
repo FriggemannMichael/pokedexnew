@@ -138,8 +138,7 @@ class TeamBattleSystem {
 
   async fetchPokemonDetails(pokemonId) {
     try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`);
-      return await response.json();
+      return await window.PokeApi.fetch(`/pokemon/${pokemonId}`);
     } catch (error) {
       console.error("[TeamBattle] Failed to fetch Pokemon details:", error);
       return null;
