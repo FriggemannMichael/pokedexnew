@@ -1,13 +1,12 @@
-"""Die Endpoints des Pokedex-Backends."""
+"""Die Pokemon-Endpoints des Backends. Die KI-Endpoints stehen in ai_views.py."""
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from . import ai, pokeapi, transform
-from .throttling import AiRateThrottle
+from . import pokeapi, transform
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
@@ -129,38 +128,3 @@ def pokeapi_proxy(request, resource_path):
         return upstream_error(error)
 
 
-@extend_schema(
-    summary="KI-Proxy erreichbar?",
-    description=(
-        "Das Frontend fragt hier zuerst nach. Antwortet der Endpoint, schaltet "
-        "es seine KI-Funktionen frei."
-    ),
-    responses={200: {"type": "object", "properties": {"status": {"type": "string"}}}},
-)
-@api_view(["GET"])
-@permission_classes([AllowAny])
-def ai_ping(request):
-    """GET /api/ai/ping"""
-    return Response({"status": "ok"})
-
-
-@extend_schema(
-    summary="KI-Anfrage (Proxy)",
-    description=(
-        "Reicht eine Chat-Anfrage an den gewuenschten Anbieter weiter (Feld "
-        "'provider': groq, openrouter, mistral oder gemini; ohne Angabe greift "
-        "AI_PROVIDER, sonst groq) und haengt dabei den API-Key an - der Key "
-        "bleibt so auf dem Server. Max. 30 Anfragen pro Minute und IP."
-    ),
-)
-@api_view(["POST"])
-@permission_classes([AllowAny])
-@throttle_classes([AiRateThrottle])
-def ai_chat(request):
-    """POST /api/ai"""
-    body = request.data if isinstance(request.data, dict) else {}
-    provider = ai.resolve_provider(body.get("provider"))
-    try:
-        return Response(ai.ask(provider, body))
-    except ai.AiError as error:
-        return Response(error.detail, status=error.status)

@@ -208,14 +208,9 @@ function getTeamCoreScripts() {
   ];
 }
 
-function getPromptScripts() {
-  return [
-    "./script/prompts/team-analysis-prompt.js",
-    "./script/prompts/team-advice-prompt.js",
-    "./script/prompts/battle-strategy-prompt.js",
-    "./script/prompts/coach-prompt.js",
-    "./script/team-ai-service.js",
-  ];
+function getAiScripts() {
+  // Die Prompts liegen im Backend (backend/api/prompts.py), nicht mehr hier.
+  return ["./script/team-ai-service.js"];
 }
 
 function getTeamModalScripts() {
@@ -268,7 +263,7 @@ function getAllScripts() {
     ...getUtilScripts(),
     ...getPokemonScripts(),
     ...getTeamCoreScripts(),
-    ...getPromptScripts(),
+    ...getAiScripts(),
     ...getTeamModalScripts(),
     ...getAnalyzerScripts(),
     ...getPokemonGoScripts(),

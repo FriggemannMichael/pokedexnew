@@ -29,8 +29,12 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/pokemon/`                  | Eine Seite fertiger Pokémon (`?offset=0&limit=20`) |
 | `/api/pokemon/by-type/<typ>/`    | Dasselbe, gefiltert auf einen Typ (z.B. `fire`)    |
 | `/api/pokeapi/<pfad>`            | Gecachter Durchreicher, z.B. `/api/pokeapi/move/tackle` |
-| `/api/ai` (POST)                 | KI-Proxy (Chat-Anfrage, Key bleibt im Backend)     |
-| `/api/ai/ping`                   | Prüft, ob der KI-Proxy bereit ist                  |
+| `/api/ai/ping`                   | Prüft, ob die KI bereit ist                        |
+| `/api/ai/team-advice` (POST)     | Professor Eichs Rat zum Team (Text)                |
+| `/api/ai/battle-commentary` (POST) | Kommentar zu einem Spielzug (Text)               |
+| `/api/ai/gym-dialogue` (POST)    | Spruch des Arenaleiters (Text, max. 12 Wörter)     |
+| `/api/ai/team-analysis` (POST)   | Große Team-Analyse (JSON)                          |
+| `/api/ai/gym-strategy` (POST)    | Battleplan gegen ein Arena-Team (JSON)             |
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
@@ -45,21 +49,34 @@ Der Endpoint `/api/pokemon/` nimmt dem Browser dabei Arbeit ab: Er holt die
 Liste **und** alle 20 Detailseiten selbst (parallel) und schickt sie fertig
 aufbereitet zurück. Der Browser braucht dafür nur noch **eine** Anfrage statt 21.
 
-## Wie der KI-Proxy funktioniert
+## Wie die KI funktioniert
 
 Ein API-Key darf **niemals** ins Frontend – im Browser könnte ihn jeder
-auslesen. Das Frontend schickt seine Anfrage darum an `/api/ai`, und erst
-`backend/api/ai.py` hängt den Key an und spricht mit dem Anbieter.
+auslesen. Deshalb spricht nur das Backend mit den KI-Anbietern.
+
+Für jede KI-Funktion der App gibt es einen eigenen Endpoint. Das Frontend
+schickt dorthin nur **Rohdaten** (das Team, den Spielzug, das Arena-Matchup),
+und das Backend baut daraus den Prompt:
+
+| Datei | Aufgabe |
+| ----- | ------- |
+| `api/prompts.py` | Was die KI gefragt wird (die Prompt-Texte) |
+| `api/ai_views.py` | Die Endpoints, einer je KI-Funktion |
+| `api/ai.py` | Wer gefragt wird: Anbieter, Keys, Fallback |
+
+Früher baute das **Frontend** die Prompts und schickte fertige Nachrichten an
+einen allgemeinen Proxy (`POST /api/ai`). Der ist entfallen: Wer die URL kannte,
+konnte darüber beliebige Prompts auf Kosten des API-Keys stellen.
 
 Die Keys stehen in der `.env` im Projektwurzelverzeichnis (eine Ebene über
-`backend/`) – dieselbe Datei, die das Frontend schon benutzt hat:
+`backend/`):
 
 ```env
 GROQ_API_KEY=...
 GEMINI_API_KEY=...
 MISTRAL_API_KEY=...
 OPENROUTER_API_KEY=...
-# Standard-Anbieter, wenn das Frontend keinen nennt; leer = groq
+# Wer zuerst gefragt wird; leer = groq
 AI_PROVIDER=gemini
 ```
 
@@ -67,11 +84,10 @@ Unterstützt werden Groq, OpenRouter, Mistral und Gemini. Die ersten drei
 sprechen das OpenAI-Protokoll; Geminis abweichendes Antwortformat wird
 zurückübersetzt, damit das Frontend überall dasselbe liest.
 
-Welchen der vier eine Anfrage nimmt, entscheidet das Frontend: Es schickt
-`"provider": "gemini"` mit, und `AI_PROVIDER` greift nur, wenn nichts (oder
-ein unbekannter Name) mitkommt. Das ist wichtig, weil das Frontend bei einem
-Ausfall der Reihe nach die anderen Anbieter durchprobiert – würde `AI_PROVIDER`
-den Wunsch überstimmen, liefen alle Versuche wieder in denselben Fehler.
+**Fallback-Kette:** `ai.chat()` fragt der Reihe nach jeden Anbieter, für den ein
+Key hinterlegt ist – `AI_PROVIDER` zuerst, dann die übrigen. Antwortet einer
+nicht (kein Guthaben, Ausfall), übernimmt der nächste. Deshalb legt ein
+aufgebrauchtes Gemini-Kontingent die KI nicht mehr lahm.
 
 Es gilt ein **Rate-Limit von 30 Anfragen pro Minute und IP** (`api/throttling.py`).
 Ohne das könnte eine einzige geöffnete Seite das Guthaben des Keys leerlaufen

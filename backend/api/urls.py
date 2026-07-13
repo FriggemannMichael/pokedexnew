@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import ai_views, views
 
 urlpatterns = [
     path("health/", views.health, name="health"),
@@ -13,7 +13,15 @@ urlpatterns = [
     ),
     # Gecachter Durchreicher fuer alles andere (Details, Typen, Attacken, ...)
     path("pokeapi/<path:resource_path>", views.pokeapi_proxy, name="pokeapi-proxy"),
-    # KI-Proxy (bewusst ohne Schluss-Slash: genau so ruft das Frontend auf)
-    path("ai", views.ai_chat, name="ai-chat"),
-    path("ai/ping", views.ai_ping, name="ai-ping"),
+    # KI (bewusst ohne Schluss-Slash: genau so ruft das Frontend auf)
+    path("ai/ping", ai_views.ai_ping, name="ai-ping"),
+    path("ai/team-advice", ai_views.team_advice, name="ai-team-advice"),
+    path(
+        "ai/battle-commentary",
+        ai_views.battle_commentary,
+        name="ai-battle-commentary",
+    ),
+    path("ai/gym-dialogue", ai_views.gym_dialogue, name="ai-gym-dialogue"),
+    path("ai/team-analysis", ai_views.team_analysis, name="ai-team-analysis"),
+    path("ai/gym-strategy", ai_views.gym_strategy, name="ai-gym-strategy"),
 ]

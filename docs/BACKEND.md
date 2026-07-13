@@ -106,8 +106,12 @@ Konkret hat sich dadurch geaendert:
 - Das **Nachladen der Detailseiten** ist ins Backend gewandert: Frueher holte der
   Browser fuer die erste Seite 21 Ressourcen (1 Liste + 20 Details), heute
   genuegt **eine** Anfrage an `/api/pokemon/`.
-- Der **KI-Proxy** ist von Node (`server.js`) nach Django gezogen
-  (`backend/api/ai.py`), samt Rate-Limit (30 Anfragen pro Minute und IP).
+- Die **KI** ist von Node (`server.js`) nach Django gezogen, samt Rate-Limit
+  (30 Anfragen pro Minute und IP). Inzwischen liegen dort auch die **Prompts**
+  (`backend/api/prompts.py`): Das Frontend schickt nur noch Rohdaten an einen
+  Endpoint je KI-Funktion (`backend/api/ai_views.py`) und bekommt fertigen Text
+  bzw. fertiges JSON zurueck. Faellt ein Anbieter aus, nimmt `backend/api/ai.py`
+  automatisch den naechsten.
 - Die alte, nirgends eingebundene `script/api.js` ist entfallen – ihre Logik
   (`createPokemonData`, Typ-Filter) steckt jetzt in `backend/api/transform.py`
   und `backend/api/views.py`.

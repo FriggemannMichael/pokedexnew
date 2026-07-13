@@ -12,7 +12,7 @@ from django.db import OperationalError
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from . import ai, pokeapi
+from . import ai, pokeapi, prompts
 from .models import CachedResource
 from .throttling import AiRateThrottle
 from .transform import slim_pokemon
@@ -178,12 +178,31 @@ def fake_provider_response(status=200, payload=None):
 
 
 CHAT = {
-    "provider": "groq",
     "messages": [
         {"role": "system", "content": "Du bist Professor Eich."},
         {"role": "user", "content": "Wie ist mein Team?"},
     ],
 }
+
+TEAM = [
+    {"id": 1, "name": "bulbasaur", "types": ["Pflanze"], "stats": {"hp": 45}},
+    {"id": 4, "name": "charmander", "types": ["Feuer"], "stats": {"hp": 39}},
+]
+
+ALL_KEY_NAMES = (
+    "GROQ_API_KEY",
+    "OPENROUTER_API_KEY",
+    "MISTRAL_API_KEY",
+    "GEMINI_API_KEY",
+)
+
+
+def only_keys(*names, **extra):
+    """Eine Umgebung, in der genau die genannten Anbieter einen Key haben."""
+    environment = {name: ("k" if name in names else "") for name in ALL_KEY_NAMES}
+    environment["AI_PROVIDER"] = ""
+    environment.update(extra)
+    return environment
 
 
 class AiConfigTests(TestCase):
@@ -195,22 +214,6 @@ class AiConfigTests(TestCase):
 
         self.assertEqual(config["headers"]["Authorization"], "Bearer geheim-123")
 
-    def test_the_frontend_wish_beats_ai_provider_env(self):
-        with patch.dict("os.environ", {"AI_PROVIDER": "gemini"}):
-            self.assertEqual(ai.resolve_provider("groq"), "groq")
-
-    def test_ai_provider_env_is_the_default(self):
-        with patch.dict("os.environ", {"AI_PROVIDER": "mistral"}):
-            self.assertEqual(ai.resolve_provider(None), "mistral")
-
-    def test_unknown_provider_falls_back_to_the_default(self):
-        with patch.dict("os.environ", {"AI_PROVIDER": "mistral"}):
-            self.assertEqual(ai.resolve_provider("bibor"), "mistral")
-
-    def test_without_anything_groq_is_used(self):
-        with patch.dict("os.environ", {"AI_PROVIDER": ""}):
-            self.assertEqual(ai.resolve_provider(None), "groq")
-
     def test_gemini_separates_the_system_prompt(self):
         with patch.dict("os.environ", {"GEMINI_API_KEY": "g-key"}):
             payload = ai.gemini_config(CHAT)["payload"]
@@ -219,6 +222,69 @@ class AiConfigTests(TestCase):
             payload["system_instruction"]["parts"][0]["text"], "Du bist Professor Eich."
         )
         self.assertEqual(payload["contents"][0]["parts"][0]["text"], "Wie ist mein Team?")
+
+    def test_ai_provider_decides_who_is_asked_first(self):
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY", AI_PROVIDER="mistral")):
+            self.assertEqual(ai.default_provider(), "mistral")
+
+    def test_without_ai_provider_groq_is_asked_first(self):
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY")):
+            self.assertEqual(ai.default_provider(), "groq")
+
+    def test_chain_skips_providers_without_key(self):
+        """Wen man nicht fragen kann, den fragt man auch nicht."""
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY", "MISTRAL_API_KEY")):
+            self.assertEqual(ai.provider_chain(), ["groq", "mistral"])
+
+    def test_chain_starts_with_the_default_provider(self):
+        keys = only_keys("GROQ_API_KEY", "GEMINI_API_KEY", AI_PROVIDER="gemini")
+
+        with patch.dict("os.environ", keys):
+            self.assertEqual(ai.provider_chain(), ["gemini", "groq"])
+
+    def test_json_is_read_even_with_chatter_around_it(self):
+        """Manche Anbieter schreiben trotz Ansage noch etwas dazu."""
+        raw = 'Klar doch!\n```json\n{"overall_rating": 7}\n```'
+
+        self.assertEqual(ai.parse_json(raw), {"overall_rating": 7})
+
+    def test_answer_without_json_gives_none(self):
+        self.assertIsNone(ai.parse_json("Dein Team ist super."))
+
+
+class AiFallbackTests(TestCase):
+    """Faellt ein Anbieter aus, muss der naechste einspringen."""
+
+    def test_next_provider_takes_over_after_an_error(self):
+        """Genau der Fall, der die App lahmlegte: Geminis Freikontingent war leer."""
+        failure = fake_provider_response(status=429, payload={"error": "kein Guthaben"})
+        answers = [failure, fake_provider_response()]
+        keys = only_keys("GEMINI_API_KEY", "GROQ_API_KEY", AI_PROVIDER="gemini")
+
+        with patch.dict("os.environ", keys):
+            with patch.object(ai.requests, "post", side_effect=answers) as post:
+                provider, content = ai.chat(CHAT["messages"])
+
+        self.assertIn("googleapis", post.call_args_list[0].args[0])  # zuerst Gemini
+        self.assertEqual(provider, "groq")  # dann der naechste mit Key
+        self.assertEqual(content, "Ein starkes Team!")
+
+    def test_the_last_error_survives_if_nobody_answers(self):
+        failure = fake_provider_response(status=429, payload={"error": "kein Guthaben"})
+
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY")):
+            with patch.object(ai.requests, "post", return_value=failure):
+                with self.assertRaises(ai.AiError) as caught:
+                    ai.chat(CHAT["messages"])
+
+        self.assertEqual(caught.exception.status, 429)
+
+    def test_without_any_key_nobody_is_asked(self):
+        with patch.dict("os.environ", only_keys()):
+            with self.assertRaises(ai.AiError) as caught:
+                ai.chat(CHAT["messages"])
+
+        self.assertEqual(caught.exception.status, 500)
 
     def test_gemini_answer_is_translated_to_openai_format(self):
         """Das Frontend liest ueberall data.choices[0].message.content."""
@@ -229,12 +295,48 @@ class AiConfigTests(TestCase):
         self.assertEqual(result["choices"][0]["message"]["content"], "Stark!")
 
 
+class PromptTests(TestCase):
+    """Die Prompts entstehen im Backend - das Frontend schickt nur Rohdaten."""
+
+    def test_the_prompt_carries_the_team_data(self):
+        messages = prompts.team_advice(TEAM, {"weaknesses": ["Feuer"]})
+
+        self.assertEqual(messages[0]["role"], "system")
+        self.assertIn("Professor Eich", messages[0]["content"])
+        self.assertIn("bulbasaur", messages[1]["content"])
+        self.assertIn("Feuer", messages[1]["content"])
+
+    def test_a_full_team_is_not_told_to_grow(self):
+        """Sonst rief die KI ein 6er-Team dazu auf, noch jemanden aufzunehmen."""
+        full_team = TEAM * 3
+
+        system = prompts.team_advice(full_team, {})[0]["content"]
+
+        self.assertIn("VOLLSTAENDIG", system)
+
+    def test_useless_fields_are_left_out_of_the_prompt(self):
+        """Ein ganzes Pokemon-Objekt wuerde den Prompt nur aufblaehen."""
+        fat_team = [{"id": 1, "name": "bulbasaur", "sprites": {"front": "bild.png"}}]
+
+        user = prompts.team_advice(fat_team, {})[1]["content"]
+
+        self.assertIn("bulbasaur", user)
+        self.assertNotIn("bild.png", user)
+
+
 class AiEndpointTests(TestCase):
-    """Prueft den KI-Endpoint so, wie das Frontend ihn aufruft."""
+    """Prueft die KI-Endpoints so, wie das Frontend sie aufruft."""
 
     def setUp(self):
         self.client = APIClient()
         cache.clear()  # sonst zaehlt das Rate-Limit ueber Tests hinweg weiter
+
+    def post(self, path, payload, answer=None):
+        """Ein Aufruf, bei dem der KI-Anbieter durch eine Attrappe ersetzt ist."""
+        response = answer or fake_provider_response()
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY")):
+            with patch.object(ai.requests, "post", return_value=response):
+                return self.client.post(path, payload, format="json")
 
     def test_ping(self):
         response = self.client.get("/api/ai/ping")
@@ -242,37 +344,67 @@ class AiEndpointTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"status": "ok"})
 
-    def test_chat_returns_the_answer(self):
-        with patch.dict("os.environ", {"GROQ_API_KEY": "k", "AI_PROVIDER": ""}):
-            with patch.object(ai.requests, "post", return_value=fake_provider_response()):
-                response = self.client.post("/api/ai", CHAT, format="json")
+    def test_team_advice_returns_text(self):
+        response = self.post("/api/ai/team-advice", {"team": TEAM, "staticAnalysis": {}})
 
-        content = response.json()["choices"][0]["message"]["content"]
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(content, "Ein starkes Team!")
+        self.assertEqual(response.json()["text"], "Ein starkes Team!")
+        self.assertEqual(response.json()["providerLabel"], "Groq")
 
-    def test_chat_asks_the_provider_the_frontend_wants(self):
-        """Die Fallback-Kette des Frontends braucht das: Wunsch schlaegt .env."""
-        keys = {"GROQ_API_KEY": "k", "GEMINI_API_KEY": "g", "AI_PROVIDER": "gemini"}
+    def test_battle_commentary_returns_text(self):
+        move = {
+            "attackerName": "Glumanda",
+            "moveName": "Glut",
+            "defenderName": "Bisasam",
+            "effectiveness": "sehr effektiv",
+        }
 
-        with patch.dict("os.environ", keys):
-            with patch.object(
-                ai.requests, "post", return_value=fake_provider_response()
-            ) as post:
-                self.client.post("/api/ai", CHAT, format="json")
+        response = self.post("/api/ai/battle-commentary", move)
 
-        self.assertIn("groq.com", post.call_args.args[0])
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["text"], "Ein starkes Team!")
+
+    def test_gym_dialogue_is_cut_to_twelve_words(self):
+        """Der Arenaleiter soll knapp bleiben, auch wenn die KI ausschweift."""
+        babble = fake_provider_response(
+            payload={"choices": [{"message": {"content": "wort " * 30}}]}
+        )
+
+        response = self.post("/api/ai/gym-dialogue", {"leaderName": "Rocko"}, babble)
+
+        self.assertEqual(len(response.json()["text"].split()), 12)
+
+    def test_team_analysis_returns_parsed_json(self):
+        json_answer = fake_provider_response(
+            payload={"choices": [{"message": {"content": '{"overall_rating": 8}'}}]}
+        )
+
+        response = self.post("/api/ai/team-analysis", {"team": TEAM}, json_answer)
+
+        self.assertEqual(response.json()["parsed"], {"overall_rating": 8})
+        self.assertEqual(response.json()["provider"], "groq")
+
+    def test_answer_without_json_leaves_parsed_empty(self):
+        """Das Frontend faellt dann auf seine lokale Analyse zurueck."""
+        response = self.post("/api/ai/gym-strategy", {"playerTeam": TEAM})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["parsed"])
 
     def test_the_api_key_never_reaches_the_browser(self):
-        with patch.dict("os.environ", {"GROQ_API_KEY": "streng-geheim", "AI_PROVIDER": ""}):
+        with patch.dict("os.environ", only_keys("GROQ_API_KEY", GROQ_API_KEY="geheim")):
             with patch.object(ai.requests, "post", return_value=fake_provider_response()):
-                response = self.client.post("/api/ai", CHAT, format="json")
+                response = self.client.post(
+                    "/api/ai/team-advice", {"team": TEAM}, format="json"
+                )
 
-        self.assertNotIn("streng-geheim", response.content.decode())
+        self.assertNotIn("geheim", response.content.decode())
 
     def test_missing_key_gives_500(self):
-        with patch.dict("os.environ", {"GROQ_API_KEY": "", "AI_PROVIDER": ""}):
-            response = self.client.post("/api/ai", CHAT, format="json")
+        with patch.dict("os.environ", only_keys()):
+            response = self.client.post(
+                "/api/ai/team-advice", {"team": TEAM}, format="json"
+            )
 
         self.assertEqual(response.status_code, 500)
         self.assertIn("Kein API-Key", response.json()["error"])
@@ -280,23 +412,23 @@ class AiEndpointTests(TestCase):
     def test_provider_error_is_passed_through(self):
         failure = fake_provider_response(status=429, payload={"error": "zu schnell"})
 
-        with patch.dict("os.environ", {"GROQ_API_KEY": "k", "AI_PROVIDER": ""}):
-            with patch.object(ai.requests, "post", return_value=failure):
-                response = self.client.post("/api/ai", CHAT, format="json")
+        response = self.post("/api/ai/team-advice", {"team": TEAM}, failure)
 
         self.assertEqual(response.status_code, 429)
 
     def test_rate_limit_blocks_the_third_request(self):
         """Schutz fuers Guthaben des API-Keys. Echt sind 30/min - hier 2/min."""
         with patch.object(AiRateThrottle, "get_rate", return_value="2/min"):
-            with patch.dict("os.environ", {"GROQ_API_KEY": "k", "AI_PROVIDER": ""}):
-                with patch.object(
-                    ai.requests, "post", return_value=fake_provider_response()
-                ):
-                    first = self.client.post("/api/ai", CHAT, format="json")
-                    second = self.client.post("/api/ai", CHAT, format="json")
-                    third = self.client.post("/api/ai", CHAT, format="json")
+            first = self.post("/api/ai/team-advice", {"team": TEAM})
+            second = self.post("/api/ai/team-advice", {"team": TEAM})
+            third = self.post("/api/ai/team-advice", {"team": TEAM})
 
         self.assertEqual(first.status_code, 200)
         self.assertEqual(second.status_code, 200)
         self.assertEqual(third.status_code, 429)
+
+    def test_the_old_open_proxy_is_gone(self):
+        """Frueher konnte hier jeder beliebige Prompts auf Kosten des Keys stellen."""
+        response = self.client.post("/api/ai", CHAT, format="json")
+
+        self.assertEqual(response.status_code, 404)

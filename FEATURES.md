@@ -71,11 +71,13 @@ Das Projekt ist ein interaktiver Pokedex mit lokalem Team-Management, Team-Analy
 
 ### KI-Integration und Server
 
-- Lokaler Express-Server fuer statische Auslieferung und AI-Proxy
-- `/api/ai/ping` zur Proxy-Erkennung im Frontend
-- `/api/ai` als Proxy fuer Groq, Mistral, Gemini und OpenRouter
-- Rate Limiting fuer AI-Requests
-- Frontend-Fallback zwischen direktem API-Zugriff und Proxy-Nutzung
+- Lokaler Express-Server nur noch fuer die statische Auslieferung
+- KI komplett im Django-Backend: Prompts, Anbieterwahl und Keys liegen dort
+- Ein Endpoint je KI-Funktion (`/api/ai/team-advice`, `/api/ai/battle-commentary`,
+  `/api/ai/gym-dialogue`, `/api/ai/team-analysis`, `/api/ai/gym-strategy`)
+- `/api/ai/ping` zur Erkennung im Frontend
+- Fallback-Kette ueber Groq, Mistral, Gemini und OpenRouter
+- Rate Limiting fuer AI-Requests (30/min pro IP)
 - Caching, Retry-Logik, Timeout und Throttling fuer KI-Anfragen
 
 ## Persistenz

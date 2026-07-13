@@ -1,14 +1,17 @@
-"""Der KI-Proxy: Das Backend spricht mit den KI-Anbietern, nie der Browser.
+"""Die Verbindung zu den KI-Anbietern. Der Browser spricht nie mit ihnen.
 
-Warum ueberhaupt ein Proxy? Ein API-Key darf niemals ins Frontend - er waere
-sonst fuer jeden im Browser sichtbar. Das Frontend schickt seine Anfrage also
-hierher, und erst das Backend haengt den Key dran.
+Ein API-Key darf niemals ins Frontend - er waere sonst fuer jeden im Browser
+sichtbar. Das Frontend schickt darum nur Rohdaten an die Endpoints in
+ai_views.py; der Prompt entsteht in prompts.py und die Anfrage geht von hier
+raus, mit dem Key vom Server.
 
 Unterstuetzt werden vier Anbieter. Drei davon (Groq, OpenRouter, Mistral)
 sprechen dasselbe Protokoll wie OpenAI; Gemini braucht ein eigenes Format und
-wird darum zurueckuebersetzt (siehe normalize_response).
+wird darum zurueckuebersetzt (siehe normalize_response). Faellt einer aus
+(kein Guthaben, Ausfall), nimmt chat() automatisch den naechsten.
 """
 
+import json
 import os
 
 import requests
@@ -116,18 +119,43 @@ PROVIDERS = {
     "gemini": gemini_config,
 }
 
+LABELS = {
+    "groq": "Groq",
+    "openrouter": "OpenRouter",
+    "mistral": "Mistral",
+    "gemini": "Gemini",
+}
 
-def resolve_provider(requested):
-    """Das Frontend waehlt den Anbieter; AI_PROVIDER ist nur der Standard.
+KEY_NAMES = {
+    "groq": "GROQ_API_KEY",
+    "openrouter": "OPENROUTER_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "gemini": "GEMINI_API_KEY",
+}
 
-    Nur so kann das Frontend eine Fallback-Kette durchprobieren (Gemini ->
-    OpenRouter -> ...): Wuerde AI_PROVIDER den Wunsch ueberstimmen, landeten
-    alle Versuche wieder beim selben Anbieter.
+FALLBACK_ORDER = ("gemini", "openrouter", "mistral", "groq")
+
+
+def label(provider):
+    """Der Name des Anbieters, wie ihn die Oberflaeche anzeigt."""
+    return LABELS.get(provider, provider)
+
+
+def default_provider():
+    """Wer zuerst gefragt wird. AI_PROVIDER darf das bestimmen, sonst Groq."""
+    wanted = (env("AI_PROVIDER") or "").lower()
+    return wanted if wanted in PROVIDERS else "groq"
+
+
+def provider_chain():
+    """Alle Anbieter mit Key, der bevorzugte zuerst.
+
+    Ohne Key braucht man einen Anbieter gar nicht erst zu fragen - so bleibt
+    fuer den Fallback nur uebrig, was auch wirklich antworten kann.
     """
-    wanted = (requested or "").lower()
-    if wanted in PROVIDERS:
-        return wanted
-    return (env("AI_PROVIDER") or "groq").lower()
+    first = default_provider()
+    order = [first] + [name for name in FALLBACK_ORDER if name != first]
+    return [name for name in order if env(KEY_NAMES[name])]
 
 
 def build_config(provider, body):
@@ -177,3 +205,55 @@ def ask(provider, body):
     if not response.ok:
         raise AiError(data, response.status_code)
     return normalize_response(provider, data)
+
+
+def extract_content(data):
+    """Holt den Antworttext aus der Anbieter-Antwort."""
+    message = ((data.get("choices") or [{}])[0] or {}).get("message") or {}
+    content = message.get("content")
+    if isinstance(content, list):  # manche Anbieter schicken Text-Bausteine
+        content = " ".join(part.get("text", "") for part in content)
+    text = str(content or "").strip()
+    if not text:
+        raise AiError({"error": "Der Anbieter hat nichts geantwortet"}, 502)
+    return text
+
+
+def chat(messages, temperature=DEFAULT_TEMPERATURE, max_tokens=DEFAULT_MAX_TOKENS):
+    """Fragt der Reihe nach, bis einer antwortet. Gibt (Anbieter, Text) zurueck."""
+    body = {"messages": messages, "temperature": temperature, "max_tokens": max_tokens}
+    chain = provider_chain()
+    if not chain:
+        raise AiError({"error": "Kein API-Key konfiguriert"}, 500)
+    return try_chain(chain, body)
+
+
+def try_chain(chain, body):
+    """Ein Anbieter nach dem anderen; der letzte Fehler zaehlt, wenn keiner will."""
+    last_error = None
+    for provider in chain:
+        try:
+            return provider, extract_content(ask(provider, body))
+        except AiError as error:
+            last_error = error
+    raise last_error
+
+
+def parse_json(text):
+    """Der Coach soll JSON liefern - manchmal steht aber Geschwaetz drumherum."""
+    direct = load_json(text)
+    if direct is not None:
+        return direct
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end <= start:
+        return None
+    return load_json(text[start : end + 1])
+
+
+def load_json(text):
+    """json.loads, aber ohne Absturz bei Unsinn."""
+    try:
+        parsed = json.loads(text)
+    except ValueError:
+        return None
+    return parsed if isinstance(parsed, dict) else None

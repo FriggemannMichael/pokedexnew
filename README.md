@@ -210,7 +210,7 @@ Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen über den lokalen Proxy
 | --- | --- |
 | `index.html` | Grundlayout, Filter, Offcanvas, Team-Modal, Team-Builder |
 | `main.js` | Bootstrap und Initialisierung der Frontend-Module |
-| `server.js` | Express-Server und AI-Proxy |
+| `server.js` | Express-Server für die statische Auslieferung |
 | `assets/css/*` | Modulare Styles für Pokédex, Karten, Team, Analyse und Battle |
 | `assets/icon/*` | SVG-Icons für Pokémon-Typen |
 | `assets/img/9.png` | Favicon / Pokéball-Asset |
@@ -218,7 +218,8 @@ Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen über den lokalen Proxy
 | `script/team-*` | Team-Builder, Team-Modal, Team-Analyse und Gym-Battle |
 | `script/battle-*` | Battle-Simulator und Battle-Historie |
 | `script/services/*` | API-, Storage-, State- und Service-Schicht |
-| `js/ai-service.js` | Frontend-AI-Client für Kampfkommentare und Dialoge |
+| `js/ai-service.js` | Client für die KI-Endpoints des Backends (Text) |
+| `script/team-ai-service.js` | Client für die KI-Endpoints des Backends (JSON) |
 
 ## Lokale Speicherung
 
@@ -252,18 +253,20 @@ GET /pokemon/{id-or-name}
 GET /type/{type-name}
 ```
 
-### Lokaler AI-Proxy
+### KI (im Django-Backend)
 
-Der Express-Server stellt AI-Funktionen für Team-Analyse, Strategieauswertung und Dialoge bereit. Unterstützte Provider:
+Die KI-Funktionen – Team-Analyse, Strategieauswertung, Kampfkommentare und Dialoge – laufen komplett im Backend. Für jede gibt es einen eigenen Endpoint (`/api/ai/team-advice`, `/api/ai/battle-commentary`, `/api/ai/gym-dialogue`, `/api/ai/team-analysis`, `/api/ai/gym-strategy`). Das Frontend schickt nur Rohdaten wie das Team; den Prompt baut Django (`backend/api/prompts.py`).
+
+Unterstützte Provider:
 
 - Groq
 - Mistral
 - Gemini
 - OpenRouter
 
-Welchen Anbieter eine Anfrage nimmt, entscheidet das Frontend – nur so kann es bei einem Ausfall der Reihe nach die anderen durchprobieren. Optional legt `AI_PROVIDER` (`groq`, `mistral`, `gemini` oder `openrouter`) fest, welcher Anbieter genommen wird, wenn das Frontend keinen nennt. Bleibt der Wert leer, ist das Groq.
+Das Backend fragt der Reihe nach jeden Anbieter, für den ein Key hinterlegt ist – `AI_PROVIDER` (`groq`, `mistral`, `gemini` oder `openrouter`) zuerst, sonst Groq. Antwortet einer nicht, übernimmt der nächste.
 
-Der Proxy ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben.
+Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben. Details: [backend/README.md](backend/README.md).
 
 ## Bekannte Einschränkungen
 
