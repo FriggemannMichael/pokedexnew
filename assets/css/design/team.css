@@ -1,0 +1,212 @@
+/* =========================================================
+   Team, Kampf und Konto. 1:1 aus design-draft/index.html.
+   ========================================================= */
+
+/* ---------- Team ---------- */
+.slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+}
+.slot {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  animation: pop 0.35s ease both;
+}
+.slot--empty {
+  border: 1.5px dashed rgba(23, 48, 63, 0.22);
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--muted);
+}
+.slot--filled { --accent: var(--type); }
+.slot img {
+  width: 78%;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+}
+.slot__name {
+  position: absolute;
+  bottom: 0.3rem;
+  font-size: 0.62rem;
+  color: #fff;
+}
+.slot__x {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.panel {
+  margin-top: 0.9rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 30px rgba(23, 48, 63, 0.08);
+}
+.panel__title {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.6rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+.btn {
+  border: 0;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink);
+  box-shadow: 0 6px 20px rgba(23, 48, 63, 0.09);
+  transition: transform 0.15s ease;
+}
+.btn:active { transform: scale(0.97); }
+.btn--primary { background: var(--accent); color: #fff; }
+.btn--ghost {
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  padding: 0.4rem 0;
+  font-size: 0.82rem;
+}
+.btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.eich {
+  margin-top: 0.9rem;
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  display: grid;
+  gap: 0.4rem;
+}
+.eich__who {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.eich p { font-size: 0.92rem; line-height: 1.5; }
+
+/* ---------- Kampf ---------- */
+.opponents { display: grid; gap: 0.7rem; }
+.opp {
+  --accent: var(--type);
+  border-radius: 18px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  cursor: pointer;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  transition: transform 0.2s ease;
+}
+.opp:hover { transform: translateY(-2px); }
+.opp__badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.3rem;
+  flex: 0 0 auto;
+}
+.opp__name { font-family: var(--font-title); font-weight: 700; font-size: 1.02rem; }
+.opp__meta { font-size: 0.8rem; opacity: 0.9; }
+.opp__go { margin-left: auto; font-family: var(--font-ui); font-weight: 600; font-size: 0.82rem; }
+.opp--soon {
+  background: rgba(255, 255, 255, 0.62);
+  border: 1.5px dashed rgba(23, 48, 63, 0.2);
+  color: var(--ink);
+  cursor: default;
+}
+.opp--soon:hover { transform: none; }
+.opp--soon .opp__badge { background: rgba(23, 48, 63, 0.08); }
+.tagline {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.history { display: grid; gap: 0.5rem; }
+.fight {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 0.88rem;
+}
+.pill {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+.pill--win { background: #d7f5e3; color: #1a7a4c; }
+.pill--loss { background: #fde0e0; color: #a33; }
+
+/* ---------- Konto ---------- */
+.account { border-radius: 22px; padding: 1.4rem; display: grid; gap: 0.7rem; }
+.account h3 { font-family: var(--font-title); font-size: 1.3rem; }
+.account p { font-size: 0.94rem; line-height: 1.55; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+}
+.stat { border-radius: 14px; padding: 0.75rem; text-align: center; }
+.stat__n { font-family: var(--font-title); font-weight: 800; font-size: 1.4rem; }
+.stat__l {
+  font-family: var(--font-ui);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+}
+
+@media (min-width: 900px) {
+  .slots { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

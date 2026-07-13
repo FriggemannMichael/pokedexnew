@@ -1,917 +1,397 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="shortcut icon" href="./assets/img/9.png" type="image/x-icon" />
-    <link rel="preload" href="./assets/img/9.png" as="image" />
-    <link
-      rel="preload"
-      href="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
-      as="image"
-    />
-    <title>Pokédex - Discover all Pokemon</title>
+    <title>Pokédex</title>
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-
-    <link rel="stylesheet" href="./assets/css/root.css" />
-    <link rel="stylesheet" href="./assets/css/app-intro.css" />
-    <link rel="stylesheet" href="./assets/css/main.css" />
-    <link rel="stylesheet" href="./assets/css/cards.css" />
-    <link rel="stylesheet" href="./assets/css/pokemon-go-features.css" />
-    <link rel="stylesheet" href="./assets/css/team-analyzer.css" />
-    <link rel="stylesheet" href="./assets/css/team-modal.css" />
-    <link rel="stylesheet" href="./assets/css/team-offcanvas.css" />
-    <link rel="stylesheet" href="./assets/css/team-builder.css" />
-    <link rel="stylesheet" href="./assets/css/pokemon-compare.css" />
-    <link rel="stylesheet" href="./assets/css/battle-simulator.css" />
-    <link rel="stylesheet" href="./assets/css/team-battle.css" />
-    <!-- Loaded last so the unified .glass-modal shell wins over per-modal chrome -->
-    <link rel="stylesheet" href="./assets/css/glass-modal.css" />
-    <link rel="stylesheet" href="./assets/css/account.css" />
-    <link rel="stylesheet" href="./assets/css/team-presets.css" />
-    <link rel="stylesheet" href="./assets/css/app-shell.css" />
-    <link rel="stylesheet" href="./assets/css/dex-view.css" />
-
-    <!-- Font Awesome für Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
+    <!-- Das abgenommene Design aus design-draft/index.html, in Dateien
+         aufgeteilt. Reihenfolge = Reihenfolge der Abschnitte im Entwurf. -->
+    <link rel="stylesheet" href="./assets/css/design/base.css" />
+    <link rel="stylesheet" href="./assets/css/design/shell.css" />
+    <link rel="stylesheet" href="./assets/css/design/dex.css" />
+    <link rel="stylesheet" href="./assets/css/design/team.css" />
+    <link rel="stylesheet" href="./assets/css/design/sheet.css" />
   </head>
   <body>
-    <div class="app-intro" id="appIntro" aria-hidden="true">
-      <div class="app-intro__stage">
-        <img class="app-intro__ball" src="./assets/img/9.png" alt="" decoding="sync" fetchpriority="high" />
-        <div class="app-intro__stars" aria-hidden="true">
-          <img src="./assets/icon/fire.svg" alt="" class="app-intro__star app-intro__star--fire" />
-          <img src="./assets/icon/water.svg" alt="" class="app-intro__star app-intro__star--water" />
-          <img src="./assets/icon/electric.svg" alt="" class="app-intro__star app-intro__star--electric" />
-          <img src="./assets/icon/grass.svg" alt="" class="app-intro__star app-intro__star--grass" />
-          <img src="./assets/icon/psychic.svg" alt="" class="app-intro__star app-intro__star--psychic" />
-          <img src="./assets/icon/dragon.svg" alt="" class="app-intro__star app-intro__star--dragon" />
-          <img src="./assets/icon/ghost.svg" alt="" class="app-intro__star app-intro__star--ghost" />
-          <img src="./assets/icon/fairy.svg" alt="" class="app-intro__star app-intro__star--fairy" />
-        </div>
-        <div class="app-intro__sparkles" aria-hidden="true">
-          <span class="app-intro__sparkle app-intro__sparkle--1"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--2"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--3"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--4"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--5"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--6"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--7"></span>
-          <span class="app-intro__sparkle app-intro__sparkle--8"></span>
-        </div>
-        <div class="app-intro__brand">
-          <img
-            class="app-intro__pokeapi-logo"
-            src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
-            alt=""
-            decoding="async"
-          />
-          <div class="app-intro__title">Pokédex</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Team Offcanvas -->
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="teamOffcanvas">
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title">
-          <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein Team
-          <span class="badge bg-primary ms-2" id="teamCounter">0/6</span>
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="offcanvas"
-          aria-label="Schließen"
-        ></button>
-      </div>
-
-      <div class="offcanvas-body">
-        <!-- Drop-Zone für Drag & Drop -->
-        <div class="team-drop-zone" id="teamDropZone">
-          <div class="drop-placeholder">
-            <i class="fas fa-hand-paper"></i>
-            <p>Ziehe Pokemon hierher um dein Team zu erstellen</p>
-            <small>Maximal 6 Pokemon erlaubt</small>
-          </div>
-
-          <!-- Container für Mini-Cards -->
-          <div class="team-cards-container" id="teamCardsContainer">
-            <!-- Mini-Cards werden hier dynamisch hinzugefügt -->
-          </div>
-          <!-- Offcanvas Aktion: My Pokedex Button -->
-          <div class="offcanvas-actions mt-4">
-            <button
-              class="btn btn-filter mypokedex offcanvas-mypokedex-btn"
-              type="button"
-              onclick="showTeamModal()"
-            >
-              <img
-                class="pokeball-img"
-                src="./assets/img/9.png"
-                alt="Pokeball"
-              />
-              <span class="filter-text"> My Pokédx</span>
-              <span class="pokedex-count" id="pokedexCountOffcanvas">0</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Login / Registrierung -->
-    <div
-      class="modal fade glass-modal"
-      id="loginModal"
-      tabindex="-1"
-      aria-hidden="true"
-      aria-labelledby="loginModalLabel"
-    >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="loginModalLabel">
-              <img src="assets/img/9.png" alt="" class="icon-team" /> Dein Konto
-            </h5>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Schliessen"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p class="login-hint">
-              Mit Konto liegt dein Team auf dem Server und ist auf jedem Geraet da.
-              Ohne Konto bleibt es nur in diesem Browser.
-            </p>
-            <form id="loginForm" novalidate>
-              <div class="mb-3">
-                <label class="form-label" for="loginUsername">Name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="loginUsername"
-                  autocomplete="username"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="loginPassword">Passwort</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  id="loginPassword"
-                  autocomplete="current-password"
-                  required
-                />
-              </div>
-              <p class="login-error" id="loginError" role="alert" hidden></p>
-              <div class="login-actions">
-                <button type="submit" class="btn btn-light" id="loginSubmit">
-                  Anmelden
-                </button>
-                <button type="button" class="btn btn-outline-light" id="registerSubmit">
-                  Neu registrieren
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Team Modal (für Button-Klick) -->
-    <div
-      class="modal fade glass-modal"
-      id="teamModal"
-      tabindex="-1"
-      aria-hidden="true"
-      aria-labelledby="teamModalLabel"
-      aria-describedby="teamOverview"
-    >
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="teamModalLabel">
-              <img src="assets/img/9.png" alt="Team" class="icon-team" /> Dein
-              Pokemon Team
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Schließen"
-            ></button>
-          </div>
-
-          <div class="modal-body">
-            <!-- Team-Übersicht wird hier gerendert -->
-            <div id="teamOverview">
-              <!-- Hier werden die Pokemon des Teams angezeigt -->
-            </div>
-          </div>
-
-          <div class="modal-footer">
-            <button
-              class="btn btn-filter"
-              id="showTeamBtn"
-              onclick="showDetailedTeamView()"
-            >
-              Team anzeigen
-            </button>
-            <button class="btn btn-filter" onclick="openTeamAnalysis()">
-              Team analysieren
-            </button>
-            <button
-              class="btn btn-filter"
-              onclick="
-                window.teamBattle.startChallenge(
-                  window.teamOffcanvas?.getTeam() || [],
-                )
-              "
-            >
-              Challenge Gym
-            </button>
-            <button
-              class="btn btn-filter"
-              onclick="window.teamBattle.showBattleHistory()"
-            >
-              Kampfhistorie
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Schließen
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Header mit optimiertem Layout -->
-    <header class="hero-section py-5">
+    <!-- Die Atmosphäre der App: Wolken, Partikel, schwebende Pokémon -->
+    <div class="ambient" aria-hidden="true">
       <div class="cloud cloud-1"></div>
       <div class="cloud cloud-2"></div>
       <div class="cloud cloud-3"></div>
-      <div class="footer-pokemon footer-pokemon-1"></div>
-      <div class="footer-pokemon footer-pokemon-2"></div>
-      <div class="footer-pokemon footer-pokemon-3"></div>
-      <div class="footer-pokemon footer-pokemon-4"></div>
-      <div class="footer-pokemon footer-pokemon-5"></div>
-      <div class="footer-pokemon footer-pokemon-6"></div>
-      <div class="footer-pokemon footer-pokemon-7"></div>
 
-      <div class="particle particle-1"></div>
-      <div class="particle particle-2"></div>
-      <div class="particle particle-3"></div>
-      <div class="particle particle-4"></div>
-      <div class="particle particle-5"></div>
-      <div class="particle particle-6"></div>
+      <span class="particle particle-1"></span>
+      <span class="particle particle-2"></span>
+      <span class="particle particle-3"></span>
+      <span class="particle particle-4"></span>
+      <span class="particle particle-5"></span>
+      <span class="particle particle-6"></span>
 
-      <div class="container">
-        <!-- Kopfzeile wie im Entwurf: Marke links, Konto rechts, eine Zeile. -->
-        <div class="dex-topbar">
-          <div class="dex-brand">
-            <img
-              src="./assets/img/9.png"
-              alt=""
-              class="dex-brand__ball"
-              aria-hidden="true"
-            />
-            <span class="dex-brand__mark">POKÉDX</span>
-          </div>
+      <span
+        class="poke poke-1"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-2"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-3"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-4"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-5"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-6"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/144.png&quot;);
+        "
+      ></span>
+      <span
+        class="poke poke-7"
+        style="
+          background-image: url(&quot;https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png&quot;);
+        "
+      ></span>
+    </div>
 
-          <div class="account-bar" id="accountBar">
-            <span class="account-bar__user" id="accountUser" hidden></span>
-            <button
-              type="button"
-              class="btn btn-light btn-sm account-bar__btn"
-              id="accountLoginBtn"
-              data-bs-toggle="modal"
-              data-bs-target="#loginModal"
-            >
-              Anmelden
-            </button>
-            <button
-              type="button"
-              class="btn btn-outline-light btn-sm account-bar__btn"
-              id="accountLogoutBtn"
-              hidden
-            >
-              Abmelden
-            </button>
-          </div>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="./assets/img/9.png" alt="" />
+          <span class="brand__mark">POKÉDX</span>
         </div>
 
-        <!-- Suche als Pille, daneben der Typ-Filter. -->
-        <div class="dex-search" data-view="dex">
-          <div class="dex-search__field">
+        <button class="avatar" id="accountBtn">
+          <span id="accountName">Anmelden</span>
+          <span class="avatar__dot" aria-hidden="true">↗</span>
+        </button>
+      </header>
+
+      <main>
+        <!-- ============ POKÉDEX ============ -->
+        <section class="view" data-view="dex" data-active>
+          <div class="search">
             <input
               type="search"
-              class="form-control"
-              id="searchInput"
               placeholder="Pokémon suchen …"
-              autocomplete="off"
               aria-label="Pokémon suchen"
             />
-            <button
-              class="dex-search__go"
-              type="button"
-              id="searchBtn"
-              aria-label="Suchen"
-              disabled
-            >
-              🔍
+            <button class="btn-filter" id="filterBtn">
+              <span id="filterLabel">Typ</span>
             </button>
-            <div id="searchDropdown" class="search-dropdown d-none">
-              <div class="search-results" id="searchResults"></div>
-            </div>
+          </div>
+          <!-- Nur drei Ansichts-Schalter. Die 18 Typen stehen im Filter,
+               nicht als endlose Zeile zum Wischen. -->
+          <div class="chips" id="viewChips">
+            <button class="chip" aria-pressed="true">Alle</button>
+            <button class="chip">❤️ Favoriten</button>
+            <button class="chip">Mein Pokédex</button>
+          </div>
+          <div class="grid" id="dexGrid"></div>
+          <p class="hint" style="text-align: center; margin: 1.4rem 0">
+            <span id="dexCount">lädt …</span> ·
+            <button class="btn btn--ghost" id="loadMore">Mehr laden</button>
+          </p>
+        </section>
+
+        <!-- ============ TEAM ============ -->
+        <section class="view" data-view="team">
+          <div class="section-head">
+            <h2>Dein Team</h2>
+            <span class="hint" id="teamCount">0 / 6</span>
+          </div>
+          <div class="slots" id="teamSlots"></div>
+
+          <div class="actions">
+            <button class="btn btn--primary">Analysieren</button>
+            <button class="btn">Team speichern</button>
           </div>
 
-          <button class="btn btn-filter burger-menu-btn" id="burgerMenuBtn">
-            <span class="filter-text">Typ</span>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Filter-Sektion mit Burger-Menü -->
-    <section class="filters py-4" data-view="dex">
-      <div class="container">
-        <div class="row">
-          <div class="col-12">
-            <!-- Ansichts-Chips wie im Entwurf. Die Typen stecken im Sheet. -->
-            <div class="dex-chips">
-              <button class="dex-chip active" data-type="all">
-                <span class="filter-text">Alle</span>
-              </button>
-              <button class="dex-chip" id="favoritesToggle">❤️ Favoriten</button>
-              <button class="dex-chip" id="myPokedexBtn" onclick="showTeamModal()">
-                Mein Pokédex
-                <span class="pokedex-count" id="pokedexCount">0</span>
-              </button>
-            </div>
-
-            <!-- Typ-Filter (Sheet). script/app-shell.js haengt ihn an den body. -->
-            <div class="filter-container" id="filterContainer">
-              <!-- Desktop: Alle Filter sichtbar -->
-              <div class="filter-row popular-types mb-3">
-                <button class="btn btn-filter" data-type="fire">
-                  <img
-                    src="./assets/icon/fire.svg"
-                    alt="Fire"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Fire</span>
-                </button>
-                <button class="btn btn-filter" data-type="water">
-                  <img
-                    src="./assets/icon/water.svg"
-                    alt="Water"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Water</span>
-                </button>
-                <button class="btn btn-filter" data-type="grass">
-                  <img
-                    src="./assets/icon/grass.svg"
-                    alt="Grass"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Grass</span>
-                </button>
-                <button class="btn btn-filter" data-type="electric">
-                  <img
-                    src="./assets/icon/electric.svg"
-                    alt="Electric"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Electric</span>
-                </button>
-                <button class="btn btn-filter" data-type="psychic">
-                  <img
-                    src="./assets/icon/psychic.svg"
-                    alt="Psychic"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Psychic</span>
-                </button>
-                <button class="btn btn-filter" data-type="normal">
-                  <img
-                    src="./assets/icon/normal.svg"
-                    alt="Normal"
-                    class="type-icon"
-                  />
-                  <span class="filter-text">Normal</span>
-                </button>
-                <!-- "Mein Pokédex" und "Favoriten" stehen jetzt als Chips
-                     ueber dem Raster (siehe .dex-chips). Hier bleibt nur der
-                     Typ-Filter - genau wie im Entwurf. -->
-                <select
-                  id="ratingFilter"
-                  class="form-select"
-                  aria-label="Nach Bewertung filtern"
-                >
-                  <option value="">Alle Bewertungen</option>
-                  <option value="4">4★ (perfekt)</option>
-                  <option value="3">3★</option>
-                  <option value="2">2★</option>
-                  <option value="1">1★</option>
-                  <option value="0">0★</option>
-                </select>
-              </div>
-
-              <div class="filter-row secondary-types">
-                <div class="dropdown">
-                  <button
-                    class="btn btn-filter dropdown-toggle"
-                    type="button"
-                    id="moreTypesDropdown"
-                    data-bs-toggle="dropdown"
-                  >
-                    <span class="filter-text">More Types</span>
-                  </button>
-                  <ul class="dropdown-menu" aria-labelledby="moreTypesDropdown">
-                    <li>
-                      <button
-                        class="dropdown-item type-item"
-                        data-type="fighting"
-                      >
-                        <img
-                          src="./assets/icon/fighting.svg"
-                          alt="Fighting"
-                          class="type-icon"
-                        />
-                        Fighting
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        class="dropdown-item type-item"
-                        data-type="poison"
-                      >
-                        <img
-                          src="./assets/icon/poison.svg"
-                          alt="Poison"
-                          class="type-icon"
-                        />
-                        Poison
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        class="dropdown-item type-item"
-                        data-type="ground"
-                      >
-                        <img
-                          src="./assets/icon/ground.svg"
-                          alt="Ground"
-                          class="type-icon"
-                        />
-                        Ground
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        class="dropdown-item type-item"
-                        data-type="flying"
-                      >
-                        <img
-                          src="./assets/icon/flying.svg"
-                          alt="Flying"
-                          class="type-icon"
-                        />
-                        Flying
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="bug">
-                        <img
-                          src="./assets/icon/bug.svg"
-                          alt="Bug"
-                          class="type-icon"
-                        />
-                        Bug
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="rock">
-                        <img
-                          src="./assets/icon/rock.svg"
-                          alt="Rock"
-                          class="type-icon"
-                        />
-                        Rock
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="ghost">
-                        <img
-                          src="./assets/icon/ghost.svg"
-                          alt="Ghost"
-                          class="type-icon"
-                        />
-                        Ghost
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="steel">
-                        <img
-                          src="./assets/icon/steel.svg"
-                          alt="Steel"
-                          class="type-icon"
-                        />
-                        Steel
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="ice">
-                        <img
-                          src="./assets/icon/ice.svg"
-                          alt="Ice"
-                          class="type-icon"
-                        />
-                        Ice
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        class="dropdown-item type-item"
-                        data-type="dragon"
-                      >
-                        <img
-                          src="./assets/icon/dragon.svg"
-                          alt="Dragon"
-                          class="type-icon"
-                        />
-                        Dragon
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="dark">
-                        <img
-                          src="./assets/icon/dark.svg"
-                          alt="Dark"
-                          class="type-icon"
-                        />
-                        Dark
-                      </button>
-                    </li>
-                    <li>
-                      <button class="dropdown-item type-item" data-type="fairy">
-                        <img
-                          src="./assets/icon/fairy.svg"
-                          alt="Fairy"
-                          class="type-icon"
-                        />
-                        Fairy
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+          <div class="eich lg-surface">
+            <span class="eich__who">🔬 Professor Eich</span>
+            <p id="eichText"></p>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Der Team-Builder lag bisher INNERHALB der Filter-Sektion. Das fiel nie
-         auf, solange alles untereinander stand – beim Umschalten hätte er sich
-         aber mit dem Pokédex versteckt. -->
-    <section class="team-builder-section" data-view="team" aria-label="Active Team Builder">
-        <div class="container">
-          <div class="team-builder-panel" id="activeTeamBuilder">
-            <div class="team-builder-header">
-              <div class="team-builder-title-wrap">
-                <h2 class="team-builder-title">Active Team</h2>
-                <p class="team-builder-subtitle">
-                  Drag Pokemon cards into the six team slots.
-                </p>
+          <div class="panel">
+            <div class="panel__title">Gespeicherte Teams</div>
+            <div class="row">
+              <div>
+                <strong style="font-family: var(--font-ui)">Wasser-Team</strong>
+                <span class="hint"> · 6 Pokémon</span>
               </div>
-              <div
-                class="team-builder-counter"
-                id="activeTeamCounter"
-                aria-live="polite"
-              >
-                0/6
-              </div>
-            </div>
-
-            <div
-              class="active-team-grid"
-              id="activeTeamGrid"
-              role="list"
-              aria-label="Active Team Slots"
-            ></div>
-            <p class="team-builder-hint">
-              Tip: Drop on a filled slot to replace it instantly.
-            </p>
-            <div
-              class="team-builder-actions d-none"
-              id="teamBuilderActions"
-              role="group"
-              aria-label="Team actions"
-            >
-              <button type="button" class="team-action-btn" data-action="analyze">
-                <i class="fas fa-chart-simple" aria-hidden="true"></i>
-                <span>Analysieren</span>
-              </button>
-              <button type="button" class="team-action-btn" data-action="battle">
-                <i class="fas fa-shield-halved" aria-hidden="true"></i>
-                <span>Gym-Challenge</span>
-              </button>
-              <button type="button" class="team-action-btn" data-action="history">
-                <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
-                <span>Historie</span>
-              </button>
-            </div>
-
-            <!-- Gespeicherte Teams: immer sichtbar, denn bei leerem Team will
-                 man gerade eins laden (die Aktionsleiste oben ist dann weg). -->
-            <!-- Die id NICHT "teamPresets" nennen: Der Browser legt zu jeder id
-                 ein window-Property an, das wuerde window.teamPresets (den
-                 Service aus script/team-presets.js) verdecken. -->
-            <section
-              class="team-presets"
-              id="teamPresetsPanel"
-              aria-label="Gespeicherte Teams"
-            >
-              <div class="team-presets__head">
-                <h3 class="team-presets__title">Gespeicherte Teams</h3>
+              <div style="display: flex; gap: 0.4rem">
                 <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  id="savePresetBtn"
+                  class="btn"
+                  style="padding: 0.5rem 0.9rem; font-size: 0.8rem"
                 >
-                  Aktuelles Team speichern
+                  Laden
                 </button>
+                <button class="btn btn--ghost">Löschen</button>
               </div>
-              <div id="teamPresetsBody"></div>
-            </section>
-
-            <div
-              id="teamBuilderAdvisor"
-              class="team-builder-advisor is-waiting"
-              data-role="ai-advice"
-              aria-live="polite"
-            ></div>
-            <div
-              class="visually-hidden"
-              id="teamBuilderLiveRegion"
-              aria-live="polite"
-            ></div>
-          </div>
-        </div>
-      </section>
-
-    <!-- Pokemon Grid -->
-    <section class="pokemon-grid py-5" data-view="dex">
-      <div class="container">
-        <div class="loading-spinner text-center d-none">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <p class="mt-3">Loading Pokemon...</p>
-        </div>
-
-        <div class="row justify-content-center" id="pokemonContainer"></div>
-      </div>
-    </section>
-
-    <!-- Pagination & Load More Section -->
-    <section class="navigation-section" data-view="dex">
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-auto1">
-            <!-- Pagination Controls -->
-            <div class="pagination-controls mb-3" id="paginationControls">
-              <button id="prevPageBtn" class="nav-control-btn" disabled>
-                <span class="nav-icon">←</span>
-                <span class="nav-text">Previous</span>
-              </button>
-
-              <div class="page-info">
-                <span id="pageInfo">Page 1</span>
-              </div>
-
-              <button id="nextPageBtn" class="nav-control-btn">
-                <span class="nav-text">Next</span>
-                <span class="nav-icon">→</span>
-              </button>
             </div>
+          </div>
+        </section>
 
-            <!-- Load More Button -->
-            <button id="loadMoreBtn" class="load-more-btn">
-              <span class="load-more-text">⬇️ Load More Pokemon</span>
-              <span class="load-more-spinner d-none">
-                <span
-                  class="spinner-border spinner-border-sm me-1"
-                  role="status"
-                ></span>
-                Loading...
+        <!-- ============ KAMPF ============ -->
+        <section class="view" data-view="fight">
+          <div class="section-head">
+            <h2>Gegner wählen</h2>
+            <span class="hint" id="fightTeam">Dein Team: 0 / 6</span>
+          </div>
+
+          <div class="opponents">
+            <button class="opp lg-surface" style="--type: var(--type-rock)">
+              <span class="opp__badge frost">🪨</span>
+              <span>
+                <span class="opp__name">Rocko</span>
+                <span class="opp__meta" style="display: block"
+                  >Arenaleiter · Gestein · 3 Pokémon</span
+                >
               </span>
+              <span class="opp__go">Antreten →</span>
             </button>
+
+            <button class="opp lg-surface" style="--type: var(--type-water)">
+              <span class="opp__badge frost">💧</span>
+              <span>
+                <span class="opp__name">Misty</span>
+                <span class="opp__meta" style="display: block"
+                  >Arenaleiterin · Wasser · 3 Pokémon</span
+                >
+              </span>
+              <span class="opp__go">Antreten →</span>
+            </button>
+
+            <div class="opp opp--soon">
+              <span class="opp__badge">🏆</span>
+              <span>
+                <span class="tagline">Bald</span>
+                <span class="opp__name" style="display: block"
+                  >Andere Trainer</span
+                >
+                <span
+                  class="opp__meta"
+                  style="display: block; color: var(--muted)"
+                >
+                  Tritt gegen die Teams echter Spieler an
+                </span>
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Kampf: sammelt, was bisher nur über die Team-Aktionsleiste erreichbar war -->
-    <section class="app-section" data-view="fight" aria-label="Kampf">
-      <div class="container">
-        <h2 class="app-section__title">Gegner wählen</h2>
-        <p class="app-section__hint" id="fightTeamHint">Dein Team: 0 / 6</p>
-
-        <div class="opponents">
-          <button type="button" class="opponent" data-fight="gym">
-            <span class="opponent__badge">🏟️</span>
-            <span class="opponent__body">
-              <span class="opponent__name">Gym-Challenge</span>
-              <span class="opponent__meta">Tritt gegen ein Arena-Team an</span>
-            </span>
-            <span class="opponent__go" aria-hidden="true">→</span>
-          </button>
-
-          <button type="button" class="opponent" data-fight="history">
-            <span class="opponent__badge">🕘</span>
-            <span class="opponent__body">
-              <span class="opponent__name">Kampfhistorie</span>
-              <span class="opponent__meta">Deine letzten Kämpfe und Statistiken</span>
-            </span>
-            <span class="opponent__go" aria-hidden="true">→</span>
-          </button>
-
-          <div class="opponent opponent--soon">
-            <span class="opponent__badge">🏆</span>
-            <span class="opponent__body">
-              <span class="opponent__tag">Bald</span>
-              <span class="opponent__name">Andere Trainer</span>
-              <span class="opponent__meta">Tritt gegen die Teams echter Spieler an</span>
-            </span>
+          <div class="section-head">
+            <h2>Letzte Kämpfe</h2>
+            <button class="btn btn--ghost">Alle ansehen</button>
           </div>
-        </div>
-      </div>
-    </section>
+          <div class="history">
+            <div class="fight">
+              <span class="pill pill--win">Sieg</span>
+              <span>gegen <strong>Rocko</strong></span>
+              <span class="hint" style="margin-left: auto"
+                >240 Schaden · 8 Züge</span
+              >
+            </div>
+            <div class="fight">
+              <span class="pill pill--loss">Niederlage</span>
+              <span>gegen <strong>Misty</strong></span>
+              <span class="hint" style="margin-left: auto"
+                >90 Schaden · 6 Züge</span
+              >
+            </div>
+          </div>
+        </section>
 
-    <!-- Konto -->
-    <section class="app-section" data-view="you" aria-label="Konto">
-      <div class="container">
-        <h2 class="app-section__title" id="accountHeading">Melde dich an</h2>
-        <p class="app-section__hint" id="accountLead">
-          Mit Konto liegen Team, Favoriten, Notizen und Kampfhistorie auf dem
-          Server – auf jedem Gerät dieselben. Ohne Konto bleibt alles nur in
-          diesem Browser.
-        </p>
-        <div class="account-actions">
-          <button
-            type="button"
-            class="btn btn-light"
-            id="accountOpenLogin"
-            data-bs-toggle="modal"
-            data-bs-target="#loginModal"
-          >
-            Anmelden oder Konto anlegen
-          </button>
-          <button type="button" class="btn btn-outline-light" id="accountViewLogout" hidden>
-            Abmelden
-          </button>
-        </div>
-      </div>
-    </section>
+        <!-- ============ KONTO ============ -->
+        <section class="view" data-view="you">
+          <div class="account lg-surface">
+            <h3 id="accountTitle">Melde dich an</h3>
+            <p id="accountText">
+              Mit Konto liegt dein Team auf dem Server — auf jedem Gerät
+              dasselbe. Und sobald die Trainerkämpfe da sind, treten andere
+              gegen genau dieses Team an.
+            </p>
+            <div style="display: flex; gap: 0.6rem; margin-top: 0.3rem">
+              <button class="btn frost" style="flex: 1" id="loginDemo">
+                Anmelden
+              </button>
+              <button class="btn frost" style="flex: 1">Konto anlegen</button>
+            </div>
+            <div class="stats" id="accountStats" hidden>
+              <div class="stat frost">
+                <div class="stat__n">12</div>
+                <div class="stat__l">Kämpfe</div>
+              </div>
+              <div class="stat frost">
+                <div class="stat__n">67%</div>
+                <div class="stat__l">Siege</div>
+              </div>
+              <div class="stat frost">
+                <div class="stat__n">31</div>
+                <div class="stat__l">Favoriten</div>
+              </div>
+            </div>
+          </div>
 
-    <!-- Bereichswechsel. Bewusst KEIN Kind der Kopfzeile: deren backdrop-filter
-         würde "position: fixed" brechen. -->
-    <nav class="app-tabs" id="appTabs" role="tablist" aria-label="Bereiche">
-      <button type="button" class="app-tab" role="tab" aria-selected="true" data-tab="dex">
-        <span class="app-tab__icon" aria-hidden="true">🔍</span>
-        <span class="app-tab__label">Pokédex</span>
+          <div class="panel">
+            <div class="panel__title">Was gespeichert wird</div>
+            <p class="hint" style="line-height: 1.6">
+              Team, gespeicherte Teams, Favoriten, Notizen und die
+              Kampfhistorie. Ohne Konto bleibt alles nur in diesem Browser.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Die Tab-Leiste gehört NICHT in die Kopfzeile: deren backdrop-filter
+         würde sie zum Bezugsrahmen machen und "position: fixed" bräche. -->
+    <nav class="tabs" role="tablist" aria-label="Bereiche">
+      <button class="tab" role="tab" aria-selected="true" data-view="dex">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M3 12h18" />
+          <circle cx="12" cy="12" r="2.6" />
+        </svg>
+        Pokédex
       </button>
-      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="team">
-        <span class="app-tab__icon" aria-hidden="true">🎯</span>
-        <span class="app-tab__label">Team</span>
-        <span class="app-tab__badge" id="teamTabBadge" hidden>0</span>
+      <button class="tab" role="tab" aria-selected="false" data-view="team">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 7h5v5H4zM15 7h5v5h-5zM9.5 14h5v5h-5z" />
+        </svg>
+        Team
+        <span class="badge" id="teamBadge" hidden>0</span>
       </button>
-      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="fight">
-        <span class="app-tab__icon" aria-hidden="true">⚔️</span>
-        <span class="app-tab__label">Kampf</span>
+      <button class="tab" role="tab" aria-selected="false" data-view="fight">
+        <svg viewBox="0 0 24 24">
+          <path d="M14.5 4.5 19 9 8 20l-4.5-4.5z" />
+          <path d="M16 2.5 21.5 8" />
+        </svg>
+        Kampf
       </button>
-      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="you">
-        <span class="app-tab__icon" aria-hidden="true">👤</span>
-        <span class="app-tab__label">Konto</span>
+      <button class="tab" role="tab" aria-selected="false" data-view="you">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.6" />
+          <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+        </svg>
+        Konto
       </button>
     </nav>
 
-    <!-- Footer bleibt unverändert -->
-    <footer class="pokemon-footer">
-      <div class="footer-pokemon-bg">
-        <div class="footer-pokemon footer-pokemon-1"></div>
-        <div class="footer-pokemon footer-pokemon-2"></div>
-        <div class="footer-pokemon footer-pokemon-3"></div>
-        <div class="footer-pokemon footer-pokemon-4"></div>
-        <div class="footer-pokemon footer-pokemon-5"></div>
-        <div class="footer-pokemon footer-pokemon-6"></div>
-      </div>
-
-      <div class="container footer-content">
+    <!-- Typ-Filter: alle 18 auf einen Blick, mit dem Daumen erreichbar -->
+    <div class="sheet" id="typeSheet">
+      <div
+        class="sheet__card lg-surface"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Nach Typ filtern"
+      >
+        <span class="sheet__grab"></span>
         <div class="row">
-          <div class="col-md-8 mb-3">
-            <div class="footer-heading">Image Sources</div>
-            <div class="footer-sources">
-              <div class="source-item">
-                <div class="source-icon">🎨</div>
-                <p class="footer-text mb-0">
-                  <strong>Pokémon Images:</strong>
-                  <a
-                    href="https://pokeapi.co/"
-                    target="_blank"
-                    class="footer-link"
-                    >PokéAPI</a
-                  >
-                  &
-                  <a
-                    href="https://github.com/PokeAPI/sprites"
-                    target="_blank"
-                    class="footer-link"
-                    >Official Artwork</a
-                  >
-                </p>
-              </div>
-
-              <div class="source-item">
-                <div class="source-icon">🔧</div>
-                <p class="footer-text mb-0">
-                  <strong>Icons & UI:</strong>
-                  <a
-                    href="https://getbootstrap.com/"
-                    target="_blank"
-                    class="footer-link"
-                    >Bootstrap</a
-                  >
-                  &
-                  <a
-                    href="https://fonts.google.com/"
-                    target="_blank"
-                    class="footer-link"
-                    >Google Fonts</a
-                  >
-                </p>
-              </div>
-
-              <div class="source-item">
-                <div class="source-icon">⚡</div>
-                <p class="footer-text mb-0">
-                  <strong>API Data:</strong>
-                  <a
-                    href="https://pokeapi.co/docs/v2"
-                    target="_blank"
-                    class="footer-link"
-                    >PokéAPI v2 Documentation</a
-                  >
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-4 mb-3 text-md-end">
-            <div class="footer-creator">
-              <div class="footer-heading">Created by</div>
-              <p class="footer-creator-name">Michael Friggemann</p>
-              <p class="footer-subtitle">Developer Akademie • Module 8</p>
-              <p class="footer-subtitle">Trainee Fullstack Web Developer</p>
-            </div>
-          </div>
+          <span class="sheet__name" style="font-size: 1.25rem"
+            >Nach Typ filtern</span
+          >
+          <button
+            class="btn btn--ghost"
+            id="typeReset"
+            style="color: rgba(255, 255, 255, 0.9)"
+          >
+            Zurücksetzen
+          </button>
         </div>
-
-        <div class="row">
-          <div class="col-12">
-            <hr class="footer-divider" />
-            <p class="footer-copyright">
-              © 2025 Pokédex Project • Built with ❤️ and lots of ☕<br />
-              Pokémon and all related characters are trademarks of Nintendo
-            </p>
-          </div>
-        </div>
+        <div class="typegrid" id="typeGrid"></div>
+        <button class="btn frost" id="typeClose">Fertig</button>
       </div>
-    </footer>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      window.POKE_AI_CONFIG = window.POKE_AI_CONFIG || {};
-      // Optional, ohne sichtbare UI-Felder:
-      // window.POKE_AI_CONFIG.mistralApiKey = "mistral-...";
-      // window.POKE_AI_CONFIG.groqApiKey = "gsk_...";
-    </script>
-    <script type="module" src="./main.js"></script>
+    <!-- Detailkarte -->
+    <div class="sheet" id="sheet">
+      <div
+        class="sheet__card lg-surface"
+        id="sheetCard"
+        role="dialog"
+        aria-modal="true"
+      >
+        <span class="sheet__grab"></span>
+        <img class="sheet__img" id="sheetImg" alt="" />
+        <span class="sheet__no" id="sheetNo"></span>
+        <span class="sheet__name" id="sheetName"></span>
+        <span class="card__types" id="sheetTypes"></span>
+
+        <p class="sheet__desc" id="sheetDesc">lädt …</p>
+
+        <div class="facts" id="sheetFacts"></div>
+
+        <div
+          class="panel__title"
+          style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem"
+        >
+          Basiswerte
+        </div>
+        <div class="sheet__stats" id="sheetStats"></div>
+
+        <div
+          class="panel__title"
+          id="sheetEvoTitle"
+          style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem"
+          hidden
+        >
+          Entwicklung
+        </div>
+        <div class="evo-row" id="sheetEvo" hidden></div>
+
+        <div
+          class="panel__title"
+          style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem"
+        >
+          Attacken
+        </div>
+        <div class="moves" id="sheetMoves"></div>
+
+        <button class="btn frost" id="sheetAdd" style="margin-top: 0.8rem">
+          Ins Team
+        </button>
+        <button
+          class="btn btn--ghost"
+          id="sheetClose"
+          style="color: rgba(255, 255, 255, 0.85)"
+        >
+          Schließen
+        </button>
+      </div>
+    </div>
+
+    <!-- Rueckmeldung -->
+    <div class="toast" id="toast">
+      <span id="toastText"></span>
+      <button id="toastUndo">Rückgängig</button>
+    </div>
+
+    <!-- Klassische Skripte in fester Reihenfolge: Sie teilen sich den
+         globalen Scope – wie im Entwurf, nur in Dateien aufgeteilt. -->
+    <script src="./js/app/config.js"></script>
+    <script src="./js/app/api.js"></script>
+    <script src="./js/app/type-filter.js"></script>
+    <script src="./js/app/grid.js"></script>
+    <script src="./js/app/team.js"></script>
+    <script src="./js/app/sheet.js"></script>
+    <script src="./js/app/shell.js"></script>
   </body>
 </html>

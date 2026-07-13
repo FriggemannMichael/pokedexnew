@@ -1,0 +1,146 @@
+/* =========================================================
+   Pokédex-Raster und Karten. 1:1 aus design-draft/index.html.
+   ========================================================= */
+
+/* minmax(0, 1fr), nicht 1fr: Sonst schrumpft eine Spalte nie unter die
+   Mindestbreite ihres Inhalts – und die Bilder bringen 200px mit.
+   Genau das schob das Raster über den Bildschirmrand hinaus. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+/* Die Karte traegt eine schlanke Fassung der Glas-Rezeptur: zwei Ebenen
+   statt fuenf. Bei 60+ Karten gleichzeitig zaehlt jede eingesparte Ebene. */
+.card {
+  --accent: var(--type);
+  position: relative;
+  min-width: 0; /* darf schrumpfen */
+  border-radius: 18px;
+  padding: 0.7rem 0.7rem 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font: inherit;
+  display: grid;
+  gap: 0.3rem;
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, transparent 45%),
+    linear-gradient(135deg, color-mix(in srgb, var(--type) 82%, #fff) 0%, var(--type) 50%, color-mix(in srgb, var(--type) 70%, #000) 100%);
+  box-shadow: 0 10px 28px rgba(31, 38, 135, 0.18);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  /* Der Browser malt nur, was man sieht. Ohne das rechnet er bei 180
+     Karten alle Verlaeufe und Bilder gleichzeitig - und friert ein. */
+  content-visibility: auto;
+  contain-intrinsic-size: 230px;
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+}
+/* Platzhalter, solange die Liste eines Typs geholt wird. */
+.card--skeleton {
+  --type: rgba(255, 255, 255, 0.45);
+  aspect-ratio: 3 / 4;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.35);
+  animation: pulse 1.3s ease-in-out infinite;
+  cursor: default;
+}
+@keyframes pulse {
+  50% { opacity: 0.55; }
+}
+.card:hover { transform: translateY(-4px); }
+.card:active { transform: scale(0.98); }
+.card:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.card__no {
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 600;
+  opacity: 0.85;
+  /* Platz lassen: links sitzt das Herz, rechts das Plus. */
+  padding: 0 2.2rem;
+  text-align: center;
+  min-height: 32px;
+  display: grid;
+  place-items: center;
+}
+.card__img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.card:hover .card__img { transform: scale(1.06) rotate(-2deg); }
+/* Rueckfall auf das Pixel-Sprite: scharf skalieren statt matschig. */
+.card__img.is-sprite { image-rendering: pixelated; }
+.card__name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1rem;
+}
+.card__types { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.t {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Herz links oben, "+" rechts oben. Beide liegen ueber der Karte. */
+.card__fav {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 0.85rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease;
+}
+.card__fav:hover { transform: scale(1.12); }
+
+/* Das "+" ist der Weg ins Team. Auf dem Handy tippt man, man zieht nicht. */
+.card__add {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.card__add:hover { transform: scale(1.12); }
+.card__add[data-in] {
+  background: var(--ink);
+  color: #fff;
+}
+
+@media (min-width: 900px) {
+  .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+}
