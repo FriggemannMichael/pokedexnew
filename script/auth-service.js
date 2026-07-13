@@ -88,6 +88,35 @@
       this._endSession();
     }
 
+    /**
+     * Ruft `handler` auf, sobald ein Nutzer angemeldet ist: jetzt, wenn der
+     * gespeicherte Token noch gilt - sonst beim naechsten Login.
+     *
+     * Das ist die Anlaufstelle fuer die Sync-Skripte. Sie duerfen sich nicht
+     * einfach auf das Event verlassen: Beim Seitenstart feuert es, sobald der
+     * Token geprueft ist, und wer dann noch nicht geladen war, verpasst es.
+     * Doppelt laeuft der Handler nie - das wuerde sonst beim frischen Konto
+     * denselben Stand zweimal hochschicken.
+     */
+    onSession(handler) {
+      let running = null;
+      const run = () => {
+        if (!this.isLoggedIn() || running) return;
+        running = Promise.resolve()
+          .then(handler)
+          .catch((error) =>
+            AppError.warn(AppError.CATEGORY.APP, "Abgleich fehlgeschlagen", error),
+          )
+          .finally(() => {
+            running = null;
+          });
+      };
+      document.addEventListener(AUTH_EVENT, (event) => {
+        if (event.detail?.loggedIn) run();
+      });
+      Promise.resolve(this.ready).then(run);
+    }
+
     /** Beim Seitenstart: Gilt der gespeicherte Token noch? */
     async restore() {
       if (!this.token) return false;
@@ -108,6 +137,13 @@
 
   if (!window.authService) {
     window.authService = new AuthService();
-    window.authService.restore();
+    /**
+     * Ist der gespeicherte Token geprueft?
+     *
+     * Die Sync-Skripte duerfen sich nicht auf das Event verlassen: Sie werden
+     * nacheinander geladen, und wer zu spaet dran ist, verpasst es. An diesem
+     * Promise haengen sie sich stattdessen auf - egal, wann sie geladen werden.
+     */
+    window.authService.ready = window.authService.restore();
   }
 })();

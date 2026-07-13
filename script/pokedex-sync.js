@@ -144,10 +144,5 @@
     schedule("Notizen", pushNotes);
   });
 
-  document.addEventListener("pokedex-auth-changed", (event) => {
-    if (!event.detail?.loggedIn) return;
-    pullAll().catch((error) =>
-      AppError.warn(AppError.CATEGORY.STORAGE, "MyPokedex nicht geladen", error),
-    );
-  });
+  auth()?.onSession(pullAll);
 })();

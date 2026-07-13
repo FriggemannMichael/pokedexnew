@@ -220,6 +220,7 @@ function getAccountScripts() {
     "./script/auth-ui.js",
     "./script/team-sync.js",
     "./script/pokedex-sync.js",
+    "./script/battle-sync.js",
   ];
 }
 

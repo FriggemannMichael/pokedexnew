@@ -13,44 +13,54 @@ class BattleHistory {
     }
   }
 
-  addEntry(entry) {
-    const history = this.getHistory();
-    history.unshift({
+  _snapshotTeam(team) {
+    return (team || []).map((p) => ({ id: p.id, name: p.name, types: p.types }));
+  }
+
+  _snapshotLeader(leader) {
+    if (!leader) return null;
+    return { name: leader.name || "Unbekannt", type: leader.type || "normal" };
+  }
+
+  _snapshotMvp(mvp) {
+    if (!mvp) return null;
+    return { id: mvp.id, name: mvp.name, damageDealt: mvp.damageDealt || 0 };
+  }
+
+  buildEntry(entry) {
+    return {
       id: Date.now(),
       date: new Date().toISOString(),
-      playerTeam: (entry.playerTeam || []).map((p) => ({
-        id: p.id,
-        name: p.name,
-        types: p.types,
-      })),
-      gymLeader: entry.gymLeader
-        ? {
-            name: entry.gymLeader.name || "Unbekannt",
-            type: entry.gymLeader.type || "normal",
-          }
-        : null,
+      playerTeam: this._snapshotTeam(entry.playerTeam),
+      gymLeader: this._snapshotLeader(entry.gymLeader),
       result: entry.result || "loss",
       totalDamageDealt: entry.totalDamageDealt || 0,
       totalTurns: entry.totalTurns || 0,
-      mvpPokemon: entry.mvpPokemon
-        ? {
-            id: entry.mvpPokemon.id,
-            name: entry.mvpPokemon.name,
-            damageDealt: entry.mvpPokemon.damageDealt || 0,
-          }
-        : null,
+      mvpPokemon: this._snapshotMvp(entry.mvpPokemon),
       pokemonUsed: entry.pokemonUsed || 0,
-    });
+    };
+  }
 
+  save(history) {
     while (history.length > this.maxEntries) {
       history.pop();
     }
-
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(history));
     } catch (e) {
       console.warn("[BattleHistory] Could not save:", e);
     }
+  }
+
+  addEntry(entry) {
+    const record = this.buildEntry(entry);
+    const history = this.getHistory();
+    history.unshift(record);
+    this.save(history);
+    // Damit script/battle-sync.js den Kampf auch ins Konto schreiben kann.
+    document.dispatchEvent(
+      new CustomEvent("battleRecorded", { detail: { battle: record } }),
+    );
   }
 
   getStats() {
@@ -104,6 +114,7 @@ class BattleHistory {
 
   clearHistory() {
     localStorage.removeItem(this.storageKey);
+    document.dispatchEvent(new CustomEvent("battleHistoryCleared"));
   }
 }
 

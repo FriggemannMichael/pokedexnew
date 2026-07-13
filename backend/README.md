@@ -42,6 +42,7 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/team` (GET/PUT)            | Team des angemeldeten Nutzers lesen/speichern      |
 | `/api/favorites` (GET/PUT)       | Favorisierte Pokémon lesen/speichern               |
 | `/api/notes` (GET/PUT)           | Persönliche Notizen lesen/speichern                |
+| `/api/battles` (GET/POST/PUT/DELETE) | Kampfhistorie (anhängen, lesen, leeren)       |
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
@@ -78,16 +79,30 @@ Keine **Sterne**: Die rechnet die App aus den IVs aus (GO-Appraisal in
 `pokemonRatings` im localStorage wird nirgends beschrieben – es gibt also nichts
 zu speichern.
 
-Im Frontend hängen daran `script/auth-service.js` (Token), `script/auth-ui.js`
-(Konto-Leiste und Dialog), `script/team-sync.js` und `script/pokedex-sync.js`:
-Beim Anmelden wird der Stand vom Server geholt, jede Änderung wandert dorthin
-zurück. Ist auf dem Server noch nichts gespeichert (frisch registriert), wandert
-der Stand aus dem Browser nach oben, statt gelöscht zu werden.
+**Die Kampfhistorie** (`api/battle_views.py`, Models `BattleRecord` und
+`BattleParticipant`) ist der einzige Bereich, der **wächst** statt ersetzt zu
+werden: POST hängt einen Kampf an. Gespeichert wird bewusst der Stand von damals
+(Name und Typen der Kämpfer) – ein Kampf ist Geschichte und darf sich nicht
+ändern, nur weil das Team heute anders aussieht. Behalten werden die letzten 50,
+wie im Frontend.
 
-Wichtig dabei: Die Sync-Skripte schreiben **immer zuerst in den localStorage**.
-Beim Anmelden gibt es `window.pokemonGoFeatures` unter Umständen noch gar nicht –
-es liest seine Favoriten beim Erzeugen aus dem localStorage, und damit kommt der
-Stand vom Server auch dann an, wenn er vor der App da ist.
+Im Frontend hängen daran `script/auth-service.js` (Token), `script/auth-ui.js`
+(Konto-Leiste und Dialog) und die drei Sync-Skripte `team-sync.js`,
+`pokedex-sync.js` und `battle-sync.js`: Beim Anmelden wird der Stand vom Server
+geholt, jede Änderung wandert dorthin zurück. Ist auf dem Server noch nichts
+gespeichert (frisch registriert), wandert der Stand aus dem Browser nach oben,
+statt gelöscht zu werden.
+
+Zwei Fallstricke, über die wir schon gestolpert sind:
+
+- **Die Sync-Skripte hängen sich an `authService.onSession(...)`**, nicht ans
+  Event `pokedex-auth-changed`. Beim Seitenstart feuert das Event, sobald der
+  gespeicherte Token geprüft ist – wer dann noch nicht geladen war, verpasst es
+  und synchronisiert nie. `onSession` läuft in beiden Fällen (und nie doppelt).
+- **Sie schreiben immer zuerst in den localStorage.** `window.pokemonGoFeatures`
+  gibt es beim Anmelden unter Umständen noch nicht; es liest seine Favoriten beim
+  Erzeugen aus dem localStorage. So kommt der Stand vom Server auch dann an, wenn
+  er vor der App da ist.
 
 ## Wie der Cache funktioniert
 

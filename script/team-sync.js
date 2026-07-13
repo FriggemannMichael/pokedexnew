@@ -92,10 +92,5 @@
     schedulePush(event.detail?.team || currentTeam());
   });
 
-  document.addEventListener("pokedex-auth-changed", (event) => {
-    if (!event.detail?.loggedIn) return;
-    pull().catch((error) =>
-      AppError.warn(AppError.CATEGORY.STORAGE, "Team nicht geladen", error),
-    );
-  });
+  auth()?.onSession(pull);
 })();

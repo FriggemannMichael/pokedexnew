@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import ai_views, auth_views, collection_views, team_views, views
+from . import ai_views, auth_views, battle_views, collection_views, team_views, views
 
 urlpatterns = [
     path("health/", views.health, name="health"),
@@ -12,6 +12,7 @@ urlpatterns = [
     path("team", team_views.team, name="team"),
     path("favorites", collection_views.favorites, name="favorites"),
     path("notes", collection_views.notes, name="notes"),
+    path("battles", battle_views.battles, name="battles"),
     # Fertig aufbereitete Listen (Backend erledigt das Nachladen der Details)
     path("pokemon/", views.pokemon_list, name="pokemon-list"),
     path(
