@@ -130,7 +130,7 @@ ANALYSIS_SHAPE = {
     "type_redundancies": [{"type": "", "count": 0, "impact": "Vorteil/Nachteil-Bewertung"}],
     "offensive_gaps": [],
     "individual_pro_con": [{"name": "", "strength": "", "weakness": ""}],
-    "next_moves": [],
+    "next_moves": ["Pokemon: Move (kurze Begruendung)"],
 }
 
 ANALYSIS_RULES = [
@@ -156,6 +156,10 @@ ANALYSIS_ALGORITHM = [
     "- Individual Pro/Con: Erstelle fuer JEDES der 6 Pokemon genau einen Eintrag.",
     "- Next Moves: Schlage max. 3 Moves insgesamt vor. Bedingung: Der Move MUSS fuer"
     " das Pokemon in 'staticAnalysis.legalMoves' gelistet sein.",
+    "- next_moves und offensive_gaps enthalten NUR Text-Eintraege, keine Objekte."
+    " Die Oberflaeche zeigt sie unveraendert an.",
+    "- overall_rating: eine ganze Zahl von 0 bis 100 (die Oberflaeche zeigt sie als"
+    " 'x/100' an).",
 ]
 
 

@@ -13,10 +13,12 @@ wird darum zurueckuebersetzt (siehe normalize_response). Faellt einer aus
 
 import json
 import os
+import time
 
 import requests
 
-TIMEOUT_SECONDS = 30
+TIMEOUT_SECONDS = 25  # wie lange ein einzelner Anbieter Zeit bekommt
+CHAIN_BUDGET_SECONDS = 45  # wie lange alle Versuche zusammen dauern duerfen
 DEFAULT_TEMPERATURE = 0.7
 DEFAULT_MAX_TOKENS = 320
 
@@ -229,9 +231,17 @@ def chat(messages, temperature=DEFAULT_TEMPERATURE, max_tokens=DEFAULT_MAX_TOKEN
 
 
 def try_chain(chain, body):
-    """Ein Anbieter nach dem anderen; der letzte Fehler zaehlt, wenn keiner will."""
+    """Ein Anbieter nach dem anderen; der letzte Fehler zaehlt, wenn keiner will.
+
+    Das Zeitbudget bricht die Kette ab, wenn schon zu viel Zeit vergangen ist.
+    Sonst koennte ein Aufruf vier lahme Anbieter hintereinander abwarten - und
+    der Browser haette laengst aufgegeben.
+    """
+    deadline = time.monotonic() + CHAIN_BUDGET_SECONDS
     last_error = None
     for provider in chain:
+        if last_error and time.monotonic() > deadline:
+            break
         try:
             return provider, extract_content(ask(provider, body))
         except AiError as error:

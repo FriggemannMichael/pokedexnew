@@ -11,7 +11,9 @@
       this.baseEndpoint = `${window.BACKEND_URL || ""}/api/ai`;
       this.useProxy = false;
       this._proxyChecked = false;
-      this.timeoutMs = 20000;
+      // Hinter einer Anfrage steckt die ganze Anbieter-Kette des Backends
+      // (Zeitbudget dort: 45s), darum mehr als die frueheren 20s.
+      this.timeoutMs = 60000;
       this.cache = new Map();
       this.cacheTtlMs = 5 * 60 * 1000;
       this.maxCacheEntries = 80;

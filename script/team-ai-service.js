@@ -11,7 +11,10 @@ class TeamAIService {
     this.baseEndpoint = `${window.BACKEND_URL || ""}/api/ai`;
     this.useProxy = false;
     this._proxyChecked = false;
-    this.timeoutMs = 25000;
+    // Grosszuegig, weil hinter EINER Anfrage die ganze Anbieter-Kette des
+    // Backends steckt (Zeitbudget dort: 45s). Frueher lief die Kette hier, da
+    // bekam jeder Anbieter seine eigenen 25s.
+    this.timeoutMs = 60000;
     this._throttleFn = window.createThrottler(2000);
   }
 

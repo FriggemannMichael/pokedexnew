@@ -147,10 +147,15 @@ def gym_dialogue(request):
 @permission_classes([AllowAny])
 @throttle_classes([AiRateThrottle])
 def team_analysis(request):
-    """POST /api/ai/team-analysis"""
+    """POST /api/ai/team-analysis
+
+    Reichlich max_tokens: Die Antwort enthaelt einen Eintrag je Teammitglied.
+    Wird sie mittendrin abgeschnitten, ist das JSON kaputt und nicht mehr zu
+    parsen - dann steht der Analyzer ohne KI-Analyse da.
+    """
     data = body(request)
     messages = prompts.team_analysis(data.get("team"), data.get("staticAnalysis"))
-    return json_reply(messages, temperature=0.3, max_tokens=700)
+    return json_reply(messages, temperature=0.3, max_tokens=1600)
 
 
 @extend_schema(
