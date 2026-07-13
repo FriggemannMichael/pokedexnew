@@ -7,14 +7,16 @@ const GYM_LEADERS = {
     type: "rock",
     badge: "🪨",
     style: "hart und unnachgiebig",
-    pokemon: [74, 75, 95], // Kleinstein, Georok, Onix
+    // Kleinstein, Georok, Onix, Rihorn, Geowaz, Aerodactyl – das Ass zuletzt
+    pokemon: [74, 75, 95, 111, 76, 142],
   },
   misty: {
     name: "Misty",
     type: "water",
     badge: "💧",
     style: "temperamentvoll und direkt",
-    pokemon: [54, 120, 121], // Enton, Sterndu, Starmie
+    // Goldini, Enton, Seeper, Sterndu, Starmie, Garados – das Ass zuletzt
+    pokemon: [118, 54, 116, 120, 121, 130],
   },
 };
 
