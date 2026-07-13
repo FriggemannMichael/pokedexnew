@@ -213,6 +213,15 @@ function getAiScripts() {
   return ["./script/team-ai-service.js"];
 }
 
+function getAccountScripts() {
+  // Konto und Team-Sync (M3). Ohne Login aendert sich nichts am Verhalten.
+  return [
+    "./script/auth-service.js",
+    "./script/auth-ui.js",
+    "./script/team-sync.js",
+  ];
+}
+
 function getTeamModalScripts() {
   return [
     "./script/team-modal-core.js",
@@ -264,6 +273,7 @@ function getAllScripts() {
     ...getPokemonScripts(),
     ...getTeamCoreScripts(),
     ...getAiScripts(),
+    ...getAccountScripts(),
     ...getTeamModalScripts(),
     ...getAnalyzerScripts(),
     ...getPokemonGoScripts(),

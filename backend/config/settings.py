@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Drittanbieter
     'rest_framework',
+    # Gibt jedem Login einen Token, den das Frontend mitschickt (M3).
+    'rest_framework.authtoken',
     'drf_spectacular',
     'corsheaders',
     # Eigene Apps
@@ -143,6 +145,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework: drf-spectacular als Schema-Generator nutzen.
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    # Wer bin ich? Das Frontend schickt "Authorization: Token <key>" mit; daran
+    # erkennt DRF den Nutzer und setzt request.user.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
     # Bremse fuer den KI-Proxy (siehe api/throttling.py). Ohne sie koennte eine
     # einzige Seite das Guthaben des API-Keys leerlaufen lassen.
     'DEFAULT_THROTTLE_RATES': {

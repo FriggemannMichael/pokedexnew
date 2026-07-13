@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="./assets/css/team-battle.css" />
     <!-- Loaded last so the unified .glass-modal shell wins over per-modal chrome -->
     <link rel="stylesheet" href="./assets/css/glass-modal.css" />
+    <link rel="stylesheet" href="./assets/css/account.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -117,6 +118,68 @@
               <span class="filter-text"> My Pokédx</span>
               <span class="pokedex-count" id="pokedexCountOffcanvas">0</span>
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login / Registrierung -->
+    <div
+      class="modal fade glass-modal"
+      id="loginModal"
+      tabindex="-1"
+      aria-hidden="true"
+      aria-labelledby="loginModalLabel"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginModalLabel">
+              <img src="assets/img/9.png" alt="" class="icon-team" /> Dein Konto
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Schliessen"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <p class="login-hint">
+              Mit Konto liegt dein Team auf dem Server und ist auf jedem Geraet da.
+              Ohne Konto bleibt es nur in diesem Browser.
+            </p>
+            <form id="loginForm" novalidate>
+              <div class="mb-3">
+                <label class="form-label" for="loginUsername">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="loginUsername"
+                  autocomplete="username"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="loginPassword">Passwort</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="loginPassword"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+              <p class="login-error" id="loginError" role="alert" hidden></p>
+              <div class="login-actions">
+                <button type="submit" class="btn btn-light" id="loginSubmit">
+                  Anmelden
+                </button>
+                <button type="button" class="btn btn-outline-light" id="registerSubmit">
+                  Neu registrieren
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -213,6 +276,28 @@
       <div class="particle particle-6"></div>
 
       <div class="container">
+        <!-- Konto: ohne Login bleibt alles nur im Browser gespeichert -->
+        <div class="account-bar" id="accountBar">
+          <span class="account-bar__user" id="accountUser" hidden></span>
+          <button
+            type="button"
+            class="btn btn-light btn-sm account-bar__btn"
+            id="accountLoginBtn"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
+            Anmelden
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-light btn-sm account-bar__btn"
+            id="accountLogoutBtn"
+            hidden
+          >
+            Abmelden
+          </button>
+        </div>
+
         <div class="row align-items-center justify-content-center">
           <div class="col-12">
             <!-- Zentrierter Header-Content -->

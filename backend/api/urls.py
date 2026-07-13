@@ -1,9 +1,15 @@
 from django.urls import path
 
-from . import ai_views, views
+from . import ai_views, auth_views, team_views, views
 
 urlpatterns = [
     path("health/", views.health, name="health"),
+    # Konto und gespeicherte Daten (M3)
+    path("auth/register", auth_views.register, name="auth-register"),
+    path("auth/login", auth_views.login, name="auth-login"),
+    path("auth/logout", auth_views.logout, name="auth-logout"),
+    path("auth/me", auth_views.me, name="auth-me"),
+    path("team", team_views.team, name="team"),
     # Fertig aufbereitete Listen (Backend erledigt das Nachladen der Details)
     path("pokemon/", views.pokemon_list, name="pokemon-list"),
     path(

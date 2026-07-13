@@ -35,9 +35,43 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/ai/gym-dialogue` (POST)    | Spruch des Arenaleiters (Text, max. 12 Wörter)     |
 | `/api/ai/team-analysis` (POST)   | Große Team-Analyse (JSON)                          |
 | `/api/ai/gym-strategy` (POST)    | Battleplan gegen ein Arena-Team (JSON)             |
+| `/api/auth/register` (POST)      | Konto anlegen, gibt gleich den Token zurück        |
+| `/api/auth/login` (POST)         | Anmelden, gibt den Token zurück                    |
+| `/api/auth/logout` (POST)        | Token löschen                                      |
+| `/api/auth/me`                   | Gilt der Token noch, und zu wem gehört er?         |
+| `/api/team` (GET/PUT)            | Team des angemeldeten Nutzers lesen/speichern      |
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
+
+## Konto und gespeichertes Team (M3)
+
+Ohne Login ändert sich nichts: Die App speichert wie bisher im localStorage des
+Browsers. Wer sich anmeldet, bekommt sein Team zusätzlich auf dem Server.
+
+**Login per Token** (`api/auth_views.py`). Beim Login legt Django einen
+zufälligen Schlüssel an; das Frontend schickt ihn danach bei jeder Anfrage mit:
+
+```http
+Authorization: Token 9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b
+```
+
+Daran erkennt DRF den Nutzer und setzt `request.user`. Beim Logout wird der
+Token gelöscht. Das Passwort selbst landet nie in der Datenbank – Django
+speichert nur einen Hash (`create_user` erledigt das), und die Regeln dafür
+stehen in `AUTH_PASSWORD_VALIDATORS`.
+
+**Das Team** (`api/team_views.py`, Model `TeamMember`) speichert nur
+Pokémon-Nummer und Platz. Name, Bild und Werte holt das Backend beim Abrufen aus
+seinem PokéAPI-Cache und schickt sie im selben Format wie `/api/pokemon/` – das
+Frontend kann das Team also direkt anzeigen. Sonst lägen dieselben Daten doppelt
+in der Datenbank und würden veralten.
+
+Im Frontend hängen daran `script/auth-service.js` (Token), `script/auth-ui.js`
+(Konto-Leiste und Dialog) und `script/team-sync.js`: Beim Anmelden wird das Team
+vom Server geholt, jede Änderung wandert dorthin zurück. Ist auf dem Server noch
+nichts gespeichert (frisch registriert), wandert das Team aus dem Browser nach
+oben, statt gelöscht zu werden.
 
 ## Wie der Cache funktioniert
 
