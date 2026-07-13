@@ -184,13 +184,6 @@ if (!window.showPokemonDetail) {
     try {
       const id = parseInt(pokemonId);
       if (isNaN(id)) return;
-      if (
-        window.pokemonTeamModal &&
-        typeof window.pokemonTeamModal.showPokemonDetail === "function"
-      ) {
-        window.pokemonTeamModal.showPokemonDetail(id);
-        return;
-      }
       if (resolveDetailFromState(id)) return;
       fetchDetailFallback(id);
     } catch (e) {

@@ -142,7 +142,6 @@ function initComponent(comp) {
 
 function initializeComponents() {
   const components = [
-    { winKey: "pokemonTeamModal", coreKey: "PokemonTeamModalCore" },
     { winKey: "pokemonTeamAnalyzer", coreKey: "PokemonTeamAnalyzerCore" },
     { winKey: "pokemonGoFeatures" },
     { winKey: "pokemonCompare" },
@@ -227,15 +226,6 @@ function getAccountScripts() {
   ];
 }
 
-function getTeamModalScripts() {
-  return [
-    "./script/team-modal-core.js",
-    "./script/team-modal-render.js",
-    "./script/team-modal-actions.js",
-    "./script/team-modal-events.js",
-  ];
-}
-
 function getAnalyzerScripts() {
   return [
     "./script/mypokedex-render.js",
@@ -279,7 +269,6 @@ function getAllScripts() {
     ...getTeamCoreScripts(),
     ...getAiScripts(),
     ...getAccountScripts(),
-    ...getTeamModalScripts(),
     ...getAnalyzerScripts(),
     ...getPokemonGoScripts(),
     ...getBattleScripts(),
