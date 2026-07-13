@@ -155,7 +155,8 @@ function appendPokemonCard(pokemon) {
 
 function createPokemonCard(pokemon) {
   const cardElement = document.createElement("div");
-  cardElement.className = "col-md-4 col-lg-3 mb-4";
+  // Zwei Karten nebeneinander auf dem Handy - eine pro Zeile war Verschwendung.
+  cardElement.className = "col-6 col-md-4 col-lg-3 mb-3";
   cardElement.innerHTML = getPokemonCardTemplate(pokemon);
   wireCardActivation(cardElement.querySelector(".pokemon-card"), pokemon);
   return cardElement;

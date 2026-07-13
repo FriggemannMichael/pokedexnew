@@ -207,10 +207,27 @@ function initializeBurgerMenu() {
 
     setupBurgerButtonClick(burgerBtn, filterContainer);
     setupDocumentClickHandler(burgerBtn, filterContainer);
+    setupCloseAfterTypeChoice(burgerBtn, filterContainer);
+}
+
+/** Typ gewaehlt, Sheet zu. Sonst verdeckt es die Karten, die man sehen will. */
+function setupCloseAfterTypeChoice(burgerBtn, filterContainer) {
+    filterContainer.addEventListener("click", (event) => {
+        if (!event.target.closest("[data-type]")) return;
+        filterContainer.classList.remove("show");
+        updateBurgerButtonHTML(burgerBtn, false);
+    });
 }
 
 function setupBurgerButtonClick(burgerBtn, filterContainer) {
-    burgerBtn.addEventListener("click", () => toggleFilterContainer(burgerBtn, filterContainer));
+    burgerBtn.addEventListener("click", (event) => {
+        // Wichtig: Der Klick darf nicht bis zum Dokument durchlaufen.
+        // Der Button tauscht gleich sein innerHTML aus - das angeklickte <span>
+        // ist danach aus dem DOM, und handleOutsideClick haelt es faelschlich
+        // fuer "ausserhalb" und schliesst das Menue sofort wieder.
+        event.stopPropagation();
+        toggleFilterContainer(burgerBtn, filterContainer);
+    });
 }
 
 function setupDocumentClickHandler(burgerBtn, filterContainer) {

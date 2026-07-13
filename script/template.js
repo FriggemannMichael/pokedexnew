@@ -128,6 +128,15 @@ function createDescriptionTabTemplate() {
     `;
 }
 
+/**
+ * Die Karte im Pokedex-Raster.
+ *
+ * Bewusst knapp: Bild, Nummer, Name, Typen - und zwei runde Knoepfe (Team,
+ * Vergleichen). CP-Balken, Prozentwert und Sterne sind raus; sie machten jede
+ * Karte doppelt so hoch und waren der Grund, warum die Seite auf dem Handy
+ * 13000 Pixel lang war. Wer die Werte sehen will, oeffnet die Detailkarte -
+ * dort stehen sie ohnehin vollstaendig.
+ */
 function getPokemonCardTemplate(pokemon) {
     const pokemonNumber = formatPokemonNumber(pokemon.id);
     const pokemonName = formatPokemonDisplayName(pokemon.name);
@@ -135,11 +144,6 @@ function getPokemonCardTemplate(pokemon) {
 
     const favoriteBtn = window.pokemonGoFeatures ?
         window.pokemonGoFeatures.getFavoriteButtonHTML(pokemon.id) : '';
-    const ratingStars = window.pokemonGoFeatures ?
-        window.pokemonGoFeatures.getRatingStarsHTML(pokemon.id, pokemon) : '';
-    const powerLevel = window.pokemonGoFeatures ?
-        window.pokemonGoFeatures.getPowerLevelHTML(pokemon) : '';
-
 
     return `
         <div class="pokemon-card h-100 type-${pokemon.types[0]}"
@@ -149,21 +153,17 @@ function getPokemonCardTemplate(pokemon) {
             <div class="pokemon-image-wrapper">
                 ${favoriteBtn}
                 <span class="pokemon-number">${pokemonNumber}</span>
+                <button class="card-icon-btn team-add-btn" data-action="add-team" data-pokemon-id="${pokemon.id}" title="${pokemonName} ins Team" aria-label="${pokemonName} ins Team">
+                    <i class="fas fa-plus"></i>
+                </button>
                 <img src="${pokemon.image}" alt="${pokemonName}" class="pokemon-image" loading="lazy">
             </div>
             <div class="pokemon-card-content">
                 <button class="pokemon-name pokemon-detail-trigger" id="pokemon-name-${pokemon.id}" type="button">${pokemonName}</button>
                 <div class="pokemon-types">${typeBadges}</div>
-                ${ratingStars}
-                ${powerLevel}
-                <div class="card-actions">
-                    <button class="compare-btn" data-pokemon-id="${pokemon.id}" title="Compare Pokemon">
-                        <i class="fas fa-exchange-alt"></i> Compare
-                    </button>
-                    <button class="team-add-btn" data-action="add-team" data-pokemon-id="${pokemon.id}" title="Add ${pokemonName} to team" aria-label="Add ${pokemonName} to team">
-                        <i class="fas fa-plus"></i> Team
-                    </button>
-                </div>
+                <button class="card-icon-btn compare-btn" data-pokemon-id="${pokemon.id}" title="${pokemonName} vergleichen" aria-label="${pokemonName} vergleichen">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
             </div>
         </div>
     `;

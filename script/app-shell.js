@@ -88,8 +88,27 @@
     el("accountViewLogout")?.addEventListener("click", () => window.authService?.logout());
   }
 
+  /**
+   * Das Typ-Sheet muss direkt an den <body>.
+   *
+   * Es lag in der Filterleiste – und die trägt einen backdrop-filter. Der macht
+   * sie zum Bezugsrahmen für "position: fixed": Das Sheet richtete sich dann an
+   * IHR aus statt am Bildschirm und landete oberhalb des Sichtfelds (gemessen:
+   * y = -200px). Sichtbar war es trotzdem – nur eben nicht dort, wo man es
+   * anklicken kann.
+   *
+   * Dasselbe Element, dieselben Handler – nur ein anderer Platz im DOM.
+   */
+  function liftFilterSheet() {
+    const sheet = document.getElementById("filterContainer");
+    if (sheet && sheet.parentElement !== document.body) {
+      document.body.appendChild(sheet);
+    }
+  }
+
   function init() {
     if (!document.getElementById("appTabs")) return;
+    liftFilterSheet();
     attachTabs();
     attachFight();
     attachSearchJump();
