@@ -82,6 +82,46 @@ class Note(models.Model):
         return f"{self.user}: #{self.pokemon_id}"
 
 
+class TeamPreset(models.Model):
+    """Ein gespeichertes Team unter einem Namen ("Wasser-Team")."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="presets",
+    )
+    name = models.CharField(max_length=60)
+    created_at = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-created_at", "-id"]  # neueste zuerst
+        verbose_name = "Team-Preset"
+        verbose_name_plural = "Team-Presets"
+
+    def __str__(self):
+        return f"{self.user}: {self.name}"
+
+
+class TeamPresetMember(models.Model):
+    """Ein Pokemon in einem Preset - wie beim Team nur die Nummer und der Platz."""
+
+    preset = models.ForeignKey(
+        TeamPreset,
+        on_delete=models.CASCADE,
+        related_name="members",
+    )
+    slot = models.PositiveSmallIntegerField()
+    pokemon_id = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ["slot"]
+        verbose_name = "Preset-Mitglied"
+        verbose_name_plural = "Preset-Mitglieder"
+
+    def __str__(self):
+        return f"{self.preset.name}: Platz {self.slot} = #{self.pokemon_id}"
+
+
 class BattleRecord(models.Model):
     """Ein ausgefochtener Kampf gegen einen Arenaleiter.
 

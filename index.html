@@ -32,6 +32,7 @@
     <!-- Loaded last so the unified .glass-modal shell wins over per-modal chrome -->
     <link rel="stylesheet" href="./assets/css/glass-modal.css" />
     <link rel="stylesheet" href="./assets/css/account.css" />
+    <link rel="stylesheet" href="./assets/css/team-presets.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -651,6 +652,30 @@
                 <span>Historie</span>
               </button>
             </div>
+
+            <!-- Gespeicherte Teams: immer sichtbar, denn bei leerem Team will
+                 man gerade eins laden (die Aktionsleiste oben ist dann weg). -->
+            <!-- Die id NICHT "teamPresets" nennen: Der Browser legt zu jeder id
+                 ein window-Property an, das wuerde window.teamPresets (den
+                 Service aus script/team-presets.js) verdecken. -->
+            <section
+              class="team-presets"
+              id="teamPresetsPanel"
+              aria-label="Gespeicherte Teams"
+            >
+              <div class="team-presets__head">
+                <h3 class="team-presets__title">Gespeicherte Teams</h3>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-primary"
+                  id="savePresetBtn"
+                >
+                  Aktuelles Team speichern
+                </button>
+              </div>
+              <div id="teamPresetsBody"></div>
+            </section>
+
             <div
               id="teamBuilderAdvisor"
               class="team-builder-advisor is-waiting"

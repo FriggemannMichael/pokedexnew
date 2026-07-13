@@ -271,7 +271,7 @@ Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, w
 ## Bekannte Einschränkungen
 
 - Notizen sind im Datenmodell und in Teilen der Logik vorhanden, aber nicht als voll ausgebaute Hauptfunktion sichtbar.
-- Team-Presets können gespeichert werden, es gibt aber noch keine vollständige Preset-Verwaltung mit Laden und Löschen.
+- Team-Presets haben eine vollständige Verwaltung: Unter dem Team-Builder lassen sie sich speichern, laden und löschen. Mit Konto liegen sie auf dem Server.
 - Das Projekt enthält ältere und neuere Modulbereiche parallel. `main.js` initialisiert den aktuell genutzten Satz.
 - Es gibt aktuell nur ein Start-Script und keine automatisierte Test-Suite im `package.json`.
 

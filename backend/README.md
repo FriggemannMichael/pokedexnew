@@ -43,6 +43,7 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/favorites` (GET/PUT)       | Favorisierte Pokémon lesen/speichern               |
 | `/api/notes` (GET/PUT)           | Persönliche Notizen lesen/speichern                |
 | `/api/battles` (GET/POST/PUT/DELETE) | Kampfhistorie (anhängen, lesen, leeren)       |
+| `/api/presets` (GET/PUT)         | Gespeicherte Teams lesen/speichern                 |
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
@@ -86,9 +87,16 @@ werden: POST hängt einen Kampf an. Gespeichert wird bewusst der Stand von damal
 ändern, nur weil das Team heute anders aussieht. Behalten werden die letzten 50,
 wie im Frontend.
 
+**Gespeicherte Teams** (`api/preset_views.py`, Models `TeamPreset` und
+`TeamPresetMember`) funktionieren wie das Team: nur Nummern in der Datenbank,
+Details aus dem Cache. Die Verwaltung dazu (speichern, laden, löschen) sitzt
+unter dem Team-Builder (`script/team-presets-ui.js`) – **nicht** im alten
+Team-Modal: Das ist unerreichbar, weil es ein `.drop-point`-Element sucht, das
+es im heutigen Layout nicht mehr gibt. Es gehört gelöscht.
+
 Im Frontend hängen daran `script/auth-service.js` (Token), `script/auth-ui.js`
-(Konto-Leiste und Dialog) und die drei Sync-Skripte `team-sync.js`,
-`pokedex-sync.js` und `battle-sync.js`: Beim Anmelden wird der Stand vom Server
+(Konto-Leiste und Dialog) und die Sync-Skripte `team-sync.js`,
+`pokedex-sync.js`, `battle-sync.js` und `preset-sync.js`: Beim Anmelden wird der Stand vom Server
 geholt, jede Änderung wandert dorthin zurück. Ist auf dem Server noch nichts
 gespeichert (frisch registriert), wandert der Stand aus dem Browser nach oben,
 statt gelöscht zu werden.

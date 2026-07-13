@@ -218,9 +218,12 @@ function getAccountScripts() {
   return [
     "./script/auth-service.js",
     "./script/auth-ui.js",
+    "./script/team-presets.js",
+    "./script/team-presets-ui.js",
     "./script/team-sync.js",
     "./script/pokedex-sync.js",
     "./script/battle-sync.js",
+    "./script/preset-sync.js",
   ];
 }
 
