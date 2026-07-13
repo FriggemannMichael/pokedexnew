@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="./assets/css/design/dex.css" />
     <link rel="stylesheet" href="./assets/css/design/team.css" />
     <link rel="stylesheet" href="./assets/css/design/sheet.css" />
+    <link rel="stylesheet" href="./assets/css/design/battle.css" />
   </head>
   <body>
     <!-- Die Atmosphäre der App: Wolken, Partikel, schwebende Pokémon -->
@@ -370,6 +371,48 @@
       </div>
     </div>
 
+    <!-- Arena-Kampf -->
+    <div class="sheet" id="battleSheet">
+      <div
+        class="sheet__card lg-surface"
+        id="battleCard"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Arena-Kampf"
+      >
+        <span class="sheet__grab"></span>
+        <div class="row">
+          <span class="sheet__name" style="font-size: 1.25rem" id="battleTitle"
+            >Arena</span
+          >
+          <span class="sheet__no" id="battleRound"></span>
+        </div>
+        <p class="battle-say" id="battleSay"></p>
+        <div class="battle-field" id="battleField"></div>
+        <div class="battle-log" id="battleLog"></div>
+        <div class="row">
+          <div
+            class="panel__title"
+            style="color: rgba(255, 255, 255, 0.85); margin: 0"
+          >
+            Deine Attacken
+          </div>
+          <button class="btn frost battle-auto" id="battleAuto">
+            Selbst steuern
+          </button>
+        </div>
+        <div class="battle-moves" id="battleMoves"></div>
+        <button class="btn frost" id="battleContinue" hidden>Weiter</button>
+        <button
+          class="btn btn--ghost"
+          id="battleClose"
+          style="color: rgba(255, 255, 255, 0.85)"
+        >
+          Aufgeben
+        </button>
+      </div>
+    </div>
+
     <!-- Rueckmeldung -->
     <div class="toast" id="toast">
       <span id="toastText"></span>
@@ -387,6 +430,10 @@
     <script src="./js/app/team.js"></script>
     <script src="./js/app/eich.js"></script>
     <script src="./js/app/sheet.js"></script>
+    <script src="./js/app/battle-data.js"></script>
+    <script src="./js/app/battle-moves.js"></script>
+    <script src="./js/app/battle.js"></script>
+    <script src="./js/app/battle-ui.js"></script>
     <script src="./js/app/presets.js"></script>
     <script src="./js/app/history.js"></script>
     <script src="./js/app/account.js"></script>

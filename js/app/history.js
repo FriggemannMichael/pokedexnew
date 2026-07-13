@@ -49,10 +49,20 @@ $("historyAlle").onclick = () => {
   historieAnzeigen();
 };
 
-/* Die Arenaleiter-Knöpfe: das Kampfsystem ist die nächste Umzugs-Phase. */
-document.querySelectorAll("[data-opp]").forEach((b) => {
-  b.onclick = () =>
-    toast("Das Kampfsystem zieht als nächste Phase hierher um.", false);
-});
+/** Ein geschlagener Kampf: lokal ablegen, angemeldet auch ins Konto. */
+function historieEintragen(eintrag) {
+  const liste = historieLokal();
+  liste.unshift(eintrag);
+  historieLokalSpeichern(liste);
+  if (istAngemeldet())
+    apiAbruf("/battles", {
+      method: "POST",
+      body: JSON.stringify({ battle: eintrag }),
+    })
+      .then((data) => (historieVomServer = data.battles || historieVomServer))
+      .catch(() => {});
+  historieAnzeigen();
+  kontoStatsAnzeigen();
+}
 
 historieAnzeigen();

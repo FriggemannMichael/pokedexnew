@@ -40,5 +40,12 @@ function historieLokal() {
   return jsonLaden("pokemonBattleHistory", []);
 }
 
+function historieLokalSpeichern(liste) {
+  localStorage.setItem(
+    "pokemonBattleHistory",
+    JSON.stringify(liste.slice(0, 50)),
+  );
+}
+
 /* Beim Start: die gespeicherten Favoriten übernehmen. */
 favorites = new Set(jsonLaden("pokemonFavorites", []));
