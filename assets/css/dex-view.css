@@ -9,42 +9,120 @@
    gezielt – die alten Regeln bleiben unangetastet.
    ========================================================= */
 
-/* ---- Kopfzeile: nur noch Pokéball, Wortmarke, Suche ---- */
+/* ---- Kopfzeile: Marke links, Konto rechts – eine Zeile (wie im Entwurf) ---- */
 .hero-section {
-  padding: 0.6rem 0 0.9rem !important;
+  padding: 0.75rem 0 0.4rem !important;
 }
 
-.hero-section .header-content-centered {
-  margin-bottom: 0;
-}
-
-.hero-section .logo-title-wrapper {
+.dex-topbar {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dex-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dex-brand__ball {
+  width: 26px;
+  height: 26px;
+  animation: rotatePokeball 14s linear infinite;
+}
+
+.dex-brand__mark {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(23, 48, 63, 0.35);
+}
+
+.account-bar {
   margin: 0;
 }
 
-.hero-section .header-logo {
+/* ---- Suche als Pille, daneben "Typ" ----
+   Mit body[data-tab] davor: Die Regel der App-Hülle setzt jedes [data-view]
+   auf "display: block" – das würde die Zeile umbrechen lassen. */
+body[data-tab="dex"] .dex-search {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.dex-search__field {
+  position: relative;
+  flex: 1;
+}
+
+.dex-search__field .form-control {
+  border-radius: var(--radius-circle);
+  border: 1px solid rgba(23, 48, 63, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 0.75rem 3rem 0.75rem 1.1rem;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.dex-search__go {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
   width: 34px;
-  height: auto;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
-.hero-section .pokedex-title {
-  font-size: 1.35rem;
-  margin: 0;
-  letter-spacing: -0.01em;
+/* ---- Ansichts-Chips: Alle / Favoriten / Mein Pokédex ---- */
+.dex-chips {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
 }
 
-/* Der Untertitel kostete eine Zeile und sagte nichts. */
-.hero-section .lead {
+.dex-chips::-webkit-scrollbar {
   display: none;
 }
 
-.hero-section .search-container {
-  margin-top: 0.75rem !important;
+.dex-chip {
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.78rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--dark);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.dex-chip:active {
+  transform: scale(0.96);
+}
+
+.dex-chip.active {
+  background: var(--secondary);
+  color: #fff;
+}
+
+.dex-chip .pokedex-count {
+  margin-left: 0.3rem;
+  opacity: 0.8;
 }
 
 /* ---- Atmosphäre: aus dem Hero-Band gelöst, hinter die ganze App ----
@@ -64,13 +142,20 @@
   opacity: 0.28;
 }
 
-.hero-section .container,
 .pokemon-grid,
 .navigation-section,
 .team-builder-section,
 .app-section {
   position: relative;
   z-index: 1;
+}
+
+/* Der Hero legt zwei Overlays darueber (::before z-index 1, ::after z-index 2).
+   Der Inhalt muss darueber bleiben - sonst schluckt das Raster-Overlay die
+   Klicks auf Suche und Typ-Knopf. */
+.hero-section .container {
+  position: relative;
+  z-index: 10;
 }
 
 /* Die Filter-Sektion deckelt alles, was in ihr liegt – auch das Sheet. Ihr
@@ -175,10 +260,19 @@
   }
 }
 
-/* ---- Karten: kompakt. Die Werte stehen in der Detailkarte. ---- */
+/* ---- Karten: exakt wie im Entwurf ----
+   Nummer oben mittig, Herz links, Plus rechts, Bild gross, Name LINKSBUENDIG
+   in Outfit, Typen darunter. Kein Vergleichen-Knopf - im abgenommenen Entwurf
+   gibt es ihn auf der Karte nicht. */
 .pokemon-card {
-  padding: 0.6rem 0.6rem 0.7rem;
-  border-radius: var(--radius-xl);
+  padding: 0.7rem 0.7rem 0.85rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 10px 28px rgba(31, 38, 135, 0.18);
+  text-align: left;
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
 }
 
 .pokemon-card .pokemon-image-wrapper {
@@ -193,17 +287,67 @@
 }
 
 .pokemon-card .pokemon-name {
-  font-size: 0.98rem;
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 1rem;
   padding: 0;
+  text-align: left;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  justify-self: start;
 }
 
 .pokemon-card .pokemon-types {
-  gap: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: flex-start;
 }
 
 .pokemon-card .type-badge {
-  font-size: 0.6rem;
-  padding: 0.15rem 0.45rem;
+  display: inline-flex; /* sonst stapeln sich die Badges untereinander */
+  width: auto;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.5rem;
+  border-radius: var(--radius-circle);
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+/* Das Bild liegt direkt auf der Karte – kein Kasten dahinter. */
+.pokemon-card .pokemon-image-wrapper {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.pokemon-card .pokemon-image {
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
+}
+
+/* Die Nummer ist Text, keine Plakette. */
+.pokemon-card .pokemon-number {
+  background: transparent;
+  box-shadow: none;
+  border: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-ui);
+  font-weight: 600;
+}
+
+/* Die Filterleiste braucht kein eigenes Band – der Himmel scheint durch. */
+.filters {
+  background: transparent !important;
+  padding: 0.35rem 0 0.5rem !important;
 }
 
 /* Runde Knöpfe statt breiter Balken: Team oben rechts, Vergleichen unten. */
@@ -242,11 +386,17 @@
   z-index: 3;
 }
 
-.pokemon-card-content {
+/* cards-base.css gibt dem Inhalt 1.5rem Innenabstand und einen Milchglas-
+   Kasten. Damit blieben nur ~102px Breite - die Typ-Badges passten nicht
+   nebeneinander und brachen um. Im Entwurf steht der Text direkt auf der Karte. */
+.pokemon-card .pokemon-card-content {
   display: grid;
-  justify-items: center;
+  justify-items: start;
   gap: 0.25rem;
-  padding-bottom: 0.2rem;
+  padding: 0;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* Die Nummer gehört nicht quer übers Bild: oben in die Mitte, zwischen Herz
@@ -262,28 +412,14 @@
   opacity: 0.9;
 }
 
-/* Vergleichen sitzt unten rechts auf der Karte, nicht über dem Namen. */
 .pokemon-card {
   position: relative;
 }
 
-.pokemon-card .compare-btn {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  width: 28px;
-  height: 28px;
-  font-size: 0.68rem;
-  opacity: 0.8;
-}
-
-.pokemon-card .compare-btn:hover {
-  opacity: 1;
-}
-
-/* Platz für den Vergleichen-Knopf, damit die Typen nicht darunter laufen. */
-.pokemon-card .pokemon-types {
-  padding-right: 1.8rem;
+/* Die aktive Tab-Farbe ist Mint, nicht Koralle - so steht es im Entwurf. */
+.app-tab[aria-selected="true"] {
+  background: var(--secondary);
+  box-shadow: 0 6px 18px rgba(78, 205, 196, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {

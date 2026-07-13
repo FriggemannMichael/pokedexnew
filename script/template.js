@@ -139,7 +139,8 @@ function createDescriptionTabTemplate() {
  */
 function getPokemonCardTemplate(pokemon) {
     const pokemonNumber = formatPokemonNumber(pokemon.id);
-    const pokemonName = formatPokemonDisplayName(pokemon.name);
+    // Der deutsche Name, wenn das Backend ihn mitliefert (siehe api/names.py).
+    const pokemonName = formatPokemonDisplayName(pokemon.nameDe || pokemon.name);
     const typeBadges = createTypeBadges(pokemon.types);
 
     const favoriteBtn = window.pokemonGoFeatures ?
@@ -161,9 +162,6 @@ function getPokemonCardTemplate(pokemon) {
             <div class="pokemon-card-content">
                 <button class="pokemon-name pokemon-detail-trigger" id="pokemon-name-${pokemon.id}" type="button">${pokemonName}</button>
                 <div class="pokemon-types">${typeBadges}</div>
-                <button class="card-icon-btn compare-btn" data-pokemon-id="${pokemon.id}" title="${pokemonName} vergleichen" aria-label="${pokemonName} vergleichen">
-                    <i class="fas fa-exchange-alt"></i>
-                </button>
             </div>
         </div>
     `;

@@ -279,76 +279,68 @@
       <div class="particle particle-6"></div>
 
       <div class="container">
-        <!-- Konto: ohne Login bleibt alles nur im Browser gespeichert -->
-        <div class="account-bar" id="accountBar">
-          <span class="account-bar__user" id="accountUser" hidden></span>
-          <button
-            type="button"
-            class="btn btn-light btn-sm account-bar__btn"
-            id="accountLoginBtn"
-            data-bs-toggle="modal"
-            data-bs-target="#loginModal"
-          >
-            Anmelden
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-light btn-sm account-bar__btn"
-            id="accountLogoutBtn"
-            hidden
-          >
-            Abmelden
-          </button>
+        <!-- Kopfzeile wie im Entwurf: Marke links, Konto rechts, eine Zeile. -->
+        <div class="dex-topbar">
+          <div class="dex-brand">
+            <img
+              src="./assets/img/9.png"
+              alt=""
+              class="dex-brand__ball"
+              aria-hidden="true"
+            />
+            <span class="dex-brand__mark">POKÉDX</span>
+          </div>
+
+          <div class="account-bar" id="accountBar">
+            <span class="account-bar__user" id="accountUser" hidden></span>
+            <button
+              type="button"
+              class="btn btn-light btn-sm account-bar__btn"
+              id="accountLoginBtn"
+              data-bs-toggle="modal"
+              data-bs-target="#loginModal"
+            >
+              Anmelden
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-light btn-sm account-bar__btn"
+              id="accountLogoutBtn"
+              hidden
+            >
+              Abmelden
+            </button>
+          </div>
         </div>
 
-        <div class="row align-items-center justify-content-center">
-          <div class="col-12">
-            <!-- Zentrierter Header-Content -->
-            <div class="header-content-centered">
-              <div class="logo-title-wrapper">
-                <img
-                  src="https://raw.githubusercontent.com/PokeAPI/media/master/logo/pokeapi_256.png"
-                  alt="PokeAPI Logo"
-                  class="header-logo"
-                />
-                <h1 class="pokedex-title">POKÉDX</h1>
-              </div>
-              <p class="lead text-light text-center mt-3">
-                Discover all Pokemon and their abilities!
-              </p>
-            </div>
-
-            <!-- Zentrierte Suchleiste -->
-            <div class="search-container mt-4">
-              <div class="row justify-content-center">
-                <div class="col-md-6">
-                  <div class="input-group search-group">
-                    <input
-                      type="text"
-                      class="form-control form-control-lg"
-                      id="searchInput"
-                      placeholder="Search Pokemon... (min. 3 letters)"
-                      autocomplete="off"
-                      aria-label="Search Pokemon by name"
-                    />
-                    <button
-                      class="btn btn-light btn-lg"
-                      type="button"
-                      id="searchBtn"
-                      aria-label="Search"
-                      disabled
-                    >
-                      <span class="search-btn-icon" aria-hidden="true">🔍</span>
-                    </button>
-                  </div>
-                  <!-- Search Results Dropdown -->
-                  <div id="searchDropdown" class="search-dropdown d-none">
-                    <div class="search-results" id="searchResults"></div>
-                  </div>
-                </div>
-              </div>
+        <!-- Suche als Pille, daneben der Typ-Filter. -->
+        <div class="dex-search" data-view="dex">
+          <div class="dex-search__field">
+            <input
+              type="search"
+              class="form-control"
+              id="searchInput"
+              placeholder="Pokémon suchen …"
+              autocomplete="off"
+              aria-label="Pokémon suchen"
+            />
+            <button
+              class="dex-search__go"
+              type="button"
+              id="searchBtn"
+              aria-label="Suchen"
+              disabled
+            >
+              🔍
+            </button>
+            <div id="searchDropdown" class="search-dropdown d-none">
+              <div class="search-results" id="searchResults"></div>
             </div>
           </div>
+
+          <button class="btn btn-filter burger-menu-btn" id="burgerMenuBtn">
+            <span class="filter-text">Typ</span>
+          </button>
         </div>
       </div>
     </header>
@@ -358,22 +350,22 @@
       <div class="container">
         <div class="row">
           <div class="col-12">
-            <!-- Mobile Burger Menu Button -->
-            <button
-              class="btn btn-filter burger-menu-btn d-none"
-              id="burgerMenuBtn"
-            >
-              <span class="burger-icon">☰</span>
-              <span class="filter-text">Filters</span>
-            </button>
+            <!-- Ansichts-Chips wie im Entwurf. Die Typen stecken im Sheet. -->
+            <div class="dex-chips">
+              <button class="dex-chip active" data-type="all">
+                <span class="filter-text">Alle</span>
+              </button>
+              <button class="dex-chip" id="favoritesToggle">❤️ Favoriten</button>
+              <button class="dex-chip" id="myPokedexBtn" onclick="showTeamModal()">
+                Mein Pokédex
+                <span class="pokedex-count" id="pokedexCount">0</span>
+              </button>
+            </div>
 
-            <!-- Filter Container -->
+            <!-- Typ-Filter (Sheet). script/app-shell.js haengt ihn an den body. -->
             <div class="filter-container" id="filterContainer">
               <!-- Desktop: Alle Filter sichtbar -->
               <div class="filter-row popular-types mb-3">
-                <button class="btn btn-filter active" data-type="all">
-                  <span class="filter-text">All</span>
-                </button>
                 <button class="btn btn-filter" data-type="fire">
                   <img
                     src="./assets/icon/fire.svg"
@@ -422,35 +414,20 @@
                   />
                   <span class="filter-text">Normal</span>
                 </button>
-                <button
-                  class="btn btn-filter mypokedex"
-                  id="myPokedexBtn"
-                  onclick="showTeamModal()"
-                >
-                  <img
-                    class="pokeball-img"
-                    src="./assets/img/9.png"
-                    alt="Pokeball"
-                    srcset=""
-                  />
-                  <span class="filter-text"> My Pokédx</span>
-                  <span class="pokedex-count" id="pokedexCount">0</span>
-                </button>
-                <button id="favoritesToggle" class="btn btn-filter">
-                  Favorites Only
-                </button>
+                <!-- "Mein Pokédex" und "Favoriten" stehen jetzt als Chips
+                     ueber dem Raster (siehe .dex-chips). Hier bleibt nur der
+                     Typ-Filter - genau wie im Entwurf. -->
                 <select
                   id="ratingFilter"
-                  class="form-select me-2"
-                  style="width: auto; display: inline-block"
-                  aria-label="Filter by rating"
+                  class="form-select"
+                  aria-label="Nach Bewertung filtern"
                 >
-                  <option value="">All Ratings</option>
-                  <option value="4">4* (Perfect)</option>
-                  <option value="3">3*</option>
-                  <option value="2">2*</option>
-                  <option value="1">1*</option>
-                  <option value="0">0*</option>
+                  <option value="">Alle Bewertungen</option>
+                  <option value="4">4★ (perfekt)</option>
+                  <option value="3">3★</option>
+                  <option value="2">2★</option>
+                  <option value="1">1★</option>
+                  <option value="0">0★</option>
                 </select>
               </div>
 
