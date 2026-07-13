@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from . import pokeapi, transform
+from . import names, pokeapi, transform
 
 DEFAULT_LIMIT = 20
 MAX_LIMIT = 100
@@ -70,8 +70,23 @@ def pokemon_list(request):
     except pokeapi.PokeApiError as error:
         return upstream_error(error)
     return Response(
-        {"count": index.get("count", 0), "results": transform.slim_pokemon_list(details)}
+        {
+            "count": index.get("count", 0),
+            "results": with_german(transform.slim_pokemon_list(details)),
+        }
     )
+
+
+def with_german(pokemon_list):
+    """Haengt den deutschen Namen an, sofern er in der Datenbank steht.
+
+    Steht er nicht drin (Befehl `namen_laden` noch nicht gelaufen), bleibt das
+    Feld leer - das Frontend zeigt dann den englischen Namen.
+    """
+    deutsch = names.german_by_id()
+    for pokemon in pokemon_list:
+        pokemon["nameDe"] = deutsch.get(pokemon["id"], "")
+    return pokemon_list
 
 
 def type_member_urls(type_data, offset, limit):
@@ -97,7 +112,25 @@ def pokemon_by_type(request, type_name):
         details = pokeapi.get_in_order(urls)
     except pokeapi.PokeApiError as error:
         return upstream_error(error)
-    return Response({"count": count, "results": transform.slim_pokemon_list(details)})
+    return Response(
+        {"count": count, "results": with_german(transform.slim_pokemon_list(details))}
+    )
+
+
+@extend_schema(
+    summary="Deutsche Pokemon-Namen",
+    description=(
+        "Alle Namen als Liste ({id, de, en}) - damit die Suche im Frontend "
+        '"Evoli" statt "eevee" findet. Gefuellt wird die Tabelle einmalig mit '
+        "`python manage.py namen_laden`; ist sie leer, kommt eine leere Liste."
+    ),
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def pokemon_names(request):
+    """GET /api/pokemon/names/"""
+    alle = names.all_names()
+    return Response({"count": len(alle), "names": alle})
 
 
 def with_query_string(request, resource_path):

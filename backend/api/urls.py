@@ -24,6 +24,8 @@ urlpatterns = [
     path("presets", preset_views.presets, name="presets"),
     # Fertig aufbereitete Listen (Backend erledigt das Nachladen der Details)
     path("pokemon/", views.pokemon_list, name="pokemon-list"),
+    # Deutsche Namen (vor der by-type-Route, sonst faengt die "names" ab)
+    path("pokemon/names/", views.pokemon_names, name="pokemon-names"),
     path(
         "pokemon/by-type/<str:type_name>/",
         views.pokemon_by_type,

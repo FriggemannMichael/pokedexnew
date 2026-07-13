@@ -31,6 +31,28 @@ class CachedResource(models.Model):
         return self.path
 
 
+class PokemonName(models.Model):
+    """Der deutsche Name eines Pokemon.
+
+    Die PokeAPI liefert Namen nur auf Englisch ("bulbasaur"). Die deutschen
+    stecken in den Spezies-Daten - aber einzeln, 1302 Stueck. Sie bei jeder
+    Suche zu holen waere absurd, also sammelt sie der Befehl `namen_laden`
+    einmal ein und legt sie hier ab.
+    """
+
+    pokemon_id = models.PositiveIntegerField(unique=True, db_index=True)
+    german = models.CharField(max_length=60, db_index=True)
+    english = models.CharField(max_length=60, db_index=True)
+
+    class Meta:
+        ordering = ["pokemon_id"]
+        verbose_name = "Pokemon-Name"
+        verbose_name_plural = "Pokemon-Namen"
+
+    def __str__(self):
+        return f"#{self.pokemon_id} {self.german}"
+
+
 class Favorite(models.Model):
     """Ein Pokemon, das ein Nutzer mit dem Herz markiert hat."""
 

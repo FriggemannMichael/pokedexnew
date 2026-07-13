@@ -28,6 +28,7 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/health/`                   | Health-Check (`{"status":"ok"}`)                   |
 | `/api/pokemon/`                  | Eine Seite fertiger Pokémon (`?offset=0&limit=20`) |
 | `/api/pokemon/by-type/<typ>/`    | Dasselbe, gefiltert auf einen Typ (z.B. `fire`)    |
+| `/api/pokemon/names/`            | Deutsche Namen (`{id, de, en}`) für die Suche      |
 | `/api/pokeapi/<pfad>`            | Gecachter Durchreicher, z.B. `/api/pokeapi/move/tackle` |
 | `/api/ai/ping`                   | Prüft, ob die KI bereit ist                        |
 | `/api/ai/team-advice` (POST)     | Professor Eichs Rat zum Team (Text)                |
@@ -47,6 +48,28 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
+
+## Deutsche Namen
+
+Die PokéAPI kennt nur englische Namen (`bulbasaur`). Der deutsche steht in den
+Spezies-Daten – aber pro Pokémon einzeln. Eine Suche nach „Evoli" bräuchte also
+alle 1302 Spezies, und die bei jeder Anfrage zu holen wäre Unsinn.
+
+Darum werden sie **einmalig** eingesammelt:
+
+```bash
+python manage.py namen_laden
+```
+
+Das dauert ein paar Minuten (es sind 1302 Spezies) und legt die Namen in der
+Tabelle `PokemonName` ab. `/api/pokemon/names/` liefert sie danach sofort, und
+die Listen-Endpoints hängen `nameDe` an jedes Pokémon.
+
+Lief der Befehl nie, bleibt das Feld leer und das Frontend zeigt weiter die
+englischen Namen – nichts bricht.
+
+**Achtung bei den Routen:** `pokemon/names/` muss **vor** `pokemon/by-type/<typ>/`
+stehen, sonst liest Django „names" als Pokémon-Typ. Ein Test hält das fest.
 
 ## Konto und gespeichertes Team (M3)
 
