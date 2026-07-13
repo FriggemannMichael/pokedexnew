@@ -261,7 +261,7 @@ Der Express-Server stellt AI-Funktionen für Team-Analyse, Strategieauswertung u
 - Gemini
 - OpenRouter
 
-Optional kann `AI_PROVIDER` auf `groq`, `mistral`, `gemini` oder `openrouter` gesetzt werden. Bleibt der Wert leer, nutzt der Proxy den vom Frontend angefragten Provider bzw. standardmäßig Groq.
+Welchen Anbieter eine Anfrage nimmt, entscheidet das Frontend – nur so kann es bei einem Ausfall der Reihe nach die anderen durchprobieren. Optional legt `AI_PROVIDER` (`groq`, `mistral`, `gemini` oder `openrouter`) fest, welcher Anbieter genommen wird, wenn das Frontend keinen nennt. Bleibt der Wert leer, ist das Groq.
 
 Der Proxy ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben.
 

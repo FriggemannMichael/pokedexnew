@@ -59,13 +59,19 @@ GROQ_API_KEY=...
 GEMINI_API_KEY=...
 MISTRAL_API_KEY=...
 OPENROUTER_API_KEY=...
-# Erzwingt einen Anbieter; leer = der, den das Frontend anfragt (sonst groq)
+# Standard-Anbieter, wenn das Frontend keinen nennt; leer = groq
 AI_PROVIDER=gemini
 ```
 
 Unterstützt werden Groq, OpenRouter, Mistral und Gemini. Die ersten drei
 sprechen das OpenAI-Protokoll; Geminis abweichendes Antwortformat wird
 zurückübersetzt, damit das Frontend überall dasselbe liest.
+
+Welchen der vier eine Anfrage nimmt, entscheidet das Frontend: Es schickt
+`"provider": "gemini"` mit, und `AI_PROVIDER` greift nur, wenn nichts (oder
+ein unbekannter Name) mitkommt. Das ist wichtig, weil das Frontend bei einem
+Ausfall der Reihe nach die anderen Anbieter durchprobiert – würde `AI_PROVIDER`
+den Wunsch überstimmen, liefen alle Versuche wieder in denselben Fehler.
 
 Es gilt ein **Rate-Limit von 30 Anfragen pro Minute und IP** (`api/throttling.py`).
 Ohne das könnte eine einzige geöffnete Seite das Guthaben des Keys leerlaufen

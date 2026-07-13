@@ -195,13 +195,21 @@ class AiConfigTests(TestCase):
 
         self.assertEqual(config["headers"]["Authorization"], "Bearer geheim-123")
 
-    def test_ai_provider_env_beats_the_frontend_wish(self):
+    def test_the_frontend_wish_beats_ai_provider_env(self):
         with patch.dict("os.environ", {"AI_PROVIDER": "gemini"}):
-            self.assertEqual(ai.resolve_provider("groq"), "gemini")
+            self.assertEqual(ai.resolve_provider("groq"), "groq")
 
-    def test_without_ai_provider_the_frontend_decides(self):
+    def test_ai_provider_env_is_the_default(self):
+        with patch.dict("os.environ", {"AI_PROVIDER": "mistral"}):
+            self.assertEqual(ai.resolve_provider(None), "mistral")
+
+    def test_unknown_provider_falls_back_to_the_default(self):
+        with patch.dict("os.environ", {"AI_PROVIDER": "mistral"}):
+            self.assertEqual(ai.resolve_provider("bibor"), "mistral")
+
+    def test_without_anything_groq_is_used(self):
         with patch.dict("os.environ", {"AI_PROVIDER": ""}):
-            self.assertEqual(ai.resolve_provider("mistral"), "mistral")
+            self.assertEqual(ai.resolve_provider(None), "groq")
 
     def test_gemini_separates_the_system_prompt(self):
         with patch.dict("os.environ", {"GEMINI_API_KEY": "g-key"}):
@@ -242,6 +250,18 @@ class AiEndpointTests(TestCase):
         content = response.json()["choices"][0]["message"]["content"]
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content, "Ein starkes Team!")
+
+    def test_chat_asks_the_provider_the_frontend_wants(self):
+        """Die Fallback-Kette des Frontends braucht das: Wunsch schlaegt .env."""
+        keys = {"GROQ_API_KEY": "k", "GEMINI_API_KEY": "g", "AI_PROVIDER": "gemini"}
+
+        with patch.dict("os.environ", keys):
+            with patch.object(
+                ai.requests, "post", return_value=fake_provider_response()
+            ) as post:
+                self.client.post("/api/ai", CHAT, format="json")
+
+        self.assertIn("groq.com", post.call_args.args[0])
 
     def test_the_api_key_never_reaches_the_browser(self):
         with patch.dict("os.environ", {"GROQ_API_KEY": "streng-geheim", "AI_PROVIDER": ""}):

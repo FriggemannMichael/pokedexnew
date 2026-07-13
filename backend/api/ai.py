@@ -32,11 +32,6 @@ def env(name):
     return os.environ.get(name, "") or ""
 
 
-def resolve_provider(requested):
-    """AI_PROVIDER aus der .env schlaegt den Wunsch des Frontends. Sonst Groq."""
-    return (env("AI_PROVIDER") or requested or "groq").lower()
-
-
 def openai_style(endpoint, api_key, model, body):
     """Der gemeinsame Aufbau von Groq, OpenRouter und Mistral."""
     return {
@@ -120,6 +115,19 @@ PROVIDERS = {
     "mistral": mistral_config,
     "gemini": gemini_config,
 }
+
+
+def resolve_provider(requested):
+    """Das Frontend waehlt den Anbieter; AI_PROVIDER ist nur der Standard.
+
+    Nur so kann das Frontend eine Fallback-Kette durchprobieren (Gemini ->
+    OpenRouter -> ...): Wuerde AI_PROVIDER den Wunsch ueberstimmen, landeten
+    alle Versuche wieder beim selben Anbieter.
+    """
+    wanted = (requested or "").lower()
+    if wanted in PROVIDERS:
+        return wanted
+    return (env("AI_PROVIDER") or "groq").lower()
 
 
 def build_config(provider, body):

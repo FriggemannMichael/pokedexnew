@@ -147,10 +147,10 @@ def ai_ping(request):
 @extend_schema(
     summary="KI-Anfrage (Proxy)",
     description=(
-        "Reicht eine Chat-Anfrage an den konfigurierten Anbieter weiter "
-        "(groq, openrouter, mistral oder gemini) und haengt dabei den API-Key "
-        "an - der Key bleibt so auf dem Server. Max. 30 Anfragen pro Minute "
-        "und IP."
+        "Reicht eine Chat-Anfrage an den gewuenschten Anbieter weiter (Feld "
+        "'provider': groq, openrouter, mistral oder gemini; ohne Angabe greift "
+        "AI_PROVIDER, sonst groq) und haengt dabei den API-Key an - der Key "
+        "bleibt so auf dem Server. Max. 30 Anfragen pro Minute und IP."
     ),
 )
 @api_view(["POST"])
