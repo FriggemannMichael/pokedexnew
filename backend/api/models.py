@@ -31,6 +31,57 @@ class CachedResource(models.Model):
         return self.path
 
 
+class Favorite(models.Model):
+    """Ein Pokemon, das ein Nutzer mit dem Herz markiert hat."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="favorites",
+    )
+    pokemon_id = models.PositiveIntegerField(help_text="Nummer des Pokemon, z.B. 25.")
+
+    class Meta:
+        ordering = ["user", "pokemon_id"]
+        # Zweimal dasselbe Pokemon zu favorisieren ergibt keinen Sinn.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "pokemon_id"], name="einmaliger_favorit"
+            ),
+        ]
+        verbose_name = "Favorit"
+        verbose_name_plural = "Favoriten"
+
+    def __str__(self):
+        return f"{self.user}: #{self.pokemon_id}"
+
+
+class Note(models.Model):
+    """Die persoenliche Notiz eines Nutzers zu einem Pokemon."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notes",
+    )
+    pokemon_id = models.PositiveIntegerField(help_text="Nummer des Pokemon, z.B. 25.")
+    text = models.TextField(max_length=2000)
+
+    class Meta:
+        ordering = ["user", "pokemon_id"]
+        # Eine Notiz je Pokemon und Nutzer.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "pokemon_id"], name="einmalige_notiz"
+            ),
+        ]
+        verbose_name = "Notiz"
+        verbose_name_plural = "Notizen"
+
+    def __str__(self):
+        return f"{self.user}: #{self.pokemon_id}"
+
+
 class TeamMember(models.Model):
     """Ein Pokemon im Team eines Nutzers.
 

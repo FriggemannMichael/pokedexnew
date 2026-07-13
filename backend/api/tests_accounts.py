@@ -1,4 +1,4 @@
-"""Tests fuer Konto und gespeichertes Team (M3).
+"""Tests fuer Konto, Team, Favoriten und Notizen (M3).
 
 Die PokeAPI wird auch hier nicht wirklich gefragt - `get_in_order` ist durch
 eine Attrappe ersetzt.
@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
 
-from .models import TeamMember
+from .models import Favorite, Note, TeamMember
 
 GOOD_PASSWORD = "Pikachu-Blitz-42"
 
@@ -196,3 +196,106 @@ class TeamTests(TestCase):
             response = self.client.get("/api/team")
 
         self.assertEqual(response.json()["team"], [])
+
+
+class FavoriteTests(TestCase):
+    """Die Herzchen aus MyPokedex."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.ash = User.objects.create_user(username="ash", password=GOOD_PASSWORD)
+        self.client.force_authenticate(self.ash)
+
+    def test_favorites_need_a_login(self):
+        self.client.force_authenticate(None)
+
+        self.assertEqual(self.client.get("/api/favorites").status_code, 401)
+
+    def test_saving_and_reading_favorites(self):
+        self.client.put("/api/favorites", {"pokemonIds": [25, 6]}, format="json")
+
+        response = self.client.get("/api/favorites")
+
+        self.assertEqual(response.json()["pokemonIds"], [6, 25])
+
+    def test_saving_again_replaces_the_old_favorites(self):
+        self.client.put("/api/favorites", {"pokemonIds": [25, 6]}, format="json")
+
+        self.client.put("/api/favorites", {"pokemonIds": [1]}, format="json")
+
+        self.assertEqual(favorite_ids(self.ash), [1])
+
+    def test_the_same_pokemon_twice_lands_once_in_the_database(self):
+        response = self.client.put(
+            "/api/favorites", {"pokemonIds": [25, 25]}, format="json"
+        )
+
+        self.assertEqual(response.json()["pokemonIds"], [25])
+        self.assertEqual(Favorite.objects.filter(user=self.ash).count(), 1)
+
+    def test_nonsense_instead_of_a_number_is_refused(self):
+        response = self.client.put(
+            "/api/favorites", {"pokemonIds": ["Pikachu"]}, format="json"
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_nobody_sees_the_favorites_of_someone_else(self):
+        self.client.put("/api/favorites", {"pokemonIds": [25]}, format="json")
+        misty = User.objects.create_user(username="misty", password=GOOD_PASSWORD)
+        self.client.force_authenticate(misty)
+
+        self.assertEqual(self.client.get("/api/favorites").json()["pokemonIds"], [])
+
+
+def favorite_ids(user):
+    return list(
+        Favorite.objects.filter(user=user)
+        .order_by("pokemon_id")
+        .values_list("pokemon_id", flat=True)
+    )
+
+
+class NoteTests(TestCase):
+    """Die persoenlichen Notizen zu einzelnen Pokemon."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.ash = User.objects.create_user(username="ash", password=GOOD_PASSWORD)
+        self.client.force_authenticate(self.ash)
+
+    def put_notes(self, notes):
+        return self.client.put("/api/notes", {"notes": notes}, format="json")
+
+    def test_notes_need_a_login(self):
+        self.client.force_authenticate(None)
+
+        self.assertEqual(self.client.get("/api/notes").status_code, 401)
+
+    def test_saving_and_reading_a_note(self):
+        self.put_notes({"25": "Sehr schnell!"})
+
+        response = self.client.get("/api/notes")
+
+        self.assertEqual(response.json()["notes"], {"25": "Sehr schnell!"})
+
+    def test_an_empty_note_deletes_it(self):
+        self.put_notes({"25": "Sehr schnell!"})
+
+        response = self.put_notes({"25": "   "})
+
+        self.assertEqual(response.json()["notes"], {})
+        self.assertEqual(Note.objects.filter(user=self.ash).count(), 0)
+
+    def test_a_much_too_long_note_is_refused(self):
+        response = self.put_notes({"25": "x" * 2001})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Note.objects.count(), 0)
+
+    def test_nobody_sees_the_notes_of_someone_else(self):
+        self.put_notes({"25": "Sehr schnell!"})
+        misty = User.objects.create_user(username="misty", password=GOOD_PASSWORD)
+        self.client.force_authenticate(misty)
+
+        self.assertEqual(self.client.get("/api/notes").json()["notes"], {})

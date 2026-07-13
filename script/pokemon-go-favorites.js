@@ -14,7 +14,12 @@
     }
     return 0;
   };
-  PGF.addNote = function(id,n){ this.personalNotes[id]=n; localStorage.setItem('pokemonNotes', JSON.stringify(this.personalNotes)); };
+  PGF.addNote = function(id,n){
+    this.personalNotes[id]=n;
+    localStorage.setItem('pokemonNotes', JSON.stringify(this.personalNotes));
+    // Damit script/pokedex-sync.js die Notiz auch ins Konto schreiben kann.
+    document.dispatchEvent(new CustomEvent('noteChanged',{detail:{pokemonId:id,note:n}}));
+  };
   PGF.getNote = function(id){ return this.personalNotes[id]||''; };
   PGF.getFavoriteButtonHTML = function(id){ const fav=this.isFavorite(id); return `<button class="favorite-btn ${fav?'active':''}" data-pokemon-id="${id}">${fav?'❤️':'🤍'}</button>`; };
   PGF.getRatingStarsHTML = function(id,p){

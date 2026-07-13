@@ -40,6 +40,8 @@ getrennt davon mit `npm start` (Port 3000).
 | `/api/auth/logout` (POST)        | Token löschen                                      |
 | `/api/auth/me`                   | Gilt der Token noch, und zu wem gehört er?         |
 | `/api/team` (GET/PUT)            | Team des angemeldeten Nutzers lesen/speichern      |
+| `/api/favorites` (GET/PUT)       | Favorisierte Pokémon lesen/speichern               |
+| `/api/notes` (GET/PUT)           | Persönliche Notizen lesen/speichern                |
 | `/api/docs/`                     | Swagger-UI (API testen)                            |
 | `/api/schema/`                   | OpenAPI-Schema (YAML)                              |
 | `/admin/`                        | Django-Admin (zeigt auch den Cache-Inhalt)         |
@@ -67,11 +69,25 @@ seinem PokéAPI-Cache und schickt sie im selben Format wie `/api/pokemon/` – d
 Frontend kann das Team also direkt anzeigen. Sonst lägen dieselben Daten doppelt
 in der Datenbank und würden veralten.
 
+**Favoriten und Notizen** (`api/collection_views.py`, Models `Favorite` und
+`Note`) funktionieren genauso: Das Frontend schickt seinen kompletten Stand, das
+Backend ersetzt damit den alten. Ein leerer Notiztext löscht die Notiz.
+
+Keine **Sterne**: Die rechnet die App aus den IVs aus (GO-Appraisal in
+`script/pokemon-go-favorites.js`), sie sind keine Eingabe des Nutzers. Der Key
+`pokemonRatings` im localStorage wird nirgends beschrieben – es gibt also nichts
+zu speichern.
+
 Im Frontend hängen daran `script/auth-service.js` (Token), `script/auth-ui.js`
-(Konto-Leiste und Dialog) und `script/team-sync.js`: Beim Anmelden wird das Team
-vom Server geholt, jede Änderung wandert dorthin zurück. Ist auf dem Server noch
-nichts gespeichert (frisch registriert), wandert das Team aus dem Browser nach
-oben, statt gelöscht zu werden.
+(Konto-Leiste und Dialog), `script/team-sync.js` und `script/pokedex-sync.js`:
+Beim Anmelden wird der Stand vom Server geholt, jede Änderung wandert dorthin
+zurück. Ist auf dem Server noch nichts gespeichert (frisch registriert), wandert
+der Stand aus dem Browser nach oben, statt gelöscht zu werden.
+
+Wichtig dabei: Die Sync-Skripte schreiben **immer zuerst in den localStorage**.
+Beim Anmelden gibt es `window.pokemonGoFeatures` unter Umständen noch gar nicht –
+es liest seine Favoriten beim Erzeugen aus dem localStorage, und damit kommt der
+Stand vom Server auch dann an, wenn er vor der App da ist.
 
 ## Wie der Cache funktioniert
 
