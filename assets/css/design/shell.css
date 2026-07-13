@@ -112,6 +112,11 @@
   background: var(--accent);
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
 }
+/* display: grid schlaegt sonst das hidden-Attribut - bei leerem Team
+   stuende sichtbar eine "0" auf dem Team-Tab. */
+.badge[hidden] {
+  display: none;
+}
 .badge {
   position: absolute;
   top: 2px;

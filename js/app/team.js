@@ -36,12 +36,6 @@ function dominantType() {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
-function eichSatz() {
-  return team.length >= 6
-    ? "Sechs von sechs. Deine Feuer- und Wasser-Attacken decken viel ab — gegen Boden bleibst du anfällig."
-    : `Noch ${6 - team.length} ${6 - team.length === 1 ? "Platz" : "Plätze"} frei. Gegen Gestein fehlt dir eine Antwort — ein Wasser-Pokémon würde die Lücke schließen.`;
-}
-
 /* Der Team-Bereich trägt die Farbe des Teams. */
 function teamTabFaerben() {
   const teamTab = document.querySelector('.tab[data-view="team"]');
@@ -50,16 +44,21 @@ function teamTabFaerben() {
     setContext(dominantType());
 }
 
-function refresh() {
-  renderTeam();
+function teamZahlen() {
   $("teamCount").textContent = `${team.length} / 6`;
   $("fightTeam").textContent = `Dein Team: ${team.length} / 6`;
   const badge = $("teamBadge");
   badge.textContent = team.length;
   badge.hidden = team.length === 0;
-  $("eichText").textContent = eichSatz();
+}
+
+function refresh() {
+  renderTeam();
+  teamZahlen();
   renderGrid(); // die Häkchen auf den Karten stimmen wieder
   teamTabFaerben();
+  teamMerken(); // localStorage + (angemeldet) Server
+  eichAktualisieren(); // erst der lokale Satz, dann die KI
 }
 
 function addToTeam(p) {

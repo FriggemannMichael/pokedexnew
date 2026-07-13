@@ -121,8 +121,10 @@
           <div class="slots" id="teamSlots"></div>
 
           <div class="actions">
-            <button class="btn btn--primary">Analysieren</button>
-            <button class="btn">Team speichern</button>
+            <button class="btn btn--primary" id="teamAnalysieren">
+              Analysieren
+            </button>
+            <button class="btn" id="teamSpeichern">Team speichern</button>
           </div>
 
           <div class="eich lg-surface">
@@ -132,21 +134,7 @@
 
           <div class="panel">
             <div class="panel__title">Gespeicherte Teams</div>
-            <div class="row">
-              <div>
-                <strong style="font-family: var(--font-ui)">Wasser-Team</strong>
-                <span class="hint"> · 6 Pokémon</span>
-              </div>
-              <div style="display: flex; gap: 0.4rem">
-                <button
-                  class="btn"
-                  style="padding: 0.5rem 0.9rem; font-size: 0.8rem"
-                >
-                  Laden
-                </button>
-                <button class="btn btn--ghost">Löschen</button>
-              </div>
-            </div>
+            <div id="presetListe" style="display: grid; gap: 0.6rem"></div>
           </div>
         </section>
 
@@ -158,7 +146,11 @@
           </div>
 
           <div class="opponents">
-            <button class="opp lg-surface" style="--type: var(--type-rock)">
+            <button
+              class="opp lg-surface"
+              style="--type: var(--type-rock)"
+              data-opp="rocko"
+            >
               <span class="opp__badge frost">🪨</span>
               <span>
                 <span class="opp__name">Rocko</span>
@@ -169,7 +161,11 @@
               <span class="opp__go">Antreten →</span>
             </button>
 
-            <button class="opp lg-surface" style="--type: var(--type-water)">
+            <button
+              class="opp lg-surface"
+              style="--type: var(--type-water)"
+              data-opp="misty"
+            >
               <span class="opp__badge frost">💧</span>
               <span>
                 <span class="opp__name">Misty</span>
@@ -199,24 +195,11 @@
 
           <div class="section-head">
             <h2>Letzte Kämpfe</h2>
-            <button class="btn btn--ghost">Alle ansehen</button>
+            <button class="btn btn--ghost" id="historyAlle">
+              Alle ansehen
+            </button>
           </div>
-          <div class="history">
-            <div class="fight">
-              <span class="pill pill--win">Sieg</span>
-              <span>gegen <strong>Rocko</strong></span>
-              <span class="hint" style="margin-left: auto"
-                >240 Schaden · 8 Züge</span
-              >
-            </div>
-            <div class="fight">
-              <span class="pill pill--loss">Niederlage</span>
-              <span>gegen <strong>Misty</strong></span>
-              <span class="hint" style="margin-left: auto"
-                >90 Schaden · 6 Züge</span
-              >
-            </div>
-          </div>
+          <div class="history" id="historyListe"></div>
         </section>
 
         <!-- ============ KONTO ============ -->
@@ -228,26 +211,35 @@
               dasselbe. Und sobald die Trainerkämpfe da sind, treten andere
               gegen genau dieses Team an.
             </p>
-            <div style="display: flex; gap: 0.6rem; margin-top: 0.3rem">
-              <button class="btn frost" style="flex: 1" id="loginDemo">
+            <div class="konto-buttons" id="kontoButtons">
+              <button class="btn frost" style="flex: 1" id="kontoLoginBtn">
                 Anmelden
               </button>
-              <button class="btn frost" style="flex: 1">Konto anlegen</button>
+              <button class="btn frost" style="flex: 1" id="kontoRegisterBtn">
+                Konto anlegen
+              </button>
             </div>
-            <div class="stats" id="accountStats" hidden>
-              <div class="stat frost">
-                <div class="stat__n">12</div>
-                <div class="stat__l">Kämpfe</div>
-              </div>
-              <div class="stat frost">
-                <div class="stat__n">67%</div>
-                <div class="stat__l">Siege</div>
-              </div>
-              <div class="stat frost">
-                <div class="stat__n">31</div>
-                <div class="stat__l">Favoriten</div>
-              </div>
-            </div>
+            <form class="konto-form" id="kontoForm" hidden>
+              <input
+                id="kontoName"
+                placeholder="Name"
+                autocomplete="username"
+                required
+              />
+              <input
+                id="kontoPasswort"
+                type="password"
+                placeholder="Passwort"
+                autocomplete="current-password"
+                required
+              />
+              <p class="konto-fehler" id="kontoFehler" role="alert" hidden></p>
+              <button class="btn frost" id="kontoSubmit" type="submit">
+                Anmelden
+              </button>
+            </form>
+            <button class="btn frost" id="kontoLogout" hidden>Abmelden</button>
+            <div class="stats" id="accountStats" hidden></div>
           </div>
 
           <div class="panel">
@@ -387,11 +379,18 @@
     <!-- Klassische Skripte in fester Reihenfolge: Sie teilen sich den
          globalen Scope – wie im Entwurf, nur in Dateien aufgeteilt. -->
     <script src="./js/app/config.js"></script>
+    <script src="./js/app/storage.js"></script>
+    <script src="./js/app/auth.js"></script>
     <script src="./js/app/api.js"></script>
     <script src="./js/app/type-filter.js"></script>
     <script src="./js/app/grid.js"></script>
     <script src="./js/app/team.js"></script>
+    <script src="./js/app/eich.js"></script>
     <script src="./js/app/sheet.js"></script>
+    <script src="./js/app/presets.js"></script>
+    <script src="./js/app/history.js"></script>
+    <script src="./js/app/account.js"></script>
+    <script src="./js/app/sync.js"></script>
     <script src="./js/app/shell.js"></script>
   </body>
 </html>

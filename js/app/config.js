@@ -87,7 +87,7 @@ const FALLBACK = [
 /* ---- Veränderlicher Zustand ---- */
 let DEX = [];
 let team = [];
-let favorites = new Set([25, 143]);
+let favorites = new Set(); // wird in storage.js aus dem localStorage gefüllt
 let lastAdded = null;
 let ladend = false;
 let activeType = null;
@@ -112,3 +112,13 @@ const listen = {
 
 /** Der deutsche Name, solange er da ist – sonst der englische. */
 const anzeigename = (p) => NAME_DE.get(p.id) || p.nameDe || p.name;
+
+/** Nutzereingaben (Preset-Namen, Gegnernamen) sicher in HTML einsetzen. */
+const escHtml = (s) =>
+  String(s).replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );

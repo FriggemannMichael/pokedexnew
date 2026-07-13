@@ -60,6 +60,7 @@ function wireCard(card, p) {
   card.querySelector(".card__fav").onclick = () => {
     if (favorites.has(p.id)) favorites.delete(p.id);
     else favorites.add(p.id);
+    favoritenMerken(); // localStorage + (angemeldet) Server
     renderGrid();
   };
 }

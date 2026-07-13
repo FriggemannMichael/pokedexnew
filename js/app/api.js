@@ -52,15 +52,15 @@ function updateLoadMore() {
 
 async function loadDex() {
   await loadPage();
-  // Die Team-Beispiele liegen nicht alle auf der ersten Seite (Pikachu ist
-  // die 25). Also gezielt nachladen, statt sie einfach fehlen zu lassen.
-  await ensureLoaded([6, 9, 25, 94]);
-  team = [6, 9, 25, 94]
-    .map((id) => DEX.find((p) => p.id === id))
-    .filter(Boolean);
+  // Das gespeicherte Team liegt nicht komplett auf der ersten Seite –
+  // die fehlenden Pokémon gezielt nachladen, statt sie zu verlieren.
+  const gespeichert = teamIdsLokal();
+  await ensureLoaded(gespeichert);
+  team = gespeichert.map((id) => DEX.find((p) => p.id === id)).filter(Boolean);
   refresh();
   $("loadMore").onclick = loadPage;
   loadIndex(); // Namensverzeichnis für die Suche, im Hintergrund
+  sessionWiederherstellen(); // gilt der gespeicherte Token noch?
 }
 
 function slim(p) {

@@ -27,23 +27,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => activateTab(tab);
 });
 
-/* ---- Konto-Demo ---- */
-let loggedIn = false;
-
-function kontoText(an) {
-  return an
-    ? "Dein Team liegt auf dem Server. Sobald die Trainerkämpfe starten, treten andere gegen genau dieses Team an."
-    : "Mit Konto liegt dein Team auf dem Server — auf jedem Gerät dasselbe. Und sobald die Trainerkämpfe da sind, treten andere gegen genau dieses Team an.";
-}
-
-$("loginDemo").onclick = () => {
-  loggedIn = !loggedIn;
-  $("accountName").textContent = loggedIn ? "Ash" : "Anmelden";
-  $("accountTitle").textContent = loggedIn ? "Hallo, Ash" : "Melde dich an";
-  $("accountText").textContent = kontoText(loggedIn);
-  $("accountStats").hidden = !loggedIn;
-  $("loginDemo").textContent = loggedIn ? "Abmelden" : "Anmelden";
-};
+/* Der Konto-Knopf oben rechts führt in den Konto-Bereich. */
 $("accountBtn").onclick = () =>
   document.querySelector('.tab[data-view="you"]').click();
 
