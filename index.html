@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="./assets/css/glass-modal.css" />
     <link rel="stylesheet" href="./assets/css/account.css" />
     <link rel="stylesheet" href="./assets/css/team-presets.css" />
+    <link rel="stylesheet" href="./assets/css/app-shell.css" />
 
     <!-- Font Awesome für Icons -->
     <link
@@ -352,7 +353,7 @@
     </header>
 
     <!-- Filter-Sektion mit Burger-Menü -->
-    <section class="filters py-4">
+    <section class="filters py-4" data-view="dex">
       <div class="container">
         <div class="row">
           <div class="col-12">
@@ -605,7 +606,12 @@
           </div>
         </div>
       </div>
-      <section class="team-builder-section" aria-label="Active Team Builder">
+    </section>
+
+    <!-- Der Team-Builder lag bisher INNERHALB der Filter-Sektion. Das fiel nie
+         auf, solange alles untereinander stand – beim Umschalten hätte er sich
+         aber mit dem Pokédex versteckt. -->
+    <section class="team-builder-section" data-view="team" aria-label="Active Team Builder">
         <div class="container">
           <div class="team-builder-panel" id="activeTeamBuilder">
             <div class="team-builder-header">
@@ -690,10 +696,9 @@
           </div>
         </div>
       </section>
-    </section>
 
     <!-- Pokemon Grid -->
-    <section class="pokemon-grid py-5">
+    <section class="pokemon-grid py-5" data-view="dex">
       <div class="container">
         <div class="loading-spinner text-center d-none">
           <div class="spinner-border text-primary" role="status">
@@ -707,7 +712,7 @@
     </section>
 
     <!-- Pagination & Load More Section -->
-    <section class="navigation-section">
+    <section class="navigation-section" data-view="dex">
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-auto1">
@@ -743,6 +748,91 @@
         </div>
       </div>
     </section>
+
+    <!-- Kampf: sammelt, was bisher nur über die Team-Aktionsleiste erreichbar war -->
+    <section class="app-section" data-view="fight" aria-label="Kampf">
+      <div class="container">
+        <h2 class="app-section__title">Gegner wählen</h2>
+        <p class="app-section__hint" id="fightTeamHint">Dein Team: 0 / 6</p>
+
+        <div class="opponents">
+          <button type="button" class="opponent" data-fight="gym">
+            <span class="opponent__badge">🏟️</span>
+            <span class="opponent__body">
+              <span class="opponent__name">Gym-Challenge</span>
+              <span class="opponent__meta">Tritt gegen ein Arena-Team an</span>
+            </span>
+            <span class="opponent__go" aria-hidden="true">→</span>
+          </button>
+
+          <button type="button" class="opponent" data-fight="history">
+            <span class="opponent__badge">🕘</span>
+            <span class="opponent__body">
+              <span class="opponent__name">Kampfhistorie</span>
+              <span class="opponent__meta">Deine letzten Kämpfe und Statistiken</span>
+            </span>
+            <span class="opponent__go" aria-hidden="true">→</span>
+          </button>
+
+          <div class="opponent opponent--soon">
+            <span class="opponent__badge">🏆</span>
+            <span class="opponent__body">
+              <span class="opponent__tag">Bald</span>
+              <span class="opponent__name">Andere Trainer</span>
+              <span class="opponent__meta">Tritt gegen die Teams echter Spieler an</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Konto -->
+    <section class="app-section" data-view="you" aria-label="Konto">
+      <div class="container">
+        <h2 class="app-section__title" id="accountHeading">Melde dich an</h2>
+        <p class="app-section__hint" id="accountLead">
+          Mit Konto liegen Team, Favoriten, Notizen und Kampfhistorie auf dem
+          Server – auf jedem Gerät dieselben. Ohne Konto bleibt alles nur in
+          diesem Browser.
+        </p>
+        <div class="account-actions">
+          <button
+            type="button"
+            class="btn btn-light"
+            id="accountOpenLogin"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
+            Anmelden oder Konto anlegen
+          </button>
+          <button type="button" class="btn btn-outline-light" id="accountViewLogout" hidden>
+            Abmelden
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bereichswechsel. Bewusst KEIN Kind der Kopfzeile: deren backdrop-filter
+         würde "position: fixed" brechen. -->
+    <nav class="app-tabs" id="appTabs" role="tablist" aria-label="Bereiche">
+      <button type="button" class="app-tab" role="tab" aria-selected="true" data-tab="dex">
+        <span class="app-tab__icon" aria-hidden="true">🔍</span>
+        <span class="app-tab__label">Pokédex</span>
+      </button>
+      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="team">
+        <span class="app-tab__icon" aria-hidden="true">🎯</span>
+        <span class="app-tab__label">Team</span>
+        <span class="app-tab__badge" id="teamTabBadge" hidden>0</span>
+      </button>
+      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="fight">
+        <span class="app-tab__icon" aria-hidden="true">⚔️</span>
+        <span class="app-tab__label">Kampf</span>
+      </button>
+      <button type="button" class="app-tab" role="tab" aria-selected="false" data-tab="you">
+        <span class="app-tab__icon" aria-hidden="true">👤</span>
+        <span class="app-tab__label">Konto</span>
+      </button>
+    </nav>
 
     <!-- Footer bleibt unverändert -->
     <footer class="pokemon-footer">

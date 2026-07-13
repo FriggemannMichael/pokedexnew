@@ -212,6 +212,11 @@ function getAiScripts() {
   return ["./script/team-ai-service.js"];
 }
 
+function getShellScripts() {
+  // Die vier Bereiche mit Tab-Leiste. Blendet nur um, aendert keine Funktion.
+  return ["./script/app-shell.js"];
+}
+
 function getAccountScripts() {
   // Konto und Team-Sync (M3). Ohne Login aendert sich nichts am Verhalten.
   return [
@@ -269,6 +274,7 @@ function getAllScripts() {
     ...getTeamCoreScripts(),
     ...getAiScripts(),
     ...getAccountScripts(),
+    ...getShellScripts(),
     ...getAnalyzerScripts(),
     ...getPokemonGoScripts(),
     ...getBattleScripts(),
