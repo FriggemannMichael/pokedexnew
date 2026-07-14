@@ -1,22 +1,80 @@
 /* Kampf-Grundlagen: Arenaleiter, Typen-Tabelle, Schadensformel, Effekte.
    Reine Logik ohne DOM – portiert aus script/battle-sim-core.js. */
 
+/* Die acht Kanto-Arenen. Jedes Team ist typecht (gegen die PokéAPI
+   geprüft), hat sechs Pokémon und endet mit dem Ass des Leiters. */
 const GYM_LEADERS = {
   rocko: {
     name: "Rocko",
+    titel: "Arenaleiter",
     type: "rock",
     badge: "🪨",
     style: "hart und unnachgiebig",
-    // Kleinstein, Georok, Onix, Rihorn, Geowaz, Aerodactyl – das Ass zuletzt
+    // Kleinstein, Georok, Onix, Rihorn, Geowaz, Aerodactyl
     pokemon: [74, 75, 95, 111, 76, 142],
   },
   misty: {
     name: "Misty",
+    titel: "Arenaleiterin",
     type: "water",
     badge: "💧",
     style: "temperamentvoll und direkt",
-    // Goldini, Enton, Seeper, Sterndu, Starmie, Garados – das Ass zuletzt
+    // Goldini, Enton, Seeper, Sterndu, Starmie, Garados
     pokemon: [118, 54, 116, 120, 121, 130],
+  },
+  majorbob: {
+    name: "Major Bob",
+    titel: "Arenaleiter",
+    type: "electric",
+    badge: "⚡",
+    style: "laut und aggressiv",
+    // Voltobal, Magnetilo, Pikachu, Magneton, Lektrobal, Raichu
+    pokemon: [100, 81, 25, 82, 101, 26],
+  },
+  erika: {
+    name: "Erika",
+    titel: "Arenaleiterin",
+    type: "grass",
+    badge: "🌿",
+    style: "ruhig und präzise",
+    // Myrapla, Knofensa, Owei, Tangela, Sarzenia, Giflor
+    pokemon: [43, 69, 102, 114, 71, 45],
+  },
+  koga: {
+    name: "Koga",
+    titel: "Arenaleiter",
+    type: "poison",
+    badge: "☠️",
+    style: "listig und distanziert",
+    // Zubat, Smogon, Sleima, Golbat, Smogmog, Sleimok
+    pokemon: [41, 109, 88, 42, 110, 89],
+  },
+  sabrina: {
+    name: "Sabrina",
+    titel: "Arenaleiterin",
+    type: "psychic",
+    badge: "🔮",
+    style: "kalt und kontrolliert",
+    // Traumato, Abra, Pantimos, Hypno, Kadabra, Simsala
+    pokemon: [96, 63, 122, 97, 64, 65],
+  },
+  pyro: {
+    name: "Pyro",
+    titel: "Arenaleiter",
+    type: "fire",
+    badge: "🔥",
+    style: "dramatisch und stolz",
+    // Fukano, Vulpix, Ponita, Gallopa, Vulnona, Arkani
+    pokemon: [58, 37, 77, 78, 38, 59],
+  },
+  giovanni: {
+    name: "Giovanni",
+    titel: "Arenaleiter",
+    type: "ground",
+    badge: "⛰️",
+    style: "dominant und einschüchternd",
+    // Sandan, Tragosso, Digda, Knogga, Digdri, Rizeros
+    pokemon: [27, 104, 50, 105, 51, 112],
   },
 };
 

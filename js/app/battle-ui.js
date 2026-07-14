@@ -154,7 +154,29 @@ $("battleSheet").onclick = (e) => {
   if (e.target === $("battleSheet")) kampfSchliessen();
 };
 
-/* Die Arenaleiter-Knöpfe starten den echten Kampf. */
-document.querySelectorAll("[data-opp]").forEach((b) => {
-  b.onclick = () => kampfStarten(b.dataset.opp);
-});
+/* Die acht Arenen: eine Karte pro Leiter, vor dem Trainer-Knopf. */
+function arenaKnopf(key, leader) {
+  const b = document.createElement("button");
+  b.className = "opp lg-surface";
+  b.style.setProperty("--type", TYPE_HEX[leader.type]);
+  b.dataset.opp = key;
+  b.innerHTML = `
+    <span class="opp__badge frost">${leader.badge}</span>
+    <span>
+      <span class="opp__name">${leader.name}</span>
+      <span class="opp__meta" style="display: block"
+        >${leader.titel} · ${TYPE_DE[leader.type]} · 6 Pokémon</span>
+    </span>
+    <span class="opp__go">Antreten →</span>`;
+  b.onclick = () => kampfStarten(key);
+  return b;
+}
+
+function arenenRendern() {
+  const anker = $("oppTrainer");
+  Object.entries(GYM_LEADERS).forEach(([key, leader]) => {
+    anker.before(arenaKnopf(key, leader));
+  });
+}
+
+arenenRendern();

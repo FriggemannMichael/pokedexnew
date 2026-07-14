@@ -146,37 +146,8 @@
             <span class="hint" id="fightTeam">Dein Team: 0 / 6</span>
           </div>
 
-          <div class="opponents">
-            <button
-              class="opp lg-surface"
-              style="--type: var(--type-rock)"
-              data-opp="rocko"
-            >
-              <span class="opp__badge frost">🪨</span>
-              <span>
-                <span class="opp__name">Rocko</span>
-                <span class="opp__meta" style="display: block"
-                  >Arenaleiter · Gestein · 6 Pokémon</span
-                >
-              </span>
-              <span class="opp__go">Antreten →</span>
-            </button>
-
-            <button
-              class="opp lg-surface"
-              style="--type: var(--type-water)"
-              data-opp="misty"
-            >
-              <span class="opp__badge frost">💧</span>
-              <span>
-                <span class="opp__name">Misty</span>
-                <span class="opp__meta" style="display: block"
-                  >Arenaleiterin · Wasser · 6 Pokémon</span
-                >
-              </span>
-              <span class="opp__go">Antreten →</span>
-            </button>
-
+          <!-- Die acht Arenen kommen aus GYM_LEADERS (battle-ui.js) -->
+          <div class="opponents" id="opponentListe">
             <button
               class="opp lg-surface"
               style="--type: var(--type-psychic)"

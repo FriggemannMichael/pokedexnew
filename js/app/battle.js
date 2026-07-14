@@ -110,13 +110,23 @@ function eroeffnungsSpruch(def) {
     : "Mein Team ist bereit. Zeig mir deins!";
 }
 
+/** Es treten immer 6 gegen 6 an – wer weniger hat, wird gewarnt. */
+function teamBereit() {
+  if (!team.length) {
+    toast("Stell erst ein Team zusammen.", false);
+    return false;
+  }
+  if (team.length < 6)
+    return window.confirm(
+      `Dein Team hat nur ${team.length} von 6 Pokémon – der Gegner tritt mit 6 an.\nTrotzdem kämpfen?`,
+    );
+  return true;
+}
+
 /** Startet einen Kampf gegen einen beliebigen Gegner (Arena oder Trainer). */
 async function kampfBeginnen(gegnerDef) {
   if (kampf.laeuft) return;
-  if (!team.length) {
-    toast("Stell erst ein Team zusammen.", false);
-    return;
-  }
+  if (!teamBereit()) return;
   kampfZuruecksetzen(gegnerDef);
   kampfSheetOeffnen(gegnerDef);
   kampf.spieler = await Promise.all(
