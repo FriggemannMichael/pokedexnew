@@ -349,6 +349,40 @@
       </div>
     </div>
 
+    <!-- Team speichern: Name vergeben -->
+    <div class="sheet" id="presetSheet">
+      <div
+        class="sheet__card lg-surface"
+        id="presetCard"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Team speichern"
+      >
+        <span class="sheet__grab"></span>
+        <span class="sheet__name" style="font-size: 1.25rem"
+          >Team speichern</span
+        >
+        <p class="sheet__desc" id="presetVorschau"></p>
+        <form class="konto-form" id="presetForm">
+          <input
+            id="presetName"
+            placeholder="Wie soll das Team heißen?"
+            maxlength="60"
+            autocomplete="off"
+            required
+          />
+          <button class="btn frost" type="submit">Speichern</button>
+        </form>
+        <button
+          class="btn btn--ghost"
+          id="presetAbbrechen"
+          style="color: rgba(255, 255, 255, 0.85)"
+        >
+          Abbrechen
+        </button>
+      </div>
+    </div>
+
     <!-- Trainer wählen -->
     <div class="sheet" id="trainerSheet">
       <div

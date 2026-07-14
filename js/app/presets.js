@@ -33,22 +33,47 @@ function presetsMerken(liste) {
   presetsPushPlanen();
 }
 
+/* Der Name kommt aus einem eigenen Sheet im Entwurfs-Stil –
+   ein Browser-Prompt passt nicht in die Oberfläche. */
 function presetSpeichernAktuell() {
   if (!team.length) {
     toast("Dein Team ist leer – nichts zu speichern.", false);
     return;
   }
-  const name = (window.prompt("Wie soll das Team heißen?") || "").trim();
-  if (!name) return;
+  $("presetCard").style.setProperty(
+    "--type",
+    TYPE_HEX[dominantType()] || "#4ecdc4",
+  );
+  $("presetVorschau").textContent = team.map((p) => anzeigename(p)).join(" · ");
+  $("presetName").value = "";
+  $("presetSheet").setAttribute("data-open", "");
+  $("presetName").focus();
+}
+
+function presetAnlegen(name) {
   const liste = presetsLokal();
   liste.unshift({
-    name: name.slice(0, 60),
+    name,
     created: new Date().toISOString(),
     pokemonIds: team.map((p) => p.id),
   });
   presetsMerken(liste);
-  toast(`»${name.slice(0, 60)}« gespeichert.`, false);
+  toast(`»${name}« gespeichert.`, false);
 }
+
+$("presetForm").onsubmit = (e) => {
+  e.preventDefault();
+  const name = $("presetName").value.trim().slice(0, 60);
+  if (!name) return;
+  $("presetSheet").removeAttribute("data-open");
+  presetAnlegen(name);
+};
+$("presetAbbrechen").onclick = () =>
+  $("presetSheet").removeAttribute("data-open");
+$("presetSheet").onclick = (e) => {
+  if (e.target === $("presetSheet"))
+    $("presetSheet").removeAttribute("data-open");
+};
 
 async function presetLaden(eintrag) {
   const ids = (eintrag.pokemonIds || []).slice(0, 6);
