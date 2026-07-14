@@ -177,21 +177,20 @@
               <span class="opp__go">Antreten →</span>
             </button>
 
-            <div class="opp opp--soon">
-              <span class="opp__badge">🏆</span>
+            <button
+              class="opp lg-surface"
+              style="--type: var(--type-psychic)"
+              id="oppTrainer"
+            >
+              <span class="opp__badge frost">🎓</span>
               <span>
-                <span class="tagline">Bald</span>
-                <span class="opp__name" style="display: block"
-                  >Andere Trainer</span
+                <span class="opp__name">Andere Trainer</span>
+                <span class="opp__meta" style="display: block"
+                  >Tritt gegen die Teams echter Spieler an</span
                 >
-                <span
-                  class="opp__meta"
-                  style="display: block; color: var(--muted)"
-                >
-                  Tritt gegen die Teams echter Spieler an
-                </span>
               </span>
-            </div>
+              <span class="opp__go">Wählen →</span>
+            </button>
           </div>
 
           <div class="section-head">
@@ -201,6 +200,14 @@
             </button>
           </div>
           <div class="history" id="historyListe"></div>
+
+          <div class="section-head">
+            <h2>Rangliste</h2>
+            <span class="hint">Alle Trainer mit Team</span>
+          </div>
+          <div class="panel">
+            <div id="rangListe"></div>
+          </div>
         </section>
 
         <!-- ============ KONTO ============ -->
@@ -371,6 +378,25 @@
       </div>
     </div>
 
+    <!-- Trainer wählen -->
+    <div class="sheet" id="trainerSheet">
+      <div
+        class="sheet__card lg-surface"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Trainer wählen"
+      >
+        <span class="sheet__grab"></span>
+        <div class="row">
+          <span class="sheet__name" style="font-size: 1.25rem"
+            >Trainer wählen</span
+          >
+        </div>
+        <div id="trainerListe" style="display: grid; gap: 0.5rem"></div>
+        <button class="btn frost" id="trainerClose">Schließen</button>
+      </div>
+    </div>
+
     <!-- Arena-Kampf -->
     <div class="sheet" id="battleSheet">
       <div
@@ -434,6 +460,7 @@
     <script src="./js/app/battle-moves.js"></script>
     <script src="./js/app/battle.js"></script>
     <script src="./js/app/battle-ui.js"></script>
+    <script src="./js/app/trainers.js"></script>
     <script src="./js/app/presets.js"></script>
     <script src="./js/app/history.js"></script>
     <script src="./js/app/account.js"></script>

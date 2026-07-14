@@ -46,6 +46,7 @@ function sessionEnde() {
   historieVomServer = null; // ab jetzt zählt wieder die lokale Historie
   kontoAnzeigen();
   historieAnzeigen();
+  ranglisteLeeren();
 }
 
 async function anmelden(name, passwort) {

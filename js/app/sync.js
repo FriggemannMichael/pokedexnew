@@ -131,6 +131,7 @@ async function syncNachLogin() {
     await favoritenPull();
     await presetsPull();
     await historiePull();
+    await trainerLaden(); // Rangliste und Gegner-Auswahl
   } catch {
     /* Backend nicht erreichbar – die lokalen Daten bleiben gültig */
   }

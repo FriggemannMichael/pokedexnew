@@ -100,6 +100,82 @@
   display: none;
 }
 
+/* ---------- Rangliste (Tabelle im Kampf-Bereich) ---------- */
+.rang {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr) 3rem 3.6rem 3.2rem;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.45rem 0.3rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(23, 48, 63, 0.08);
+}
+.rang:last-child {
+  border-bottom: 0;
+}
+.rang--kopf {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.rang__platz {
+  color: var(--muted);
+}
+.rang__name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rang__wert {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+/* Die eigene Zeile ist hervorgehoben. */
+.rang--selbst {
+  background: color-mix(in srgb, var(--secondary) 18%, transparent);
+  border-radius: 8px;
+}
+
+/* ---------- Trainerauswahl im Sheet ---------- */
+.trainer-row {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 14px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  min-width: 0;
+  transition: transform 0.15s ease;
+}
+.trainer-row:hover {
+  transform: translateY(-2px);
+}
+.trainer-row__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+.trainer-row__name {
+  font-family: var(--font-title);
+  font-weight: 700;
+}
+.trainer-row__meta {
+  font-size: 0.72rem;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.trainer-row__team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+}
+
 .battle-log {
   max-height: 9.5rem;
   overflow-y: auto;

@@ -59,10 +59,14 @@ function historieEintragen(eintrag) {
       method: "POST",
       body: JSON.stringify({ battle: eintrag }),
     })
-      .then((data) => (historieVomServer = data.battles || historieVomServer))
+      .then((data) => {
+        historieVomServer = data.battles || historieVomServer;
+        historieAnzeigen(); // die Serverliste enthaelt den Kampf jetzt auch
+      })
       .catch(() => {});
   historieAnzeigen();
   kontoStatsAnzeigen();
+  if (istAngemeldet()) trainerLaden(); // die eigene Bilanz in der Rangliste
 }
 
 historieAnzeigen();

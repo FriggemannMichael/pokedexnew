@@ -1,11 +1,18 @@
 /* Kampf-Oberfläche: das Arena-Sheet im Stil des Entwurfs.
    Links der Spieler, rechts der Gegner, darunter Log und klickbare Moves. */
 
+/** Farbe und Titel des Sheets – bei Trainern erst nach dem Team-Laden. */
+function kampfSheetFarbe(leader) {
+  $("battleCard").style.setProperty(
+    "--type",
+    TYPE_HEX[leader.type] || "#4ecdc4",
+  );
+  const art = leader.arena ? `${TYPE_DE[leader.type]}-Arena` : "Trainer-Duell";
+  $("battleTitle").textContent = `${leader.badge} ${leader.name} · ${art}`;
+}
+
 function kampfSheetOeffnen(leader) {
-  const card = $("battleCard");
-  card.style.setProperty("--type", TYPE_HEX[leader.type]);
-  $("battleTitle").textContent =
-    `${leader.badge} ${leader.name} · ${TYPE_DE[leader.type]}-Arena`;
+  kampfSheetFarbe(leader);
   $("battleRound").textContent = "";
   $("battleSay").textContent = "";
   $("battleField").innerHTML =

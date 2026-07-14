@@ -7,6 +7,7 @@ from . import (
     collection_views,
     preset_views,
     team_views,
+    trainer_views,
     views,
 )
 
@@ -22,6 +23,8 @@ urlpatterns = [
     path("notes", collection_views.notes, name="notes"),
     path("battles", battle_views.battles, name="battles"),
     path("presets", preset_views.presets, name="presets"),
+    # Andere Trainer: Teams als Gegner + Zahlen fuer die Rangliste
+    path("trainers", trainer_views.trainers, name="trainers"),
     # Fertig aufbereitete Listen (Backend erledigt das Nachladen der Details)
     path("pokemon/", views.pokemon_list, name="pokemon-list"),
     # Deutsche Namen (vor der by-type-Route, sonst faengt die "names" ab)

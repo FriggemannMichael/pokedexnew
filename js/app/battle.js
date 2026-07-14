@@ -94,27 +94,52 @@ async function kampfPokemon(id, seite) {
   });
 }
 
-async function kampfStarten(leaderKey) {
-  const leader = GYM_LEADERS[leaderKey];
-  if (!leader || kampf.laeuft) return;
+/** Der häufigste Ersttyp im Gegner-Team – färbt Trainer-Duelle. */
+function dominanterGegnerTyp() {
+  const counts = {};
+  kampf.gegner.forEach((p) => {
+    counts[p.types[0]] = (counts[p.types[0]] || 0) + 1;
+  });
+  const beste = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return beste ? beste[0] : "normal";
+}
+
+function eroeffnungsSpruch(def) {
+  return def.arena
+    ? `Du willst also das ${TYPE_DE[def.type]}-Emblem? Zeig, was du kannst!`
+    : "Mein Team ist bereit. Zeig mir deins!";
+}
+
+/** Startet einen Kampf gegen einen beliebigen Gegner (Arena oder Trainer). */
+async function kampfBeginnen(gegnerDef) {
+  if (kampf.laeuft) return;
   if (!team.length) {
     toast("Stell erst ein Team zusammen.", false);
     return;
   }
-  kampfZuruecksetzen(leader);
-  kampfSheetOeffnen(leader);
+  kampfZuruecksetzen(gegnerDef);
+  kampfSheetOeffnen(gegnerDef);
   kampf.spieler = await Promise.all(
     team.map((p) => kampfPokemon(p.id, "spieler")),
   );
   kampf.gegner = await Promise.all(
-    leader.pokemon.map((id) => kampfPokemon(id, "gegner")),
+    gegnerDef.pokemon.map((id) => kampfPokemon(id, "gegner")),
   );
+  if (!gegnerDef.type) {
+    gegnerDef.type = dominanterGegnerTyp();
+    kampfSheetFarbe(gegnerDef);
+  }
   kampf.laeuft = true;
   await matchupStarten();
   leaderSpruch(
-    "Der Spieler fordert deine Arena heraus.",
-    `Du willst also das ${TYPE_DE[leader.type]}-Emblem? Zeig, was du kannst!`,
+    "Der Spieler fordert dich zum Kampf heraus.",
+    eroeffnungsSpruch(gegnerDef),
   );
+}
+
+function kampfStarten(leaderKey) {
+  const leader = GYM_LEADERS[leaderKey];
+  if (leader) kampfBeginnen({ ...leader, arena: true });
 }
 
 /** Ein neues Duell: Moves der beiden Aktiven laden, Runde auf null. */
