@@ -260,6 +260,46 @@ body[data-tab="dex"] .dex-search {
   }
 }
 
+/* ---- Das Raster: eigenes Grid, nicht Bootstraps 12 Spalten ----
+   Bootstrap kann keine 5 Spalten (12 / 5 geht nicht auf) - mit col-lg-3 kamen
+   4 breite, flache Karten heraus statt 5 hochkanter. Der Entwurf hat ein
+   eigenes Raster: 2 auf dem Handy, 3 auf dem Tablet, 5 am Desktop. */
+/* Dieselbe Breite wie im Entwurf – Kopfzeile, Filter und Raster fluchten. */
+.hero-section .container,
+.filters .container,
+.pokemon-grid .container,
+.navigation-section .container {
+  max-width: 1240px;
+}
+
+#pokemonContainer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0;
+}
+
+#pokemonContainer > [class*="col-"] {
+  width: auto;
+  max-width: none;
+  flex: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (min-width: 600px) {
+  #pokemonContainer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 992px) {
+  #pokemonContainer {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
 /* ---- Karten: exakt wie im Entwurf ----
    Nummer oben mittig, Herz links, Plus rechts, Bild gross, Name LINKSBUENDIG
    in Outfit, Typen darunter. Kein Vergleichen-Knopf - im abgenommenen Entwurf

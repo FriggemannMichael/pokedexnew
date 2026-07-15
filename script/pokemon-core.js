@@ -240,10 +240,23 @@ function formatPokemonNumber(id) {
   return `#${id.toString().padStart(3, "0")}`;
 }
 
+/** Die deutschen Typ-Namen. Die App ist deutsch, die Badges waren es nicht. */
+const TYPE_NAMES_DE = {
+  normal: "Normal", fire: "Feuer", water: "Wasser", electric: "Elektro",
+  grass: "Pflanze", ice: "Eis", fighting: "Kampf", poison: "Gift",
+  ground: "Boden", flying: "Flug", psychic: "Psycho", bug: "Käfer",
+  rock: "Gestein", ghost: "Geist", dragon: "Drache", dark: "Unlicht",
+  steel: "Stahl", fairy: "Fee",
+};
+
+function typeLabel(type) {
+  return (TYPE_NAMES_DE[type] || type).toUpperCase();
+}
+
 function createTypeBadges(types) {
   return types
     .map(t => (t||'').toLowerCase().trim())
     .filter(t => VALID_POKEMON_TYPES.has(t))
-    .map((type) => `<span class="type-badge type-${type}">${type.toUpperCase()}</span>`)
+    .map((type) => `<span class="type-badge type-${type}">${typeLabel(type)}</span>`)
     .join("");
 }
