@@ -46,7 +46,7 @@ function cardHTML(p, fav, inTeam) {
          onerror="this.onerror=null; this.src='${sprite(p.id)}'; this.classList.add('is-sprite')">
     <span class="card__name">${anzeigename(p)}</span>
     <span class="card__types">${p.types.map((t) => `<span class="t">${TYPE_DE[t] || t}</span>`).join("")}</span>
-    <button class="card__fav" data-fav="${p.id}" aria-label="Favorit">${fav ? "❤️" : "🤍"}</button>
+    <button class="card__fav${fav ? " ist-favorit" : ""}" data-fav="${p.id}" aria-label="Favorit">${fav ? ICON.herzVoll : ICON.herz}</button>
     <button class="card__add" data-id="${p.id}" aria-label="${p.name} ins Team">${inTeam ? "✓" : "+"}</button>`;
 }
 

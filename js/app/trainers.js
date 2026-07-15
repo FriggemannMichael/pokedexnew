@@ -121,7 +121,6 @@ function trainerKampf(t) {
   $("trainerSheet").removeAttribute("data-open");
   kampfBeginnen({
     name: t.username,
-    badge: "🎓",
     style: "ehrgeizig und selbstbewusst",
     type: null, // wird nach dem Laden aus dem Team bestimmt
     pokemon: t.pokemonIds.slice(0, 6),

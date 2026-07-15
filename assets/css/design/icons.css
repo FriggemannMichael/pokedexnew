@@ -1,0 +1,71 @@
+/* =========================================================
+   Inline-Ikonen statt Emojis – Strichstil wie die Tab-Icons.
+   ========================================================= */
+
+.icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: 0 0 auto;
+  vertical-align: -3px;
+}
+.icon--voll {
+  fill: currentColor;
+}
+
+/* Herz im Ansichts-Chip */
+.chip .icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+  margin-right: 0.15rem;
+}
+
+/* Herz auf der Karte: grau, als Favorit koralle. */
+.card__fav {
+  color: var(--muted);
+}
+.card__fav .icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+.card__fav.ist-favorit {
+  color: var(--primary);
+}
+
+/* Professor Eich */
+.eich__who .icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* Arena-Karten: Typ-Icon (weiß gefiltert) bzw. Strich-Icon im Badge. */
+.opp__badge .icon {
+  width: 22px;
+  height: 22px;
+}
+.opp__icon {
+  width: 22px;
+  height: 22px;
+  filter: brightness(0) invert(1);
+}
+.opp--soon .opp__icon {
+  filter: none;
+  opacity: 0.55;
+}
+.opp__go .icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+
+/* Ordenstand über der Gegnerliste */
+#ordenStand .icon {
+  width: 15px;
+  height: 15px;
+}

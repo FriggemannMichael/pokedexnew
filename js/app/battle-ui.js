@@ -12,7 +12,7 @@ function kampfSheetFarbe(leader) {
     : leader.arena
       ? `${TYPE_DE[leader.type]}-Arena`
       : "Trainer-Duell";
-  $("battleTitle").textContent = `${leader.badge} ${leader.name} · ${art}`;
+  $("battleTitle").textContent = `${leader.name} · ${art}`;
 }
 
 function kampfSheetOeffnen(leader) {
@@ -121,10 +121,10 @@ function kampfAutoRendern() {
 
 function kampfEndeRendern() {
   if (kampf.vorbei)
-    $("battleRound").textContent = kampf.sieg ? "🏆 Sieg!" : "Niederlage";
+    $("battleRound").textContent = kampf.sieg ? "Sieg!" : "Niederlage";
   $("battleContinue").hidden = !kampf.vorbei;
   $("battleContinue").textContent = kampf.sieg
-    ? "🏆 Sieg! Zurück zur Arena-Wahl"
+    ? "Sieg! Zurück zur Arena-Wahl"
     : "Zurück zur Arena-Wahl";
   $("battleClose").textContent = kampf.vorbei ? "Schließen" : "Aufgeben";
 }
@@ -178,9 +178,10 @@ function arenaKnopf(key, leader) {
   b.className = "opp lg-surface";
   b.style.setProperty("--type", TYPE_HEX[leader.type]);
   b.dataset.opp = key;
-  const nochmal = orden.has(key) ? "🏅 Erneut →" : "Antreten →";
+  const abzeichen = leader.finale ? ICON.krone : typIconHTML(leader.type);
+  const nochmal = orden.has(key) ? `${ICON.orden} Erneut →` : "Antreten →";
   b.innerHTML = `
-    <span class="opp__badge frost">${leader.badge}</span>
+    <span class="opp__badge frost">${abzeichen}</span>
     <span>
       <span class="opp__name">${leader.name}</span>
       <span class="opp__meta" style="display: block">${arenaMeta(leader)}</span>
@@ -196,7 +197,7 @@ function arenaKnopfGesperrt(key, leader) {
   b.className = "opp opp--soon";
   b.dataset.opp = key;
   b.innerHTML = `
-    <span class="opp__badge">🔒</span>
+    <span class="opp__badge">${ICON.schloss}</span>
     <span>
       <span class="opp__name">${leader.name}</span>
       <span class="opp__meta" style="display: block; color: var(--muted)"

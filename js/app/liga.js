@@ -14,8 +14,9 @@ function arenaFrei(key) {
 }
 
 function ordenStandAnzeigen() {
-  const pokal = orden.has("champ") ? " · 👑 Champ" : "";
-  $("ordenStand").textContent = `🏅 ${ordenAnzahl()} / 8 Orden${pokal}`;
+  const pokal = orden.has("champ") ? ` · ${ICON.krone} Champ` : "";
+  $("ordenStand").innerHTML =
+    `${ICON.orden} ${ordenAnzahl()} / 8 Orden${pokal}`;
 }
 
 /** Nach einem Arena-Sieg: Orden merken und die Liga neu zeichnen. */
@@ -25,8 +26,8 @@ function ordenVerleihen(key) {
   ordenMerken(); // localStorage + (angemeldet) Server – sync.js
   toast(
     key === "champ"
-      ? "👑 Du hast die Liga besiegt – du bist jetzt Champ!"
-      : `🏅 ${GYM_LEADERS[key].name} besiegt – Orden erhalten!`,
+      ? "Du hast die Liga besiegt – du bist jetzt Champ!"
+      : `${GYM_LEADERS[key].name} besiegt – Orden erhalten!`,
     false,
   );
   ligaAktualisieren();

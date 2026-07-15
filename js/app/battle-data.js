@@ -10,7 +10,6 @@ const GYM_LEADERS = {
     name: "Rocko",
     titel: "Arenaleiter",
     type: "rock",
-    badge: "🪨",
     level: 25,
     style: "hart und unnachgiebig",
     // Kleinstein, Georok, Onix, Rihorn, Geowaz, Aerodactyl
@@ -20,7 +19,6 @@ const GYM_LEADERS = {
     name: "Misty",
     titel: "Arenaleiterin",
     type: "water",
-    badge: "💧",
     level: 30,
     style: "temperamentvoll und direkt",
     // Goldini, Enton, Seeper, Sterndu, Starmie, Garados
@@ -30,7 +28,6 @@ const GYM_LEADERS = {
     name: "Major Bob",
     titel: "Arenaleiter",
     type: "electric",
-    badge: "⚡",
     level: 34,
     style: "laut und aggressiv",
     // Voltobal, Magnetilo, Pikachu, Magneton, Lektrobal, Raichu
@@ -40,7 +37,6 @@ const GYM_LEADERS = {
     name: "Erika",
     titel: "Arenaleiterin",
     type: "grass",
-    badge: "🌿",
     level: 38,
     style: "ruhig und präzise",
     // Myrapla, Knofensa, Owei, Tangela, Sarzenia, Giflor
@@ -50,7 +46,6 @@ const GYM_LEADERS = {
     name: "Koga",
     titel: "Arenaleiter",
     type: "poison",
-    badge: "☠️",
     level: 42,
     style: "listig und distanziert",
     // Zubat, Smogon, Sleima, Golbat, Smogmog, Sleimok
@@ -60,7 +55,6 @@ const GYM_LEADERS = {
     name: "Sabrina",
     titel: "Arenaleiterin",
     type: "psychic",
-    badge: "🔮",
     level: 46,
     style: "kalt und kontrolliert",
     // Traumato, Abra, Pantimos, Hypno, Kadabra, Simsala
@@ -70,7 +64,6 @@ const GYM_LEADERS = {
     name: "Pyro",
     titel: "Arenaleiter",
     type: "fire",
-    badge: "🔥",
     level: 50,
     style: "dramatisch und stolz",
     // Fukano, Vulpix, Ponita, Gallopa, Vulnona, Arkani
@@ -80,7 +73,6 @@ const GYM_LEADERS = {
     name: "Giovanni",
     titel: "Arenaleiter",
     type: "ground",
-    badge: "⛰️",
     level: 55,
     style: "dominant und einschüchternd",
     // Sandan, Tragosso, Digda, Knogga, Digdri, Rizeros
@@ -90,7 +82,6 @@ const GYM_LEADERS = {
     name: "Blau",
     titel: "Champ",
     type: "dragon",
-    badge: "👑",
     level: 60,
     finale: true,
     style: "arrogant und brillant",
