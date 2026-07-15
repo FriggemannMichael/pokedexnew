@@ -54,24 +54,24 @@ Das Frontend muss dafür **nicht** umgebaut werden.
 
 ## Tech-Stack (bewusst schlank gehalten)
 
-| Baustein   | Wahl                       | Wofür                                  |
-| ---------- | -------------------------- | -------------------------------------- |
-| Framework  | Django + Django REST Framework | Web-Backend und REST-API           |
-| Datenbank  | SQLite (lokal)             | Null-Setup zum Entwickeln              |
-| API-Doku   | drf-spectacular (Swagger)  | API im Browser anschauen und testen    |
-| CORS       | django-cors-headers        | Frontend darf das Backend aufrufen     |
+| Baustein  | Wahl                           | Wofür                               |
+| --------- | ------------------------------ | ----------------------------------- |
+| Framework | Django + Django REST Framework | Web-Backend und REST-API            |
+| Datenbank | SQLite (lokal)                 | Null-Setup zum Entwickeln           |
+| API-Doku  | drf-spectacular (Swagger)      | API im Browser anschauen und testen |
+| CORS      | django-cors-headers            | Frontend darf das Backend aufrufen  |
 
 Login (JWT), PostgreSQL, Docker und Deployment kommen **später** – Schritt für
 Schritt, nicht alles auf einmal.
 
 ## Die Phasen (Meilensteine auf GitHub)
 
-| Meilenstein            | Inhalt                                                       |
-| ---------------------- | ----------------------------------------------------------- |
-| **M1 – Backend-Gerüst** | Django + DRF + Health-Endpoint + Swagger + diese Doku        |
-| **M2 – Daten holen & cachen** | PokéAPI-Proxy + KI-Proxy von Node nach Django umziehen |
-| **M3 – Login & Speichern** | Accounts + Datenbank für Team/Favoriten/Ratings/Notizen  |
-| **M4 – DevSecOps**      | Docker, CI/CD, Deployment, Security (nächster Kurs)         |
+| Meilenstein                   | Inhalt                                                  |
+| ----------------------------- | ------------------------------------------------------- |
+| **M1 – Backend-Gerüst**       | Django + DRF + Health-Endpoint + Swagger + diese Doku   |
+| **M2 – Daten holen & cachen** | PokéAPI-Proxy + KI-Proxy von Node nach Django umziehen  |
+| **M3 – Login & Speichern**    | Accounts + Datenbank für Team/Favoriten/Ratings/Notizen |
+| **M4 – DevSecOps**            | Docker, CI/CD, Deployment, Security (nächster Kurs)     |
 
 ## Lokal starten (sobald M1 gebaut ist)
 
@@ -94,7 +94,7 @@ Dann im Browser:
 **M1 ist gebaut:** Django, Django REST Framework, Health-Endpoint,
 Swagger/OpenAPI und CORS liegen unter `backend/`.
 
-**M2 ist gebaut:** PokeAPI-Zugriff *und* KI-Anfragen laufen jetzt komplett ueber
+**M2 ist gebaut:** PokeAPI-Zugriff _und_ KI-Anfragen laufen jetzt komplett ueber
 das Django-Backend.
 
 Konkret hat sich dadurch geaendert:
