@@ -77,7 +77,7 @@ function autoPlanen() {
 }
 
 /** Ein Pokémon kampffertig machen: Details holen, KP füllen. */
-async function kampfPokemon(id, seite) {
+async function kampfPokemon(id, seite, level) {
   const details = await pokeapiHolen(`pokemon/${id}`);
   const stats = kampfStats(details);
   return kampfbereit({
@@ -85,6 +85,7 @@ async function kampfPokemon(id, seite) {
     name: NAME_DE.get(details.id) || details.name,
     types: (details.types || []).map((t) => t.type.name),
     seite,
+    level,
     details,
     stats,
     maxHp: stats.hp,
@@ -105,35 +106,49 @@ function dominanterGegnerTyp() {
 }
 
 function eroeffnungsSpruch(def) {
+  if (def.finale)
+    return "Du hast alle acht Orden? Dann zeig mir, ob du Champ-Material bist!";
   return def.arena
     ? `Du willst also das ${TYPE_DE[def.type]}-Emblem? Zeig, was du kannst!`
     : "Mein Team ist bereit. Zeig mir deins!";
 }
 
-/** Es treten immer 6 gegen 6 an – wer weniger hat, wird gewarnt. */
+/* Es treten immer 6 gegen 6 an – wer weniger hat, wird gewarnt.
+   Die Frage stellt ein eigenes Sheet (kein window.confirm); die
+   Antwort kommt als Promise zurück. */
+let warnAntwortFn = null;
+
 function teamBereit() {
   if (!team.length) {
     toast("Stell erst ein Team zusammen.", false);
-    return false;
+    return Promise.resolve(false);
   }
-  if (team.length < 6)
-    return window.confirm(
-      `Dein Team hat nur ${team.length} von 6 Pokémon – der Gegner tritt mit 6 an.\nTrotzdem kämpfen?`,
-    );
-  return true;
+  if (team.length >= 6) return Promise.resolve(true);
+  $("warnText").textContent =
+    `Dein Team hat nur ${team.length} von 6 Pokémon – der Gegner tritt mit 6 an.`;
+  $("warnSheet").setAttribute("data-open", "");
+  return new Promise((entscheide) => (warnAntwortFn = entscheide));
+}
+
+function warnSchliessen(weiter) {
+  $("warnSheet").removeAttribute("data-open");
+  if (warnAntwortFn) warnAntwortFn(weiter);
+  warnAntwortFn = null;
 }
 
 /** Startet einen Kampf gegen einen beliebigen Gegner (Arena oder Trainer). */
 async function kampfBeginnen(gegnerDef) {
   if (kampf.laeuft) return;
-  if (!teamBereit()) return;
+  if (!(await teamBereit())) return;
   kampfZuruecksetzen(gegnerDef);
   kampfSheetOeffnen(gegnerDef);
   kampf.spieler = await Promise.all(
-    team.map((p) => kampfPokemon(p.id, "spieler")),
+    team.map((p) => kampfPokemon(p.id, "spieler", 50)),
   );
   kampf.gegner = await Promise.all(
-    gegnerDef.pokemon.map((id) => kampfPokemon(id, "gegner")),
+    gegnerDef.pokemon.map((id) =>
+      kampfPokemon(id, "gegner", gegnerDef.level || 50),
+    ),
   );
   if (!gegnerDef.type) {
     gegnerDef.type = dominanterGegnerTyp();
@@ -149,7 +164,7 @@ async function kampfBeginnen(gegnerDef) {
 
 function kampfStarten(leaderKey) {
   const leader = GYM_LEADERS[leaderKey];
-  if (leader) kampfBeginnen({ ...leader, arena: true });
+  if (leader) kampfBeginnen({ ...leader, key: leaderKey, arena: true });
 }
 
 /** Ein neues Duell: Moves der beiden Aktiven laden, Runde auf null. */
@@ -231,11 +246,13 @@ function angriffAusfuehren(atk, def, move) {
     return;
   }
   const ergebnis = schadenBerechnen(atk, def, move);
-  def.currentHp = Math.max(0, def.currentHp - ergebnis.damage);
-  atk.damageDealt += ergebnis.damage;
-  if (atk.seite === "spieler") kampf.schadenGesamt += ergebnis.damage;
-  kampfLog(`${def.name} erleidet ${ergebnis.damage} Schaden!`, "damage");
-  drainAnwenden(atk, move, ergebnis.damage, kampfLog);
+  // Gezählt wird, was wirklich an KP verloren geht – Overkill zählt nicht.
+  const wirklich = Math.min(ergebnis.damage, def.currentHp);
+  def.currentHp -= wirklich;
+  atk.damageDealt += wirklich;
+  if (atk.seite === "spieler") kampf.schadenGesamt += wirklich;
+  kampfLog(`${def.name} erleidet ${wirklich} Schaden!`, "damage");
+  drainAnwenden(atk, move, wirklich, kampfLog);
   flinchAnwenden(def, move, kampfLog);
   statAenderungenAnwenden(atk, def, move, kampfLog);
   treffertextLoggen(ergebnis);
@@ -295,6 +312,9 @@ function kampfEnde(sieg) {
       : "Komm wieder, wenn du stärker bist!",
   );
   kampfErgebnisSpeichern(sieg);
+  // Ein Arena-Sieg bringt den Orden und schaltet die nächste Arena frei.
+  if (sieg && kampf.leader.arena && kampf.leader.key)
+    ordenVerleihen(kampf.leader.key);
 }
 
 function mvpErmitteln() {
@@ -330,7 +350,9 @@ async function kiSpruchHolen(ereignis) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         leaderName: kampf.leader.name,
-        leaderType: TYPE_DE[kampf.leader.type],
+        leaderType: kampf.leader.finale
+          ? "alle Typen"
+          : TYPE_DE[kampf.leader.type],
         leaderStyle: kampf.leader.style,
         eventText: ereignis,
       }),

@@ -3,6 +3,7 @@ from django.urls import path
 from . import (
     ai_views,
     auth_views,
+    badge_views,
     battle_views,
     collection_views,
     preset_views,
@@ -25,6 +26,8 @@ urlpatterns = [
     path("presets", preset_views.presets, name="presets"),
     # Andere Trainer: Teams als Gegner + Zahlen fuer die Rangliste
     path("trainers", trainer_views.trainers, name="trainers"),
+    # Arena-Orden der Liga
+    path("badges", badge_views.badges, name="badges"),
     # Fertig aufbereitete Listen (Backend erledigt das Nachladen der Details)
     path("pokemon/", views.pokemon_list, name="pokemon-list"),
     # Deutsche Namen (vor der by-type-Route, sonst faengt die "names" ab)

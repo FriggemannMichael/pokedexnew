@@ -47,5 +47,10 @@ function historieLokalSpeichern(liste) {
   );
 }
 
-/* Beim Start: die gespeicherten Favoriten übernehmen. */
+function ordenLokalSpeichern() {
+  localStorage.setItem("pokemonBadges", JSON.stringify([...orden]));
+}
+
+/* Beim Start: gespeicherte Favoriten und Orden übernehmen. */
 favorites = new Set(jsonLaden("pokemonFavorites", []));
+let orden = new Set(jsonLaden("pokemonBadges", []));

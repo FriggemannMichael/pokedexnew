@@ -229,3 +229,35 @@ class TeamMember(models.Model):
 
     def __str__(self):
         return f"{self.user}: Platz {self.slot} = #{self.pokemon_id}"
+
+
+class GymBadge(models.Model):
+    """Ein Arena-Orden eines Nutzers - vergeben beim ersten Sieg in der Arena.
+
+    Gespeichert wird nur der Schluessel des Arenaleiters (z.B. "rocko") -
+    Name, Typ und Team der Arena kennt das Frontend (GYM_LEADERS).
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="badges",
+    )
+    leader_key = models.CharField(
+        max_length=30, help_text='Schluessel des Arenaleiters, z.B. "rocko".'
+    )
+    earned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["user", "earned_at"]
+        # Denselben Orden gibt es nur einmal.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "leader_key"], name="einmaliger_orden"
+            ),
+        ]
+        verbose_name = "Arena-Orden"
+        verbose_name_plural = "Arena-Orden"
+
+    def __str__(self):
+        return f"{self.user}: {self.leader_key}"

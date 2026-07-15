@@ -8,6 +8,7 @@ const PUSH_DELAY_MS = 800;
 let pushTimerTeam = null;
 let pushTimerFavoriten = null;
 let pushTimerPresets = null;
+let pushTimerOrden = null;
 let pullLaeuft = false;
 
 async function apiAbruf(pfad, options = {}) {
@@ -77,6 +78,18 @@ function presetsPushPlanen() {
   pushPlanen((t) => (pushTimerPresets = t), presetsPush);
 }
 
+function ordenPush() {
+  return apiAbruf("/badges", {
+    method: "PUT",
+    body: JSON.stringify({ leaderKeys: [...orden] }),
+  });
+}
+
+function ordenPushPlanen() {
+  clearTimeout(pushTimerOrden);
+  pushPlanen((t) => (pushTimerOrden = t), ordenPush);
+}
+
 /* ---- Merken: lokal speichern und den Push anstoßen ---- */
 
 function teamMerken() {
@@ -88,6 +101,11 @@ function favoritenMerken() {
   favoritenLokalSpeichern();
   favoritenPushPlanen();
   kontoStatsAnzeigen();
+}
+
+function ordenMerken() {
+  ordenLokalSpeichern();
+  ordenPushPlanen();
 }
 
 /* ---- Pull: beim Anmelden den Server-Stand übernehmen ---- */
@@ -125,11 +143,21 @@ async function presetsPull() {
   renderPresets();
 }
 
+async function ordenPull() {
+  const data = await apiAbruf("/badges");
+  const server = data.leaderKeys || [];
+  if (!server.length && orden.size) return ordenPush();
+  orden = new Set(server);
+  ordenLokalSpeichern();
+  ligaAktualisieren();
+}
+
 async function syncNachLogin() {
   try {
     await teamPull();
     await favoritenPull();
     await presetsPull();
+    await ordenPull(); // Liga-Fortschritt gehört zum Konto
     await historiePull();
     await trainerLaden(); // Rangliste und Gegner-Auswahl
   } catch {

@@ -1,14 +1,17 @@
 /* Kampf-Grundlagen: Arenaleiter, Typen-Tabelle, Schadensformel, Effekte.
    Reine Logik ohne DOM – portiert aus script/battle-sim-core.js. */
 
-/* Die acht Kanto-Arenen. Jedes Team ist typecht (gegen die PokéAPI
-   geprüft), hat sechs Pokémon und endet mit dem Ass des Leiters. */
+/* Die Kanto-Liga: acht Arenen in fester Reihenfolge, dann der Champ.
+   Jedes Team ist typecht (gegen die PokéAPI geprüft), hat sechs Pokémon
+   und endet mit dem Ass. Das Level steigt von Arena zu Arena – der
+   Spieler kämpft immer auf Level 50, die Liga wächst ihm entgegen. */
 const GYM_LEADERS = {
   rocko: {
     name: "Rocko",
     titel: "Arenaleiter",
     type: "rock",
     badge: "🪨",
+    level: 25,
     style: "hart und unnachgiebig",
     // Kleinstein, Georok, Onix, Rihorn, Geowaz, Aerodactyl
     pokemon: [74, 75, 95, 111, 76, 142],
@@ -18,6 +21,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiterin",
     type: "water",
     badge: "💧",
+    level: 30,
     style: "temperamentvoll und direkt",
     // Goldini, Enton, Seeper, Sterndu, Starmie, Garados
     pokemon: [118, 54, 116, 120, 121, 130],
@@ -27,6 +31,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiter",
     type: "electric",
     badge: "⚡",
+    level: 34,
     style: "laut und aggressiv",
     // Voltobal, Magnetilo, Pikachu, Magneton, Lektrobal, Raichu
     pokemon: [100, 81, 25, 82, 101, 26],
@@ -36,6 +41,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiterin",
     type: "grass",
     badge: "🌿",
+    level: 38,
     style: "ruhig und präzise",
     // Myrapla, Knofensa, Owei, Tangela, Sarzenia, Giflor
     pokemon: [43, 69, 102, 114, 71, 45],
@@ -45,6 +51,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiter",
     type: "poison",
     badge: "☠️",
+    level: 42,
     style: "listig und distanziert",
     // Zubat, Smogon, Sleima, Golbat, Smogmog, Sleimok
     pokemon: [41, 109, 88, 42, 110, 89],
@@ -54,6 +61,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiterin",
     type: "psychic",
     badge: "🔮",
+    level: 46,
     style: "kalt und kontrolliert",
     // Traumato, Abra, Pantimos, Hypno, Kadabra, Simsala
     pokemon: [96, 63, 122, 97, 64, 65],
@@ -63,6 +71,7 @@ const GYM_LEADERS = {
     titel: "Arenaleiter",
     type: "fire",
     badge: "🔥",
+    level: 50,
     style: "dramatisch und stolz",
     // Fukano, Vulpix, Ponita, Gallopa, Vulnona, Arkani
     pokemon: [58, 37, 77, 78, 38, 59],
@@ -72,11 +81,26 @@ const GYM_LEADERS = {
     titel: "Arenaleiter",
     type: "ground",
     badge: "⛰️",
+    level: 55,
     style: "dominant und einschüchternd",
     // Sandan, Tragosso, Digda, Knogga, Digdri, Rizeros
     pokemon: [27, 104, 50, 105, 51, 112],
   },
+  champ: {
+    name: "Blau",
+    titel: "Champ",
+    type: "dragon",
+    badge: "👑",
+    level: 60,
+    finale: true,
+    style: "arrogant und brillant",
+    // Tauboss, Simsala, Rizeros, Arkani, Kokowei, Turtok
+    pokemon: [18, 65, 112, 59, 103, 9],
+  },
 };
+
+/* Die Liga-Reihenfolge: eine Arena schaltet die nächste frei. */
+const GYM_ORDER = Object.keys(GYM_LEADERS);
 
 /* Die lokale Typen-Tabelle: reicht für den Kampf völlig und spart die
    18 Zusatz-Anfragen an /type/, die die alte Version vorab machte. */
@@ -216,7 +240,7 @@ function kampfStats(details) {
 function kampfbereit(p) {
   return {
     ...p,
-    level: 50,
+    level: p.level || 50,
     flinched: false,
     statStages: {
       attack: 0,

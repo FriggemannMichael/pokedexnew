@@ -145,6 +145,11 @@
             <h2>Gegner wählen</h2>
             <span class="hint" id="fightTeam">Dein Team: 0 / 6</span>
           </div>
+          <p
+            class="hint"
+            id="ordenStand"
+            style="margin: -0.35rem 0 0.75rem"
+          ></p>
 
           <!-- Die acht Arenen kommen aus GYM_LEADERS (battle-ui.js) -->
           <div class="opponents" id="opponentListe">
@@ -349,6 +354,30 @@
       </div>
     </div>
 
+    <!-- Warnung: Team unvollständig -->
+    <div class="sheet" id="warnSheet">
+      <div
+        class="sheet__card lg-surface"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Team unvollständig"
+      >
+        <span class="sheet__grab"></span>
+        <span class="sheet__name" style="font-size: 1.25rem"
+          >Team unvollständig</span
+        >
+        <p class="sheet__desc" id="warnText"></p>
+        <button class="btn frost" id="warnKaempfen">Trotzdem kämpfen</button>
+        <button
+          class="btn btn--ghost"
+          id="warnAbbrechen"
+          style="color: rgba(255, 255, 255, 0.85)"
+        >
+          Zurück zum Team
+        </button>
+      </div>
+    </div>
+
     <!-- Team speichern: Name vergeben -->
     <div class="sheet" id="presetSheet">
       <div
@@ -465,6 +494,7 @@
     <script src="./js/app/battle-moves.js"></script>
     <script src="./js/app/battle.js"></script>
     <script src="./js/app/battle-ui.js"></script>
+    <script src="./js/app/liga.js"></script>
     <script src="./js/app/trainers.js"></script>
     <script src="./js/app/presets.js"></script>
     <script src="./js/app/history.js"></script>
