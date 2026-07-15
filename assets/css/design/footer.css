@@ -31,13 +31,15 @@ body {
 }
 .footer__spalten {
   display: grid;
-  gap: 0.9rem;
+  gap: 1.1rem;
 }
+/* Am Handy ist alles zentriert – linksbündig gestapelt sah zerrupft aus. */
 .footer__block {
   display: grid;
   gap: 0.15rem;
   font-size: 0.72rem;
   line-height: 1.5;
+  text-align: center;
 }
 .footer__titel {
   font-family: var(--font-ui);
@@ -83,10 +85,11 @@ body {
     grid-template-columns: 1fr auto;
     gap: 2rem;
   }
-  .footer__block--rechts {
-    text-align: right;
-  }
   .footer__block {
     font-size: 0.78rem;
+    text-align: left;
+  }
+  .footer__block--rechts {
+    text-align: right;
   }
 }
