@@ -15,8 +15,54 @@
     <link rel="stylesheet" href="./assets/css/design/sheet.css" />
     <link rel="stylesheet" href="./assets/css/design/battle.css" />
     <link rel="stylesheet" href="./assets/css/design/icons.css" />
+    <link rel="stylesheet" href="./assets/css/design/footer.css" />
+    <link rel="stylesheet" href="./assets/css/design/intro.css" />
   </head>
   <body>
+    <!-- Intro: erster Besuch ohne Konto. Anmelden, registrieren oder
+         bewusst ohne Konto weiter - danach nie wieder. -->
+    <div class="intro" id="intro" hidden>
+      <div class="intro__stage">
+        <img class="intro__ball" src="./assets/img/9.png" alt="" />
+        <div class="intro__mark">POKÉDX</div>
+        <p class="intro__sub">
+          Dein Pokédex – Team bauen, Arenen erobern, Trainer herausfordern.
+        </p>
+        <div class="intro__karte lg-surface">
+          <div class="intro__wahl" id="introWahl">
+            <button class="btn frost" id="introLogin">Anmelden</button>
+            <button class="btn frost" id="introRegister">Konto anlegen</button>
+          </div>
+          <form class="konto-form" id="introForm" hidden>
+            <input
+              id="introName"
+              placeholder="Name"
+              autocomplete="username"
+              required
+            />
+            <input
+              id="introPasswort"
+              type="password"
+              placeholder="Passwort"
+              autocomplete="current-password"
+              required
+            />
+            <p class="konto-fehler" id="introFehler" role="alert" hidden></p>
+            <button class="btn frost" id="introSubmit" type="submit">
+              Anmelden
+            </button>
+          </form>
+          <button
+            class="btn btn--ghost"
+            id="introOhne"
+            style="color: rgba(255, 255, 255, 0.85)"
+          >
+            Ohne Konto fortfahren
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Die Atmosphäre der App: Wolken, Partikel, schwebende Pokémon -->
     <div class="ambient" aria-hidden="true">
       <div class="cloud cloud-1"></div>
@@ -255,6 +301,36 @@
           </div>
         </section>
       </main>
+
+      <!-- Quellen-Nachweis: alle Daten und Bilder kommen aus der PokéAPI. -->
+      <footer class="footer">
+        <div class="panel footer__panel">
+          <p class="footer__zeile">
+            Daten &amp; Bilder:
+            <a href="https://pokeapi.co/" target="_blank" rel="noopener"
+              >PokéAPI</a
+            >
+            ·
+            <a
+              href="https://github.com/PokeAPI/sprites"
+              target="_blank"
+              rel="noopener"
+              >Official Artwork &amp; Sprites</a
+            >
+            · Schriften:
+            <a href="https://fonts.google.com/" target="_blank" rel="noopener"
+              >Google Fonts</a
+            >
+          </p>
+          <p class="footer__zeile">
+            Erstellt von Michael Friggemann · Developer Akademie · Modul 8
+          </p>
+          <p class="footer__zeile footer__klein">
+            © 2026 Pokédex-Projekt. Pokémon und alle zugehörigen Namen sind
+            Marken von Nintendo.
+          </p>
+        </div>
+      </footer>
     </div>
 
     <!-- Die Tab-Leiste gehört NICHT in die Kopfzeile: deren backdrop-filter
@@ -520,6 +596,7 @@
     <script src="./js/app/presets.js"></script>
     <script src="./js/app/history.js"></script>
     <script src="./js/app/account.js"></script>
+    <script src="./js/app/intro.js"></script>
     <script src="./js/app/sync.js"></script>
     <script src="./js/app/shell.js"></script>
   </body>

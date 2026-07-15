@@ -1,0 +1,30 @@
+/* =========================================================
+   Footer: Quellen-Nachweis (PokéAPI) und Urheber.
+   Schlank im Stil der Panels – kein Balken wie in der Legacy.
+   ========================================================= */
+
+.footer {
+  margin-top: 2.5rem;
+}
+.footer__panel {
+  text-align: center;
+  display: grid;
+  gap: 0.35rem;
+}
+.footer__zeile {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.footer__zeile a {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+.footer__zeile a:hover {
+  text-decoration: underline;
+}
+.footer__klein {
+  font-size: 0.68rem;
+  opacity: 0.8;
+}
