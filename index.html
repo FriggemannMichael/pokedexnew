@@ -341,37 +341,51 @@
           </div>
         </section>
       </main>
-
-      <!-- Quellen-Nachweis: alle Daten und Bilder kommen aus der PokéAPI. -->
-      <footer class="footer">
-        <div class="panel footer__panel">
-          <p class="footer__zeile">
-            Daten &amp; Bilder:
-            <a href="https://pokeapi.co/" target="_blank" rel="noopener"
-              >PokéAPI</a
-            >
-            ·
-            <a
-              href="https://github.com/PokeAPI/sprites"
-              target="_blank"
-              rel="noopener"
-              >Official Artwork &amp; Sprites</a
-            >
-            · Schriften:
-            <a href="https://fonts.google.com/" target="_blank" rel="noopener"
-              >Google Fonts</a
-            >
-          </p>
-          <p class="footer__zeile">
-            Erstellt von Michael Friggemann · Developer Akademie · Modul 8
-          </p>
-          <p class="footer__zeile footer__klein">
-            © 2026 Pokédex-Projekt. Pokémon und alle zugehörigen Namen sind
-            Marken von Nintendo.
-          </p>
-        </div>
-      </footer>
     </div>
+
+    <!-- Footer wie in der Legacy: dunkles Band in voller Breite, ganz
+         unten. Quellen links, Urheber rechts, Copyright darunter. -->
+    <footer class="footer">
+      <div class="footer__inner">
+        <div class="footer__spalten">
+          <div class="footer__block">
+            <div class="footer__titel">Quellen</div>
+            <p>
+              Daten &amp; Bilder:
+              <a href="https://pokeapi.co/" target="_blank" rel="noopener"
+                >PokéAPI</a
+              >
+              &amp;
+              <a
+                href="https://github.com/PokeAPI/sprites"
+                target="_blank"
+                rel="noopener"
+                >Official Artwork</a
+              >
+            </p>
+            <p>
+              Schriften:
+              <a href="https://fonts.google.com/" target="_blank" rel="noopener"
+                >Google Fonts</a
+              >
+            </p>
+          </div>
+          <div class="footer__block footer__block--rechts">
+            <div class="footer__titel">Erstellt von</div>
+            <p class="footer__name">Michael Friggemann</p>
+            <p>
+              Trainingsprojekt aus der Weiterbildung zum
+              Fullstack&nbsp;Web&nbsp;Developer
+            </p>
+            <p>Developer Akademie · Modul 8</p>
+          </div>
+        </div>
+        <p class="footer__copy">
+          © 2026 Pokédex-Trainingsprojekt · Pokémon und alle zugehörigen Namen
+          sind Marken von Nintendo
+        </p>
+      </div>
+    </footer>
 
     <!-- Die Tab-Leiste gehört NICHT in die Kopfzeile: deren backdrop-filter
          würde sie zum Bezugsrahmen machen und "position: fixed" bräche. -->
