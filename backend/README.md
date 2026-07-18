@@ -204,5 +204,7 @@ Internet und ohne API-Keys.
 - **M1 – Backend-Gerüst:** fertig (Django, DRF, Health, Swagger, CORS).
 - **M2 – Daten holen & cachen:** fertig. PokéAPI-Proxy mit Cache **und**
   KI-Proxy laufen im Backend. `server.js` liefert nur noch das Frontend aus.
-- **M3 – Login & Speichern:** offen.
-- **M4 – DevSecOps:** offen.
+- **M3 – Login & Speichern:** fertig. Token-Login (`/api/auth`), Team,
+  Favoriten, Notizen, Presets, Orden und Kampfhistorie liegen pro Konto in
+  der Datenbank und werden vom Frontend synchronisiert (`js/app/sync.js`).
+- **M4 – DevSecOps:** offen (env-basierte Settings, Deployment, CI).

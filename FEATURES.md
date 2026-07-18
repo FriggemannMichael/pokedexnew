@@ -1,167 +1,106 @@
-# Pokedex New - Feature-Uebersicht
+# Pokédex New – Feature-Übersicht
 
-Stand: 19.03.2026
+Stand: 18.07.2026
 
 ## Kurzfassung
 
-Das Projekt ist ein interaktiver Pokedex mit lokalem Team-Management, Team-Analyse, Vergleichs- und Battle-Funktionen sowie optionaler KI-Unterstuetzung ueber einen lokalen Express-Proxy. Die Datei beschreibt den aktuell im Code vorhandenen Stand, nicht aeltere Planungen.
+Das Projekt ist ein interaktiver Pokédex mit Team-Management, Liga-Modus, Kampfsystem und optionaler KI-Unterstützung. Es besteht aus einem statischen Frontend (`index.html` + `js/app/*`, ausgeliefert von einem kleinen Express-Server) und einem Django-Backend, das die PokéAPI cached, die KI-Endpunkte bereitstellt und mit Konto die Nutzerdaten in der Datenbank hält. Die Datei beschreibt den aktuell im Code vorhandenen Stand.
 
 ## Aktive Kern-Features
 
-### Pokedex und Navigation
+### Pokédex und Navigation
 
-- Anzeige von Pokemon aus der PokeAPI mit Bild, Typen, Stats und Detailansicht
-- Suche ueber Suchfeld mit Ergebnis-Dropdown
-- Filter nach Typen, Favoriten und Bewertungsstufe
-- Pagination mit `Previous` / `Next`
-- `Load More` zum schrittweisen Nachladen weiterer Pokemon
-- Responsives Filter-Menue fuer kleinere Viewports
+- Pokédex-Raster mit Karten aus dem Backend-Cache (`/api/pokemon/`)
+- Suche über ein vollständiges Namensverzeichnis (`/api/pokemon/names/`)
+- Typ-Filter über ein Sheet mit allen 18 Typen, inklusive Kontext-Hintergrund
+- Schrittweises Nachladen weiterer Pokémon (Load More)
+- Favoriten direkt auf der Karte, lokal gespeichert und mit Konto synchronisiert
+- Detailkarte (Sheet) mit demselben Umfang wie die Original-Detailkarte
 
-### Pokemon-Karten und Detailansichten
+### Team
 
-- Kartenansicht mit Typ-Badges, Bild und Schnellaktionen
-- Detailansicht fuer einzelne Pokemon
-- Vergleichsmodus fuer zwei Pokemon
-- Direkter Start eines 1v1-Battle-Simulators aus dem Vergleichsmodal
+- Team mit sechs Slots, gefüllt direkt aus dem Pokédex
+- Professor-Eich-Hinweis zum Team, auf Wunsch mit echtem KI-Rat (`/api/ai/team-advice`)
+- Gespeicherte Teams (Presets): lokal im Browser, mit Konto zusätzlich auf dem Server
 
-### Pokemon-GO-inspirierte Features
+### Liga und Kampf
 
-- Favoriten-System mit lokaler Persistenz
-- Bewertungs-/Appraisal-System mit gespeicherten Ratings
-- Power-/Strength-Berechnungen auf Basis von Stats
-- Lokale Notizen-Struktur fuer Pokemon ist im Code vorhanden
+- Liga-Modus: acht Arenen in fester Reihenfolge plus Champ, mit steigenden Leveln
+- Orden sammeln; ein Sieg schaltet die nächste Arena frei
+- Arena-Kampf: Spieler wählt Attacken (die vier besten je Pokémon, über den Backend-Cache), der Arenaleiter zieht zufällig
+- Schadensformel mit STAB, Effektivität, Volltreffern, Statusstufen und Nebenwirkungen
+- Arenaleiter-Dialoge mit optionaler KI-Unterstützung (`/api/ai/gym-dialogue`)
+- Andere Trainer: echte Teams anderer Nutzer als Gegner plus Rangliste (`/api/trainers`)
+- Kampfhistorie: lokal, mit Konto vom Server (`/api/battles`)
 
-### Team-Management
+### Konto und Sync
 
-- Team-Offcanvas mit Team-Counter und Mini-Cards
-- Separater `Active Team`-Builder mit 6 Slots
-- Drag-and-Drop vom Pokedex in Team-Slots bzw. Team-Bereiche
-- Ersetzen bereits belegter Slots per Drop
-- Synchronisation zwischen Team-Builder, Offcanvas und `localStorage`
-- Live-Regionen und Statusmeldungen fuer Team-Aenderungen
+- Intro für neue Besucher mit Wahl zwischen Konto und „ohne Konto"
+- Registrieren, Anmelden und Abmelden über Token-Auth (`/api/auth`)
+- Beim Anmelden gewinnt der Server-Stand; danach werden Team, Favoriten, Presets, Orden und Kämpfe laufend synchronisiert
+- Konto-Bereich mit Statistik-Kacheln
 
-### Team-Modal und Team-Aktionen
+### KI-Integration
 
-- Team-Modal mit Uebersicht ueber aktuelles Team
-- Anzeige von Team-Kennzahlen wie Typenverteilung, Favoriten und Durchschnittswerten
-- Pokemon aus dem Team entfernen
-- Team mischen
-- Nicht-Favoriten gesammelt entfernen
-- Team als JSON exportieren
-- Team ueber `navigator.share` oder Clipboard teilen
-- Team-Presets im `localStorage` speichern
-
-### Team-Analyse
-
-- Statische Team-Analyse fuer Coverage, Schwaechen und Zusammensetzung
-- Eigenes Analyse-Modal
-- Team-Analyse direkt aus dem Team-Modal und aus der Hauptansicht
-- KI-gestuetzte Team-Analyse mit Fallback ueber mehrere Provider
-- KI-Teamberater im `Active Team`-Bereich
-
-### Battle-Features
-
-- 1v1-Battle-Simulator mit Rundenlogik
-- `Next Round`, Auto-Play und Reset im Simulator
-- Export des Battle-Logs
-- Gym-Challenge-Modus gegen ein generiertes Gegnerteam
-- Gym-Leader-Dialoge und Kampfkommentare mit optionaler KI-Unterstuetzung
-- Challenge-Auswertung mit Schaden, Zuegen und MVP
-- Kampfhistorie mit Statistiken, Win-Rate und meistgenutzten Pokemon
-
-### KI-Integration und Server
-
-- Lokaler Express-Server nur noch fuer die statische Auslieferung
 - KI komplett im Django-Backend: Prompts, Anbieterwahl und Keys liegen dort
-- Ein Endpoint je KI-Funktion (`/api/ai/team-advice`, `/api/ai/battle-commentary`,
-  `/api/ai/gym-dialogue`, `/api/ai/team-analysis`, `/api/ai/gym-strategy`)
-- `/api/ai/ping` zur Erkennung im Frontend
-- Fallback-Kette ueber Groq, Mistral, Gemini und OpenRouter
-- Rate Limiting fuer AI-Requests (30/min pro IP)
-- Caching, Retry-Logik, Timeout und Throttling fuer KI-Anfragen
+- Ein Endpoint je KI-Funktion (`/api/ai/team-advice`, `/api/ai/battle-commentary`, `/api/ai/gym-dialogue`, `/api/ai/team-analysis`, `/api/ai/gym-strategy`)
+- Fallback-Kette über Groq, Mistral, Gemini und OpenRouter
+- Rate Limiting für AI-Requests; ohne konfigurierte Keys fallen nur die KI-Funktionen weg
 
 ## Persistenz
 
-Die Anwendung speichert mehrere Bereiche lokal im Browser:
+Lokal im Browser (`localStorage`):
 
-- `pokemonTeam`
-- `pokemonFavorites`
-- `pokemonRatings`
-- `pokemonNotes`
-- `pokemonTeamPresets`
-- `pokemonBattleHistory`
-- AI-API-Keys fuer lokale Nutzung, falls kein Proxy aktiv ist
+- `pokemonTeam`, `pokemonFavorites`, `pokemonTeamPresets`, `pokemonBattleHistory`, `pokemonBadges`
+- `pokedexToken` (Login-Token), `pokedexIntroGesehen`
+
+Mit Konto liegen Team, Favoriten, Notizen, Presets, Orden und Kampfhistorie zusätzlich in der Backend-Datenbank.
 
 ## Status-Tabelle
 
 | Feature | Status | Kommentar |
 | --- | --- | --- |
-| Pokedex-Anzeige | Live | PokeAPI-basierte Karten- und Detailansicht |
-| Suche und Typ-Filter | Live | Suche, Typen, Favoriten und Ratings |
-| Favoriten | Live | Lokal gespeichert |
-| Ratings / Appraisal | Live | Lokal gespeichert |
-| Notizen-Datenstruktur | Teilweise live | Persistenz vorhanden, keine ausgebaute UI im Hauptfluss |
-| Team-Offcanvas | Live | Mini-Cards und Counter |
-| Active Team Builder | Live | 6 Slots mit Drag-and-Drop |
-| Team-Modal | Live | Uebersicht, Export und Aktionen |
-| Team teilen | Live | Share API oder Clipboard |
-| Team-Presets speichern | Live | Speicherung im `localStorage` |
-| Team-Analyse | Live | Statisch plus KI-Unterstuetzung |
-| Pokemon-Vergleich | Live | Zwei Pokemon im Modal vergleichen |
-| Battle-Simulator | Live | 1v1 mit Log und Export |
-| Gym-Challenge | Live | Gegnerteam, Strategie und Historie |
-| Battle-Historie | Live | Lokale Historie mit Kennzahlen |
-| AI-Proxy-Server | Live | Express-Endpunkt mit Rate Limit |
+| Pokédex-Anzeige | Live | Karten und Detail-Sheet aus dem Backend-Cache |
+| Suche und Typ-Filter | Live | Namensverzeichnis plus 18-Typen-Sheet |
+| Favoriten | Live | Lokal, mit Konto auf dem Server |
+| Team (6 Slots) | Live | Direkt aus dem Pokédex befüllt |
+| Team-Presets | Live | Speichern, Laden, Löschen; mit Konto auf dem Server |
+| KI-Teamberatung | Live | Professor Eich, `/api/ai/team-advice` |
+| Liga mit Orden | Live | Acht Arenen plus Champ, steigende Level |
+| Arena-Kampf | Live | Klickbare Moves, Schadensformel, Statusstufen |
+| Andere Trainer | Live | Echte Teams als Gegner, Rangliste |
+| Kampfhistorie | Live | Lokal, mit Konto vom Server |
+| Konto und Sync | Live | Token-Auth, Server gewinnt beim Anmelden |
+| Notizen | Teilweise | Backend-Datenmodell vorhanden, keine Frontend-UI |
 
 ## Technische Struktur
 
 ### Wichtige Einstiegspunkte
 
-- `index.html`: Layout, Filter, Offcanvas, Team-Modal, Team-Builder
-- `main.js`: Script-Bootstrap und Initialisierung aller Frontend-Module
-- `server.js`: Express-Server und AI-Proxy
+- `index.html`: Layout und feste Ladereihenfolge der Frontend-Skripte
+- `js/app/*`: Frontend-Logik als klassische Skripte mit gemeinsamem globalem Scope
+- `server.js`: Express-Server, liefert nur das Frontend aus
+- `backend/`: Django-Backend (PokéAPI-Cache, Auth, Konto-Daten, KI)
 
-### Modulbereiche
+### Modulbereiche (`js/app/`)
 
-| Bereich | Dateien / Muster | Aufgabe |
+| Bereich | Dateien | Aufgabe |
 | --- | --- | --- |
-| API und Daten | `script/services/ApiService.js`, `script/pokemon-core.js` | Laden und Transformieren der Pokemon-Daten |
-| Rendering | `script/pokemon-ui.js`, `script/template.js`, `script/pokemon-detail.js` | Karten, Details und UI-Bausteine |
-| Navigation | `script/search.js`, `script/navigation.js` | Suche, Pagination, Load More, Responsive-Verhalten |
-| GO-Features | `script/pokemon-go-*` | Favoriten, Ratings, Power, Filter |
-| Team-Builder | `script/team-builder*.js`, `script/team-offcanvas-*.js` | Slots, Drag-and-Drop, Team-Sync |
-| Team-Modal | `script/team-modal-*.js`, `script/mypokedex-*.js` | Team-Uebersicht und Team-Aktionen |
-| Analyse | `script/team-analyzer-*.js`, `script/team-ai-service.js` | Statische und KI-gestuetzte Team-Analyse |
-| Vergleich | `script/pokemon-compare*.js` | Vergleichsmodal und Battle-Trigger |
-| Battle | `script/battle-sim-*.js`, `script/team-battle-*.js`, `script/battle-history.js` | Simulator, Gym-Challenge, Historie |
-| Infrastruktur | `script/utils/*.js`, `js/ai-service.js` | Retry, Modal-Fabrik, Hilfsfunktionen, AI-Client |
+| Grunddaten | `config.js`, `storage.js`, `icons.js` | Zustand, lokale Ablage, Strich-Icons |
+| Daten | `api.js` | Listen, Namensverzeichnis und Details über das Backend |
+| Pokédex | `grid.js`, `type-filter.js`, `sheet.js` | Raster, Filter, Detailkarte |
+| Team | `team.js`, `eich.js`, `presets.js` | Slots, KI-Rat, gespeicherte Teams |
+| Kampf | `battle-data.js`, `battle-moves.js`, `battle.js`, `battle-ui.js` | Logik, Moves, Ablauf, Oberfläche |
+| Liga | `liga.js`, `trainers.js`, `history.js` | Orden, andere Trainer, Historie |
+| Konto | `auth.js`, `account.js`, `sync.js` | Token-Auth, Konto-Bereich, Server-Abgleich |
+| Hülle | `shell.js`, `intro.js` | Tabs und Intro |
 
 ## Installation und Betrieb
 
-1. Abhaengigkeiten installieren:
-   ```bash
-   npm install
-   ```
-2. `.env` auf Basis von `.env.example` anlegen
-3. Mindestens einen AI-Key hinterlegen, wenn KI-Funktionen genutzt werden sollen
-4. Server starten:
-   ```bash
-   npm start
-   ```
-5. Anwendung im Browser ueber `http://localhost:3000` aufrufen
+Siehe [README.md](./README.md#installation) – Frontend (`npm start`) und Backend (`python manage.py runserver`) laufen getrennt.
 
-## Bekannte Einschraenkungen
+## Bekannte Einschränkungen
 
-- Die Notiz-Funktion ist daten- und service-seitig vorbereitet, aber nicht als vollstaendige Haupt-UI ausgebaut.
-- Team-Presets werden gespeichert, im aktuellen Stand aber nicht als vollstaendige Preset-Verwaltung mit Laden/Loeschen praesentiert.
-- Ein Teil des Projekts enthaelt aeltere und neuere Modulpfade parallel; `main.js` bootstrapped den aktuell genutzten Satz.
-
-## Nicht mehr zutreffend aus der alten Datei
-
-Folgende Punkte aus der frueheren `FEATURES.md` sind nicht mehr korrekt:
-
-- Battle- und Compare-Funktionen sind nicht mehr "geplant", sondern vorhanden.
-- Export und Teilen sind implementiert.
-- Team-Presets koennen gespeichert werden.
-- Das Projekt nutzt inzwischen einen lokalen Node-/Express-Server fuer die KI-Anbindung.
-- Die alte Datei war in Teilen fehlerhaft kodiert und enthielt ueberholte Versions-/Changelog-Eintraege.
+- Ohne laufendes Backend zeigt der Pokédex nur einen kleinen Fallback-Datensatz.
+- Die Notiz-Funktion ist im Backend vorbereitet, aber nicht als Frontend-UI ausgebaut.
+- Kein Pokémon-Vergleich und keine Bewertungen mehr – diese Features der alten Oberfläche wurden beim UI-Umbau nicht übernommen.
