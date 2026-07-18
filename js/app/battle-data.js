@@ -356,3 +356,17 @@ function statAenderungenAnwenden(attacker, defender, move, log) {
     statStufeAendern(c.change > 0 ? attacker : defender, stat, c.change, log);
   });
 }
+
+/* Export für die Unit-Tests (node --test); im Browser ohne Wirkung. */
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = {
+    GYM_LEADERS,
+    GYM_ORDER,
+    TYPE_CHART,
+    effektivitaet,
+    kampfStats,
+    kampfbereit,
+    kampfwert,
+    schadenBerechnen,
+  };
+}
