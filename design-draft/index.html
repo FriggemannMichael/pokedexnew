@@ -1,0 +1,1887 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pokédex — Entwurf: vier Bereiche statt Endlosseite</title>
+    <style>
+      @font-face {
+        font-family: "Outfit";
+        src: url("../assets/fonts/Outfit-VariableFont_wght.ttf") format("truetype");
+        font-weight: 100 900;
+      }
+      @font-face {
+        font-family: "Poppins";
+        src: url("../assets/fonts/Poppins-Medium.ttf") format("truetype");
+        font-weight: 500;
+      }
+      @font-face {
+        font-family: "Poppins";
+        src: url("../assets/fonts/Poppins-SemiBold.ttf") format("truetype");
+        font-weight: 600;
+      }
+      @font-face {
+        font-family: "Inter";
+        src: url("../assets/fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+        font-weight: 100 900;
+      }
+
+      :root {
+        --primary: #ff6b6b;
+        --secondary: #4ecdc4;
+        --ink: #17303f;
+        --muted: #5b7183;
+
+        --type-fire: #f08030;
+        --type-water: #6890f0;
+        --type-grass: #78c850;
+        --type-electric: #f8d030;
+        --type-rock: #b8a038;
+        --type-poison: #a040a0;
+        --type-flying: #a890f0;
+        --type-dragon: #7038f8;
+        --type-ghost: #705898;
+        --type-normal: #a8a878;
+
+        --font-title: "Outfit", system-ui, sans-serif;
+        --font-ui: "Poppins", system-ui, sans-serif;
+        --font-body: "Inter", system-ui, sans-serif;
+
+        /* Leitmotiv: Die App faerbt sich nach Kontext. */
+        --accent: var(--secondary);
+        --tab-h: 68px;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* ---------- Der Himmel: exakt euer Verlauf aus main-base.css ---------- */
+      body {
+        font-family: var(--font-body);
+        color: var(--ink);
+        min-height: 100dvh;
+        -webkit-font-smoothing: antialiased;
+        background: linear-gradient(135deg, #87ceeb 0%, #98e4e8 25%, #a8e6cf 50%, #87ceeb 75%, #b8e6b8 100%);
+        background-attachment: fixed;
+        transition: background 0.8s ease;
+      }
+      /* Der Punktraster-Schleier – euer body::before */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+          radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+          radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        background-size: 50px 50px, 60px 60px, 30px 30px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.3;
+      }
+
+      /* Typ-Hintergrund – euer Prinzip aus body.type-*, aber für ALLE 18 Typen
+         aus der Typfarbe gerechnet, statt sechs handgeschriebene Verläufe. */
+      body[data-type] {
+        background: linear-gradient(
+          135deg,
+          color-mix(in srgb, var(--sky) 80%, #fff) 0%,
+          color-mix(in srgb, var(--sky) 95%, #fff) 25%,
+          color-mix(in srgb, var(--sky) 62%, #fff) 50%,
+          var(--sky) 75%,
+          color-mix(in srgb, var(--sky) 78%, #000) 100%
+        );
+        background-attachment: fixed;
+      }
+
+      /* ---------- Atmosphäre: eure Wolken, Partikel und Pokémon ----------
+         Unverändert übernommen – nur nicht mehr in einem 350px-Hero
+         eingesperrt, sondern fest hinter der ganzen App. */
+      .ambient {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 1;
+      }
+      /* Nur der Inhalt braucht hier einen Stapelkontext. Die Tab-Leiste, das
+         Sheet und der Toast bringen ihre eigene Positionierung mit – die darf
+         man ihnen nicht wegnehmen. */
+      .shell { position: relative; z-index: 2; }
+
+      /* Kein backdrop-filter auf den Wolken: Sie bewegen sich staendig, und
+         eine Blur-Ebene, die jeden Frame neu gerechnet wird, bringt schwache
+         Grafik zum Flackern. Weiss mit Transparenz reicht voellig. */
+      .ambient .cloud {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50px;
+        opacity: 0.6;
+        will-change: transform;
+      }
+      .ambient .cloud:before,
+      .ambient .cloud:after {
+        content: "";
+        position: absolute;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 50px;
+      }
+      .cloud-1 { width: 120px; height: 40px; top: 12%; left: -120px; animation: cloudMove1 25s linear infinite; }
+      .cloud-1:before { width: 50px; height: 50px; top: -25px; left: 10px; }
+      .cloud-1:after { width: 60px; height: 40px; top: -15px; right: 10px; }
+      .cloud-2 { width: 80px; height: 30px; top: 34%; left: -80px; animation: cloudMove2 30s linear infinite 5s; }
+      .cloud-2:before { width: 40px; height: 40px; top: -20px; left: 15px; }
+      .cloud-2:after { width: 50px; height: 30px; top: -10px; right: 15px; }
+      .cloud-3 { width: 100px; height: 35px; top: 62%; left: -100px; animation: cloudMove3 35s linear infinite 10s; }
+      .cloud-3:before { width: 45px; height: 45px; top: -22px; left: 20px; }
+      .cloud-3:after { width: 55px; height: 35px; top: -12px; right: 20px; }
+      @keyframes cloudMove1 { 0% { transform: translateX(-120px); } 100% { transform: translateX(calc(100vw + 120px)); } }
+      @keyframes cloudMove2 { 0% { transform: translateX(-80px); } 100% { transform: translateX(calc(100vw + 80px)); } }
+      @keyframes cloudMove3 { 0% { transform: translateX(-100px); } 100% { transform: translateX(calc(100vw + 100px)); } }
+
+      .ambient .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+      }
+      .particle-1 { width: 4px; height: 4px; bottom: 0; left: 10%; animation: particleFloat1 8s ease-in-out infinite; }
+      .particle-2 { width: 6px; height: 6px; bottom: 0; left: 25%; animation: particleFloat2 10s ease-in-out infinite 2s; }
+      .particle-3 { width: 3px; height: 3px; bottom: 0; left: 40%; animation: particleFloat3 7s ease-in-out infinite 1s; }
+      .particle-4 { width: 5px; height: 5px; bottom: 0; left: 60%; animation: particleFloat4 9s ease-in-out infinite 3s; }
+      .particle-5 { width: 4px; height: 4px; bottom: 0; left: 75%; animation: particleFloat5 8s ease-in-out infinite 1.5s; }
+      .particle-6 { width: 6px; height: 6px; bottom: 0; left: 90%; animation: particleFloat6 11s ease-in-out infinite 4s; }
+      @keyframes particleFloat1 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; } }
+      @keyframes particleFloat2 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.8; } 100% { transform: translateY(-100vh) rotate(-360deg); opacity: 0; } }
+      @keyframes particleFloat3 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(180deg); opacity: 0; } }
+      @keyframes particleFloat4 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.9; } 100% { transform: translateY(-100vh) rotate(-180deg); opacity: 0; } }
+      @keyframes particleFloat5 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; } }
+      @keyframes particleFloat6 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.7; } 100% { transform: translateY(-100vh) rotate(-270deg); opacity: 0; } }
+
+      /* Die kleinen Pokémon, die hinten aufblinken – euer floatPokemon */
+      .ambient .poke {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        opacity: 0.3;
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        image-rendering: pixelated;
+        animation: floatPokemon 8s ease-in-out infinite;
+      }
+      .poke-1 { top: 18%; left: 8%; animation-delay: 0s; }
+      .poke-2 { top: 58%; left: 84%; animation-delay: 1s; }
+      .poke-3 { top: 40%; left: 4%; animation-delay: 2s; }
+      .poke-4 { top: 78%; left: 62%; animation-delay: 3s; }
+      .poke-5 { top: 26%; left: 78%; animation-delay: 4s; }
+      .poke-6 { top: 68%; left: 28%; animation-delay: 5s; }
+      .poke-7 { top: 88%; left: 14%; animation-delay: 2.5s; }
+      @keyframes floatPokemon {
+        0%, 100% { transform: translateY(0) rotate(0) scale(1); opacity: 0.2; }
+        25% { transform: translateY(-15px) rotate(5deg) scale(1.1); opacity: 0.4; }
+        50% { transform: translateY(-8px) rotate(-3deg) scale(0.95); opacity: 0.3; }
+        75% { transform: translateY(-20px) rotate(8deg) scale(1.05); opacity: 0.45; }
+      }
+
+      /* ---------- Liquid Glass: eure Rezeptur ---------- */
+      .lg-surface {
+        background:
+          radial-gradient(55% 38% at 24% 4%, rgba(255, 255, 255, 0.55), transparent 55%),
+          linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.2) 24%, transparent 38%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 22%, transparent 46%),
+          radial-gradient(95% 85% at 85% 104%, color-mix(in srgb, var(--accent) 52%, #000) 0%, transparent 60%),
+          linear-gradient(135deg, color-mix(in srgb, var(--accent) 84%, #fff) 0%, var(--accent) 46%, color-mix(in srgb, var(--accent) 66%, #000) 100%);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow:
+          0 20px 60px rgba(31, 38, 135, 0.26),
+          inset 0 2px 1px rgba(255, 255, 255, 0.7),
+          inset 0 -55px 90px rgba(0, 0, 0, 0.18);
+      }
+      .frost {
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.32);
+        backdrop-filter: blur(12px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        color: #fff;
+      }
+
+      /* ---------- Shell ---------- */
+      .shell {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 0 1rem calc(var(--tab-h) + 5rem);
+      }
+      /* Schlanke Kopfzeile: Pokéball, Wortmarke, Konto. Kein Balken, der den
+         Bildschirm frisst – der Himmel scheint durch. */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 0.25rem 0.4rem;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-title);
+      }
+      .brand img {
+        width: 26px;
+        height: 26px;
+        animation: spin 14s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      .brand__mark {
+        font-weight: 800;
+        font-size: 1.15rem;
+        letter-spacing: -0.02em;
+        color: #fff;
+        text-shadow: 0 2px 8px rgba(23, 48, 63, 0.35);
+      }
+      .avatar {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 0;
+        cursor: pointer;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.5rem 0.4rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--ink);
+        box-shadow: 0 4px 14px rgba(23, 48, 63, 0.1);
+      }
+      .avatar__dot {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 0.75rem;
+      }
+
+      /* ---------- Tabs ---------- */
+      .tabs {
+        position: fixed;
+        left: 50%;
+        bottom: 0.75rem;
+        transform: translateX(-50%);
+        z-index: 30;
+        display: flex;
+        gap: 0.25rem;
+        padding: 0.4rem;
+        width: min(560px, calc(100% - 1.5rem));
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: 0 12px 40px rgba(23, 48, 63, 0.18);
+      }
+      .tab {
+        position: relative;
+        flex: 1;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 999px;
+        padding: 0.5rem 0.25rem 0.45rem;
+        display: grid;
+        justify-items: center;
+        gap: 0.15rem;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.66rem;
+        color: var(--muted);
+        transition: color 0.25s ease, background 0.25s ease;
+      }
+      .tab svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .tab[aria-selected="true"] {
+        color: #fff;
+        background: var(--accent);
+        box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
+      }
+      .badge {
+        position: absolute;
+        top: 2px;
+        right: 12px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: #fff;
+        font-size: 0.62rem;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      /* ---------- Ansichten ---------- */
+      .view {
+        display: none;
+        animation: rise 0.35s ease both;
+      }
+      .view[data-active] {
+        display: block;
+      }
+      @keyframes rise {
+        from { opacity: 0; transform: translateY(10px); }
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 1.4rem 0 0.75rem;
+      }
+      h2 {
+        font-family: var(--font-title);
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      /* ---------- Suche + Filter ---------- */
+      .search {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+      }
+      .search input {
+        flex: 1;
+        border: 1px solid rgba(23, 48, 63, 0.1);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 999px;
+        padding: 0.75rem 1.1rem;
+        font: inherit;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 16px rgba(23, 48, 63, 0.07);
+      }
+      .search input:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .btn-filter {
+        border: 1px solid rgba(23, 48, 63, 0.1);
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 999px;
+        padding: 0 1.1rem;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .chips {
+        display: flex;
+        gap: 0.4rem;
+        overflow-x: auto;
+        padding: 0.75rem 0 0.25rem;
+        scrollbar-width: none;
+      }
+      .chips::-webkit-scrollbar { display: none; }
+      .chip {
+        border: 0;
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.78rem;
+        padding: 0.42rem 0.85rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--muted);
+        box-shadow: 0 2px 10px rgba(23, 48, 63, 0.07);
+        transition: transform 0.15s ease;
+      }
+      .chip:active { transform: scale(0.95); }
+      .chip[aria-pressed="true"] {
+        color: #fff;
+        background: var(--chip, var(--accent));
+      }
+
+      /* ---------- Karten ---------- */
+      /* minmax(0, 1fr), nicht 1fr: Sonst schrumpft eine Spalte nie unter die
+         Mindestbreite ihres Inhalts – und die Bilder bringen 200px mit.
+         Genau das schob das Raster über den Bildschirmrand hinaus. */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.7rem;
+        margin-top: 0.5rem;
+      }
+      /* Die Karte traegt eine schlanke Fassung der Glas-Rezeptur: zwei Ebenen
+         statt fuenf. Bei 60+ Karten gleichzeitig zaehlt jede eingesparte Ebene. */
+      .card {
+        --accent: var(--type);
+        position: relative;
+        min-width: 0; /* darf schrumpfen */
+        border-radius: 18px;
+        padding: 0.7rem 0.7rem 0.85rem;
+        cursor: pointer;
+        text-align: left;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        font: inherit;
+        display: grid;
+        gap: 0.3rem;
+        color: #fff;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, transparent 45%),
+          linear-gradient(135deg, color-mix(in srgb, var(--type) 82%, #fff) 0%, var(--type) 50%, color-mix(in srgb, var(--type) 70%, #000) 100%);
+        box-shadow: 0 10px 28px rgba(31, 38, 135, 0.18);
+        transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        animation: pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+        /* Der Browser malt nur, was man sieht. Ohne das rechnet er bei 180
+           Karten alle Verlaeufe und Bilder gleichzeitig - und friert ein. */
+        content-visibility: auto;
+        contain-intrinsic-size: 230px;
+      }
+      @keyframes pop {
+        from { opacity: 0; transform: translateY(14px) scale(0.96); }
+      }
+      /* Platzhalter, solange die Liste eines Typs geholt wird. */
+      .card--skeleton {
+        --type: rgba(255, 255, 255, 0.45);
+        aspect-ratio: 3 / 4;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.35);
+        animation: pulse 1.3s ease-in-out infinite;
+        cursor: default;
+      }
+      @keyframes pulse {
+        50% { opacity: 0.55; }
+      }
+      .card:hover { transform: translateY(-4px); }
+      .card:active { transform: scale(0.98); }
+      .card:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+      .card__no {
+        font-family: var(--font-ui);
+        font-size: 0.68rem;
+        font-weight: 600;
+        opacity: 0.85;
+        /* Platz lassen: links sitzt das Herz, rechts das Plus. */
+        padding: 0 2.2rem;
+        text-align: center;
+        min-height: 32px;
+        display: grid;
+        place-items: center;
+      }
+      .card__img {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: contain;
+        filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.22));
+        transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .card:hover .card__img { transform: scale(1.06) rotate(-2deg); }
+      /* Rueckfall auf das Pixel-Sprite: scharf skalieren statt matschig. */
+      .card__img.is-sprite { image-rendering: pixelated; }
+      .card__name {
+        font-family: var(--font-title);
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      .card__types { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+      .t {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 0.18rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+      }
+
+      /* Herz links oben, "+" rechts oben. Beide liegen ueber der Karte. */
+      .card__fav {
+        position: absolute;
+        top: 0.55rem;
+        left: 0.55rem;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.92);
+        font-size: 0.85rem;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        transition: transform 0.2s ease;
+      }
+      .card__fav:hover { transform: scale(1.12); }
+
+      /* Das "+" ist der Weg ins Team. Auf dem Handy tippt man, man zieht nicht. */
+      .card__add {
+        position: absolute;
+        top: 0.55rem;
+        right: 0.55rem;
+        width: 32px;
+        height: 32px;
+        border: 0;
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--ink);
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .card__add:hover { transform: scale(1.12); }
+      .card__add[data-in] {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      /* ---------- Team ---------- */
+      .slots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+      }
+      .slot {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        font-family: var(--font-ui);
+        font-size: 0.72rem;
+        font-weight: 600;
+        animation: pop 0.35s ease both;
+      }
+      .slot--empty {
+        border: 1.5px dashed rgba(23, 48, 63, 0.22);
+        background: rgba(255, 255, 255, 0.55);
+        color: var(--muted);
+      }
+      .slot--filled { --accent: var(--type); }
+      .slot img {
+        width: 78%;
+        filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.25));
+      }
+      .slot__name {
+        position: absolute;
+        bottom: 0.3rem;
+        font-size: 0.62rem;
+        color: #fff;
+      }
+      .slot__x {
+        position: absolute;
+        top: 0.3rem;
+        right: 0.3rem;
+        width: 22px;
+        height: 22px;
+        border: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+        font-size: 0.7rem;
+        line-height: 1;
+      }
+      .panel {
+        margin-top: 0.9rem;
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        box-shadow: 0 8px 30px rgba(23, 48, 63, 0.08);
+      }
+      .panel__title {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        margin-bottom: 0.6rem;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+      }
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+        margin-top: 0.9rem;
+      }
+      .btn {
+        border: 0;
+        cursor: pointer;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.88rem;
+        padding: 0.85rem 1rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--ink);
+        box-shadow: 0 6px 20px rgba(23, 48, 63, 0.09);
+        transition: transform 0.15s ease;
+      }
+      .btn:active { transform: scale(0.97); }
+      .btn--primary { background: var(--accent); color: #fff; }
+      .btn--ghost {
+        background: transparent;
+        box-shadow: none;
+        color: var(--muted);
+        padding: 0.4rem 0;
+        font-size: 0.82rem;
+      }
+      .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+      .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+      .eich {
+        margin-top: 0.9rem;
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        display: grid;
+        gap: 0.4rem;
+      }
+      .eich__who {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .eich p { font-size: 0.92rem; line-height: 1.5; }
+
+      /* ---------- Kampf ---------- */
+      .opponents { display: grid; gap: 0.7rem; }
+      .opp {
+        --accent: var(--type);
+        border-radius: 18px;
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        cursor: pointer;
+        border: 0;
+        font: inherit;
+        text-align: left;
+        width: 100%;
+        transition: transform 0.2s ease;
+      }
+      .opp:hover { transform: translateY(-2px); }
+      .opp__badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        flex: 0 0 auto;
+      }
+      .opp__name { font-family: var(--font-title); font-weight: 700; font-size: 1.02rem; }
+      .opp__meta { font-size: 0.8rem; opacity: 0.9; }
+      .opp__go { margin-left: auto; font-family: var(--font-ui); font-weight: 600; font-size: 0.82rem; }
+      .opp--soon {
+        background: rgba(255, 255, 255, 0.62);
+        border: 1.5px dashed rgba(23, 48, 63, 0.2);
+        color: var(--ink);
+        cursor: default;
+      }
+      .opp--soon:hover { transform: none; }
+      .opp--soon .opp__badge { background: rgba(23, 48, 63, 0.08); }
+      .tagline {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.62rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .history { display: grid; gap: 0.5rem; }
+      .fight {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.7rem 0.9rem;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.78);
+        font-size: 0.88rem;
+      }
+      .pill {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.68rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+      }
+      .pill--win { background: #d7f5e3; color: #1a7a4c; }
+      .pill--loss { background: #fde0e0; color: #a33; }
+
+      /* ---------- Konto ---------- */
+      .account { border-radius: 22px; padding: 1.4rem; display: grid; gap: 0.7rem; }
+      .account h3 { font-family: var(--font-title); font-size: 1.3rem; }
+      .account p { font-size: 0.94rem; line-height: 1.55; }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+        margin-top: 0.4rem;
+      }
+      .stat { border-radius: 14px; padding: 0.75rem; text-align: center; }
+      .stat__n { font-family: var(--font-title); font-weight: 800; font-size: 1.4rem; }
+      .stat__l {
+        font-family: var(--font-ui);
+        font-size: 0.64rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.85;
+      }
+
+      /* ---------- Detailkarte (Sheet) ---------- */
+      .sheet {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        display: grid;
+        place-items: end center;
+        background: rgba(17, 40, 52, 0.35);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+      }
+      .sheet[data-open] { opacity: 1; pointer-events: auto; }
+      .sheet__card {
+        --accent: var(--type);
+        width: min(560px, 100%);
+        border-radius: 26px 26px 0 0;
+        padding: 1.4rem 1.3rem 1.6rem;
+        display: grid;
+        gap: 0.7rem;
+        transform: translateY(100%);
+        transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.2, 1);
+        max-height: 88dvh;
+        overflow-y: auto;
+        overflow-x: hidden; /* sonst schiebt das Typ-Raster einen Balken raus */
+      }
+      .sheet__card > * { min-width: 0; }
+      .sheet[data-open] .sheet__card { transform: none; }
+      .sheet__grab {
+        width: 42px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.6);
+        justify-self: center;
+      }
+      .sheet__img {
+        width: 55%;
+        justify-self: center;
+        filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.3));
+        animation: bob 4s ease-in-out infinite alternate;
+      }
+      @keyframes bob { to { transform: translateY(-10px); } }
+      .sheet__no {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.75rem;
+        opacity: 0.85;
+      }
+      .sheet__name {
+        font-family: var(--font-title);
+        font-weight: 800;
+        font-size: 1.8rem;
+        line-height: 1.1;
+      }
+      .sheet__desc {
+        font-size: 0.92rem;
+        line-height: 1.55;
+        opacity: 0.95;
+      }
+      /* Größe, Gewicht, Erfahrung – wie in eurer Detailkarte */
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.3rem;
+      }
+      .fact {
+        border-radius: 14px;
+        padding: 0.6rem 0.5rem;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.16);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .fact__v { font-family: var(--font-title); font-weight: 700; font-size: 1.05rem; }
+      .fact__l {
+        font-family: var(--font-ui);
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.85;
+      }
+      /* Entwicklungsreihe: anklickbar – ein Tipp öffnet die nächste Stufe. */
+      .evo-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+      }
+      /* Eine Stufe kann mehrere Pokémon haben (Evoli: acht). */
+      .evo__stufe {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        justify-content: center;
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+      .evo {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.16);
+        border-radius: 14px;
+        padding: 0.5rem 0.6rem 0.4rem;
+        display: grid;
+        justify-items: center;
+        gap: 0.15rem;
+        cursor: pointer;
+        color: #fff;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .evo:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.26); }
+      .evo img { image-rendering: pixelated; }
+      .evo__name {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: capitalize;
+      }
+      .evo__arrow { opacity: 0.75; font-size: 1.1rem; }
+
+      .moves { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+      .move {
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .sheet__stats { display: grid; gap: 0.45rem; margin-top: 0.3rem; }
+      .bar { display: grid; grid-template-columns: 5.5rem 1fr 2rem; align-items: center; gap: 0.6rem; font-size: 0.8rem; }
+      .bar__track {
+        display: block; /* span ist sonst inline – dann greift keine Breite */
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.28);
+        overflow: hidden;
+      }
+      /* Startet bei 0 und wird per JS gesetzt – die Balken kommen erst an,
+         wenn die Daten da sind, da greift keine CSS-Regel von vorher. */
+      .bar__fill {
+        display: block; /* dito: ohne das bleibt der Balken bei 0 Pixel */
+        height: 100%;
+        border-radius: 999px;
+        background: #fff;
+        width: 0;
+        transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      /* ---------- Typ-Raster im Filter ---------- */
+      .typegrid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+        margin: 0.4rem 0 0.8rem;
+      }
+      .type-btn {
+        --accent: var(--type);
+        min-width: 0;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 0.5rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        font-family: var(--font-ui);
+        font-weight: 600;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+      .type-btn:active { transform: scale(0.96); }
+      .type-btn[aria-pressed="true"] {
+        background: #fff;
+        color: var(--ink);
+      }
+      .type-btn img {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+      }
+      .type-btn[aria-pressed="true"] img { filter: none; }
+      .type-btn img { filter: brightness(0) invert(1); }
+      @media (min-width: 600px) {
+        .typegrid { grid-template-columns: repeat(6, 1fr); }
+      }
+
+      /* ---------- Toast ---------- */
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: calc(var(--tab-h) + 1.4rem);
+        transform: translate(-50%, 24px);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        padding: 0.7rem 0.8rem 0.7rem 1.1rem;
+        border-radius: 999px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 0.88rem;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .toast[data-show] { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+      .toast button {
+        border: 0;
+        background: rgba(255, 255, 255, 0.16);
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, .cloud, .particle, .poke { animation: none !important; transition: none !important; }
+      }
+
+      /* ---------- Desktop ---------- */
+      @media (min-width: 900px) {
+        .shell { padding-bottom: 3rem; }
+        /* Am Desktop schwebt dieselbe Leiste oben in der Mitte – zwischen
+           Logo (links) und Konto (rechts), im selben Band. */
+        .tabs {
+          top: 1rem;
+          bottom: auto;
+          width: auto;
+          padding: 0.35rem;
+        }
+        .tab {
+          flex: 0 0 auto;
+          grid-auto-flow: column;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.55rem 1.1rem;
+          font-size: 0.85rem;
+        }
+        .badge { top: -4px; right: 4px; }
+        .topbar { padding: 1.1rem 0.25rem; gap: 2rem; }
+        .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1rem; }
+        .slots { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+        .actions { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .sheet { place-items: center; }
+        .sheet__card { border-radius: 26px; transform: translateY(18px) scale(0.98); }
+        .sheet[data-open] .sheet__card { transform: none; }
+        .toast { bottom: 1.6rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Die Atmosphäre der App: Wolken, Partikel, schwebende Pokémon -->
+    <div class="ambient" aria-hidden="true">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+
+      <span class="particle particle-1"></span>
+      <span class="particle particle-2"></span>
+      <span class="particle particle-3"></span>
+      <span class="particle particle-4"></span>
+      <span class="particle particle-5"></span>
+      <span class="particle particle-6"></span>
+
+      <span class="poke poke-1" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png')"></span>
+      <span class="poke poke-2" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png')"></span>
+      <span class="poke poke-3" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png')"></span>
+      <span class="poke poke-4" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png')"></span>
+      <span class="poke poke-5" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/150.png')"></span>
+      <span class="poke poke-6" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/144.png')"></span>
+      <span class="poke poke-7" style="background-image: url('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png')"></span>
+    </div>
+
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="../assets/img/9.png" alt="" />
+          <span class="brand__mark">POKÉDX</span>
+        </div>
+
+        <button class="avatar" id="accountBtn">
+          <span id="accountName">Anmelden</span>
+          <span class="avatar__dot" aria-hidden="true">↗</span>
+        </button>
+      </header>
+
+      <main>
+        <!-- ============ POKÉDEX ============ -->
+        <section class="view" data-view="dex" data-active>
+          <div class="search">
+            <input type="search" placeholder="Pokémon suchen …" aria-label="Pokémon suchen" />
+            <button class="btn-filter" id="filterBtn">
+              <span id="filterLabel">Typ</span>
+            </button>
+          </div>
+          <!-- Nur drei Ansichts-Schalter. Die 18 Typen stehen im Filter,
+               nicht als endlose Zeile zum Wischen. -->
+          <div class="chips" id="viewChips">
+            <button class="chip" aria-pressed="true">Alle</button>
+            <button class="chip">❤️ Favoriten</button>
+            <button class="chip">Mein Pokédex</button>
+          </div>
+          <div class="grid" id="dexGrid"></div>
+          <p class="hint" style="text-align: center; margin: 1.4rem 0">
+            <span id="dexCount">lädt …</span> ·
+            <button class="btn btn--ghost" id="loadMore">Mehr laden</button>
+          </p>
+        </section>
+
+        <!-- ============ TEAM ============ -->
+        <section class="view" data-view="team">
+          <div class="section-head">
+            <h2>Dein Team</h2>
+            <span class="hint" id="teamCount">4 / 6</span>
+          </div>
+          <div class="slots" id="teamSlots"></div>
+
+          <div class="actions">
+            <button class="btn btn--primary">Analysieren</button>
+            <button class="btn">Team speichern</button>
+          </div>
+
+          <div class="eich lg-surface">
+            <span class="eich__who">🔬 Professor Eich</span>
+            <p id="eichText"></p>
+          </div>
+
+          <div class="panel">
+            <div class="panel__title">Gespeicherte Teams</div>
+            <div class="row">
+              <div>
+                <strong style="font-family: var(--font-ui)">Wasser-Team</strong>
+                <span class="hint"> · 6 Pokémon</span>
+              </div>
+              <div style="display: flex; gap: 0.4rem">
+                <button class="btn" style="padding: 0.5rem 0.9rem; font-size: 0.8rem">Laden</button>
+                <button class="btn btn--ghost">Löschen</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ KAMPF ============ -->
+        <section class="view" data-view="fight">
+          <div class="section-head">
+            <h2>Gegner wählen</h2>
+            <span class="hint" id="fightTeam">Dein Team: 4 / 6</span>
+          </div>
+
+          <div class="opponents">
+            <button class="opp lg-surface" style="--type: var(--type-rock)">
+              <span class="opp__badge frost">🪨</span>
+              <span>
+                <span class="opp__name">Rocko</span>
+                <span class="opp__meta" style="display: block">Arenaleiter · Gestein · 3 Pokémon</span>
+              </span>
+              <span class="opp__go">Antreten →</span>
+            </button>
+
+            <button class="opp lg-surface" style="--type: var(--type-water)">
+              <span class="opp__badge frost">💧</span>
+              <span>
+                <span class="opp__name">Misty</span>
+                <span class="opp__meta" style="display: block">Arenaleiterin · Wasser · 3 Pokémon</span>
+              </span>
+              <span class="opp__go">Antreten →</span>
+            </button>
+
+            <div class="opp opp--soon">
+              <span class="opp__badge">🏆</span>
+              <span>
+                <span class="tagline">Bald</span>
+                <span class="opp__name" style="display: block">Andere Trainer</span>
+                <span class="opp__meta" style="display: block; color: var(--muted)">
+                  Tritt gegen die Teams echter Spieler an
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <h2>Letzte Kämpfe</h2>
+            <button class="btn btn--ghost">Alle ansehen</button>
+          </div>
+          <div class="history">
+            <div class="fight">
+              <span class="pill pill--win">Sieg</span>
+              <span>gegen <strong>Rocko</strong></span>
+              <span class="hint" style="margin-left: auto">240 Schaden · 8 Züge</span>
+            </div>
+            <div class="fight">
+              <span class="pill pill--loss">Niederlage</span>
+              <span>gegen <strong>Misty</strong></span>
+              <span class="hint" style="margin-left: auto">90 Schaden · 6 Züge</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ KONTO ============ -->
+        <section class="view" data-view="you">
+          <div class="account lg-surface">
+            <h3 id="accountTitle">Melde dich an</h3>
+            <p id="accountText">
+              Mit Konto liegt dein Team auf dem Server — auf jedem Gerät dasselbe.
+              Und sobald die Trainerkämpfe da sind, treten andere gegen genau dieses Team an.
+            </p>
+            <div style="display: flex; gap: 0.6rem; margin-top: 0.3rem">
+              <button class="btn frost" style="flex: 1" id="loginDemo">Anmelden</button>
+              <button class="btn frost" style="flex: 1">Konto anlegen</button>
+            </div>
+            <div class="stats" id="accountStats" hidden>
+              <div class="stat frost"><div class="stat__n">12</div><div class="stat__l">Kämpfe</div></div>
+              <div class="stat frost"><div class="stat__n">67%</div><div class="stat__l">Siege</div></div>
+              <div class="stat frost"><div class="stat__n">31</div><div class="stat__l">Favoriten</div></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__title">Was gespeichert wird</div>
+            <p class="hint" style="line-height: 1.6">
+              Team, gespeicherte Teams, Favoriten, Notizen und die Kampfhistorie.
+              Ohne Konto bleibt alles nur in diesem Browser.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Die Tab-Leiste gehört NICHT in die Kopfzeile: deren backdrop-filter
+         würde sie zum Bezugsrahmen machen und "position: fixed" bräche. -->
+    <nav class="tabs" role="tablist" aria-label="Bereiche">
+      <button class="tab" role="tab" aria-selected="true" data-view="dex">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M3 12h18" /><circle cx="12" cy="12" r="2.6" /></svg>
+        Pokédex
+      </button>
+      <button class="tab" role="tab" aria-selected="false" data-view="team">
+        <svg viewBox="0 0 24 24"><path d="M4 7h5v5H4zM15 7h5v5h-5zM9.5 14h5v5h-5z" /></svg>
+        Team
+        <span class="badge" id="teamBadge">4</span>
+      </button>
+      <button class="tab" role="tab" aria-selected="false" data-view="fight">
+        <svg viewBox="0 0 24 24"><path d="M14.5 4.5 19 9 8 20l-4.5-4.5z" /><path d="M16 2.5 21.5 8" /></svg>
+        Kampf
+      </button>
+      <button class="tab" role="tab" aria-selected="false" data-view="you">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /></svg>
+        Konto
+      </button>
+    </nav>
+
+    <!-- Typ-Filter: alle 18 auf einen Blick, mit dem Daumen erreichbar -->
+    <div class="sheet" id="typeSheet">
+      <div class="sheet__card lg-surface" role="dialog" aria-modal="true" aria-label="Nach Typ filtern">
+        <span class="sheet__grab"></span>
+        <div class="row">
+          <span class="sheet__name" style="font-size: 1.25rem">Nach Typ filtern</span>
+          <button class="btn btn--ghost" id="typeReset" style="color: rgba(255, 255, 255, 0.9)">Zurücksetzen</button>
+        </div>
+        <div class="typegrid" id="typeGrid"></div>
+        <button class="btn frost" id="typeClose">Fertig</button>
+      </div>
+    </div>
+
+    <!-- Detailkarte -->
+    <div class="sheet" id="sheet">
+      <div class="sheet__card lg-surface" id="sheetCard" role="dialog" aria-modal="true">
+        <span class="sheet__grab"></span>
+        <img class="sheet__img" id="sheetImg" alt="" />
+        <span class="sheet__no" id="sheetNo"></span>
+        <span class="sheet__name" id="sheetName"></span>
+        <span class="card__types" id="sheetTypes"></span>
+
+        <p class="sheet__desc" id="sheetDesc">lädt …</p>
+
+        <div class="facts" id="sheetFacts"></div>
+
+        <div class="panel__title" style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem">
+          Basiswerte
+        </div>
+        <div class="sheet__stats" id="sheetStats"></div>
+
+        <div class="panel__title" id="sheetEvoTitle" style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem" hidden>
+          Entwicklung
+        </div>
+        <div class="evo-row" id="sheetEvo" hidden></div>
+
+        <div class="panel__title" style="color: rgba(255, 255, 255, 0.85); margin-top: 0.4rem">
+          Attacken
+        </div>
+        <div class="moves" id="sheetMoves"></div>
+
+        <button class="btn frost" id="sheetAdd" style="margin-top: 0.8rem">Ins Team</button>
+        <button class="btn btn--ghost" id="sheetClose" style="color: rgba(255, 255, 255, 0.85)">Schließen</button>
+      </div>
+    </div>
+
+    <!-- Rueckmeldung -->
+    <div class="toast" id="toast">
+      <span id="toastText"></span>
+      <button id="toastUndo">Rückgängig</button>
+    </div>
+
+    <script>
+      const art = (id) =>
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+      /* Das kleine Pixel-Sprite: 5 KB statt ~300 KB. Rueckfallebene, wenn GitHub
+         das grosse Artwork abwuergt ("Image corrupt or truncated"). */
+      const sprite = (id) =>
+        `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+
+      const STAT_NAMES = ["KP", "Angriff", "Vert.", "Initiative"];
+
+      /* Echte Daten aus eurem Backend (Port 8000). Läuft es nicht, springt der
+         Entwurf auf die öffentliche PokéAPI – filtern kann man in beiden Fällen. */
+      const BACKEND = "http://127.0.0.1:8000";
+      let DEX = [];
+      let team = [];
+      let favorites = new Set([25, 143]);
+      let lastAdded = null;
+
+      const PAGE = 24; // wie im Original: eine Seite, nicht der halbe Pokedex
+
+      /* Zwei Listen: der normale Pokedex und – wenn ein Typ gewaehlt ist – die
+         Liste dieses Typs. Die kommt aus /api/pokemon/by-type/<typ>/, sonst
+         wuerde der Filter nur die 24 geladenen Karten durchsuchen und bei "Eis"
+         gar nichts finden (unter Kanto 1-24 ist kein Eis-Pokemon). */
+      const listen = {
+        alle: { items: [], offset: 0, total: Infinity },
+        typ: { items: [], offset: 0, total: Infinity },
+      };
+
+      const aktuelle = () => (activeType ? listen.typ : listen.alle);
+      let ladend = false;
+
+      function quelle() {
+        return activeType ? listen.typ.items : listen.alle.items;
+      }
+
+      /** Holt die naechste Seite – vom Typ-Endpoint oder vom normalen. */
+      async function loadPage() {
+        const btn = $("loadMore");
+        const liste = aktuelle();
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "lädt …";
+        }
+        const url = activeType
+          ? `${BACKEND}/api/pokemon/by-type/${activeType}/?offset=${liste.offset}&limit=${PAGE}`
+          : `${BACKEND}/api/pokemon/?offset=${liste.offset}&limit=${PAGE}`;
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(res.status);
+          const data = await res.json();
+          liste.total = data.count ?? Infinity;
+          liste.items = liste.items.concat(data.results.map(slim));
+          liste.offset += PAGE;
+        } catch {
+          if (!liste.items.length && !activeType) liste.items = FALLBACK.map(slim);
+          liste.total = liste.items.length;
+        }
+        DEX = listen.alle.items; // fuer Team, Suche und Detailkarte
+        updateLoadMore();
+        renderGrid();
+      }
+
+      function updateLoadMore() {
+        const btn = $("loadMore");
+        if (!btn) return;
+        const liste = aktuelle();
+        const done = liste.items.length >= liste.total;
+        btn.disabled = done;
+        btn.textContent = done ? "Alle geladen" : "Mehr laden";
+      }
+
+      async function loadDex() {
+        await loadPage();
+        // Die Team-Beispiele liegen nicht alle auf der ersten Seite (Pikachu ist
+        // die 25). Also gezielt nachladen, statt sie einfach fehlen zu lassen.
+        await ensureLoaded([6, 9, 25, 94]);
+        team = [6, 9, 25, 94].map((id) => DEX.find((p) => p.id === id)).filter(Boolean);
+        refresh();
+        $("loadMore").onclick = loadPage;
+        loadIndex(); // Namensverzeichnis für die Suche, im Hintergrund
+      }
+
+      function slim(p) {
+        const s = (name, i) => {
+          const found = (p.stats || []).find((x) => x?.stat?.name === name);
+          return found ? found.base_stat : [45, 49, 49, 45][i];
+        };
+        return {
+          id: p.id,
+          name: p.name.charAt(0).toUpperCase() + p.name.slice(1),
+          types: p.types || [],
+          image: p.image,
+          stats: [s("hp", 0), s("attack", 1), s("defense", 2), s("speed", 3)],
+        };
+      }
+
+      const FALLBACK = [
+        { id: 1, name: "bulbasaur", types: ["grass", "poison"] },
+        { id: 4, name: "charmander", types: ["fire"] },
+        { id: 7, name: "squirtle", types: ["water"] },
+        { id: 25, name: "pikachu", types: ["electric"] },
+        { id: 6, name: "charizard", types: ["fire", "flying"] },
+        { id: 9, name: "blastoise", types: ["water"] },
+        { id: 94, name: "gengar", types: ["ghost", "poison"] },
+        { id: 149, name: "dragonite", types: ["dragon", "flying"] },
+        { id: 143, name: "snorlax", types: ["normal"] },
+        { id: 95, name: "onix", types: ["rock", "ground"] },
+      ].map((p) => ({ ...p, image: art(p.id), stats: [] }));
+
+      const $ = (id) => document.getElementById(id);
+
+      /* Kontext = Farbe. Der Akzent färbt Tabs und Flächen, der Himmel
+         wechselt über eure body.type-* Klassen. Ein Prinzip, kein neues. */
+      const TYPE_HEX = {
+        normal: "#a8a878", fire: "#f08030", water: "#6890f0", electric: "#f8d030",
+        grass: "#78c850", ice: "#98d8d8", fighting: "#c03028", poison: "#a040a0",
+        ground: "#e0c068", flying: "#a890f0", psychic: "#f85888", bug: "#a8b820",
+        rock: "#b8a038", ghost: "#705898", dragon: "#7038f8", dark: "#705848",
+        steel: "#b8b8d0", fairy: "#ee99ac",
+      };
+      const TYPE_DE = {
+        normal: "Normal", fire: "Feuer", water: "Wasser", electric: "Elektro",
+        grass: "Pflanze", ice: "Eis", fighting: "Kampf", poison: "Gift",
+        ground: "Boden", flying: "Flug", psychic: "Psycho", bug: "Käfer",
+        rock: "Gestein", ghost: "Geist", dragon: "Drache", dark: "Unlicht",
+        steel: "Stahl", fairy: "Fee",
+      };
+
+      /* Der Hintergrund folgt dem Kontext – genau wie in eurer App, wo
+         body.type-fire den Himmel rot färbt. Hier für alle 18 Typen. */
+      function setContext(type) {
+        const hex = type ? TYPE_HEX[type] : "#4ecdc4";
+        document.documentElement.style.setProperty("--accent", hex);
+        if (type) {
+          document.body.dataset.type = type;
+          document.body.style.setProperty("--sky", hex);
+        } else {
+          delete document.body.dataset.type;
+        }
+      }
+
+      /* ---- Ansichts-Chips (Alle / Favoriten / Mein Pokédex) ---- */
+      const MODES = ["alle", "favoriten", "pokedex"];
+      document.querySelectorAll("#viewChips .chip").forEach((c, i) => {
+        c.onclick = () => {
+          document.querySelectorAll("#viewChips .chip").forEach((x) => x.setAttribute("aria-pressed", "false"));
+          c.setAttribute("aria-pressed", "true");
+          viewMode = MODES[i];
+          renderGrid();
+        };
+      });
+
+      /* ---- Typ-Filter im Sheet ---- */
+      let activeType = null;
+      const typeGrid = $("typeGrid");
+      Object.keys(TYPE_HEX).forEach((t) => {
+        const b = document.createElement("button");
+        b.className = "type-btn";
+        b.setAttribute("aria-pressed", "false");
+        b.style.setProperty("--type", TYPE_HEX[t]);
+        b.innerHTML = `<img src="../assets/icon/${t}.svg" alt=""><span>${TYPE_DE[t]}</span>`;
+        b.onclick = () => selectType(t === activeType ? null : t);
+        typeGrid.append(b);
+      });
+
+      async function selectType(type) {
+        activeType = type;
+        document.querySelectorAll(".type-btn").forEach((b, i) => {
+          const t = Object.keys(TYPE_HEX)[i];
+          b.setAttribute("aria-pressed", String(t === type));
+        });
+        $("filterLabel").textContent = type ? TYPE_DE[type] : "Typ";
+        $("filterBtn").toggleAttribute("data-on", Boolean(type));
+        setContext(type); // Der Himmel färbt sich – wie im Original.
+        $("typeSheet").removeAttribute("data-open");
+
+        if (type) {
+          listen.typ = { items: [], offset: 0, total: Infinity }; // frisch anfangen
+          $("dexCount").textContent = `${TYPE_DE[type]} lädt …`;
+          ladend = true;
+          renderGrid(); // Platzhalter statt der alten Karten
+          await loadPage(); // holt die Liste dieses Typs aus dem Backend
+          ladend = false;
+          renderGrid();
+        } else {
+          updateLoadMore();
+          renderGrid();
+        }
+      }
+
+      $("filterBtn").onclick = () => $("typeSheet").setAttribute("data-open", "");
+      $("typeClose").onclick = () => $("typeSheet").removeAttribute("data-open");
+      $("typeReset").onclick = () => {
+        selectType(null);
+        $("typeSheet").removeAttribute("data-open");
+      };
+      $("typeSheet").onclick = (e) => {
+        if (e.target === $("typeSheet")) $("typeSheet").removeAttribute("data-open");
+      };
+
+      /* ---- Pokédex: filtern, suchen, anzeigen ---- */
+      const grid = $("dexGrid");
+      let viewMode = "alle"; // alle | favoriten | pokedex
+      let query = "";
+
+      function visible() {
+        // Bei aktivem Typ zeigt das Raster die Liste dieses Typs vom Backend.
+        return quelle().filter((p) => {
+          if (viewMode === "favoriten" && !favorites.has(p.id)) return false;
+          if (viewMode === "pokedex" && !favorites.has(p.id) && !team.some((t) => t.id === p.id)) return false;
+          if (query) {
+            const suchbar = `${anzeigename(p)} ${p.name}`.toLowerCase();
+            if (!suchbar.includes(query)) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderGrid() {
+        const list = visible();
+        grid.innerHTML = "";
+        // Waehrend die Liste eines Typs geholt wird, stehen sonst die alten
+        // Karten da – und es sieht aus, als tue der Filter nichts.
+        if (ladend) {
+          grid.innerHTML = Array.from({ length: 6 })
+            .map(() => `<div class="card card--skeleton"></div>`)
+            .join("");
+          return;
+        }
+        if (!list.length) {
+          grid.innerHTML = `<p class="hint" style="grid-column: 1/-1; text-align: center; padding: 2rem 0">
+            Kein Pokémon passt. Nimm den Filter zurück oder such nach etwas anderem.</p>`;
+        }
+        list.forEach((p, i) => {
+          const card = document.createElement("button");
+          card.className = "card"; // die schlanke Glas-Fassung, nicht lg-surface
+          card.style.setProperty("--type", TYPE_HEX[p.types[0]] || "#a8a878");
+          card.style.animationDelay = `${Math.min(i, 12) * 40}ms`;
+          const fav = favorites.has(p.id);
+          const inTeam = team.some((x) => x.id === p.id);
+          card.innerHTML = `
+            <span class="card__no">#${String(p.id).padStart(3, "0")}</span>
+            <img class="card__img" src="${p.image || art(p.id)}" alt="${anzeigename(p)}"
+                 loading="lazy" decoding="async" fetchpriority="low" width="200" height="200"
+                 onerror="this.onerror=null; this.src='${sprite(p.id)}'; this.classList.add('is-sprite')">
+            <span class="card__name">${anzeigename(p)}</span>
+            <span class="card__types">${p.types.map((t) => `<span class="t">${TYPE_DE[t] || t}</span>`).join("")}</span>
+            <button class="card__fav" data-fav="${p.id}" aria-label="Favorit">${fav ? "❤️" : "🤍"}</button>
+            <button class="card__add" data-id="${p.id}" aria-label="${p.name} ins Team">${inTeam ? "✓" : "+"}</button>`;
+          if (inTeam) card.querySelector(".card__add").setAttribute("data-in", "");
+          card.onclick = (e) => {
+            if (e.target.closest(".card__add") || e.target.closest(".card__fav")) return;
+            openSheet(p);
+          };
+          card.querySelector(".card__add").onclick = () => addToTeam(p);
+          card.querySelector(".card__fav").onclick = () => {
+            favorites.has(p.id) ? favorites.delete(p.id) : favorites.add(p.id);
+            renderGrid();
+          };
+          grid.append(card);
+        });
+        const liste = aktuelle();
+        const gesamt = Number.isFinite(liste.total) ? liste.total : liste.items.length;
+        const was = activeType ? `${TYPE_DE[activeType]}: ` : "";
+        $("dexCount").textContent =
+          list.length === liste.items.length
+            ? `${was}${liste.items.length} von ${gesamt} geladen`
+            : `${list.length} Treffer · ${was}${liste.items.length} von ${gesamt} geladen`;
+      }
+
+      /* Suche über den GANZEN Pokédex, nicht nur über die geladenen Karten.
+         Das Namensverzeichnis kommt einmal aus dem Backend (und liegt dort im
+         Cache); Treffer, die noch nicht geladen sind, holt die Suche nach. */
+      let INDEX = [];
+
+      /* Das Namensverzeichnis kommt jetzt aus EUREM Backend und enthaelt die
+         deutschen Namen. Damit findet die Suche "Evoli", nicht nur "eevee". */
+      const NAME_DE = new Map();
+
+      async function loadIndex() {
+        try {
+          const res = await fetch(`${BACKEND}/api/pokemon/names/`);
+          const data = await res.json();
+          INDEX = data.names.map((n) => ({
+            id: n.id,
+            name: `${n.de} ${n.en}`.toLowerCase(), // beide Sprachen durchsuchbar
+          }));
+          data.names.forEach((n) => n.de && NAME_DE.set(n.id, n.de));
+          renderGrid(); // Karten zeigen jetzt die deutschen Namen
+        } catch {
+          INDEX = [];
+        }
+      }
+
+      /** Der deutsche Name, solange er da ist - sonst der englische. */
+      const anzeigename = (p) => NAME_DE.get(p.id) || p.nameDe || p.name;
+
+      function rawSlim(raw) {
+        return {
+          id: raw.id,
+          name: raw.name.charAt(0).toUpperCase() + raw.name.slice(1),
+          types: (raw.types || []).map((t) => t.type.name),
+          image:
+            raw.sprites?.other?.["official-artwork"]?.front_default || art(raw.id),
+          stats: [],
+        };
+      }
+
+      async function ensureLoaded(ids) {
+        const missing = ids.filter((id) => !DEX.some((p) => p.id === id));
+        if (!missing.length) return;
+        const raws = await Promise.all(
+          missing.slice(0, 24).map((id) =>
+            fetch(`${BACKEND}/api/pokeapi/pokemon/${id}`).then((r) => r.json()).catch(() => null),
+          ),
+        );
+        listen.alle.items = listen.alle.items.concat(raws.filter(Boolean).map(rawSlim));
+        DEX = listen.alle.items;
+      }
+
+      let searchTimer = null;
+      document.querySelector(".search input").addEventListener("input", (e) => {
+        query = e.target.value.trim().toLowerCase();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(async () => {
+          if (query.length >= 2 && INDEX.length) {
+            const hits = INDEX.filter((p) => p.name.includes(query)).map((p) => p.id);
+            if (hits.length) await ensureLoaded(hits);
+          }
+          renderGrid();
+        }, 250);
+      });
+
+      /* ---- Team ---- */
+      function renderTeam() {
+        const slots = $("teamSlots");
+        slots.innerHTML = "";
+        team.forEach((p) => {
+          const s = document.createElement("div");
+          s.className = "slot slot--filled lg-surface";
+          s.style.setProperty("--type", `var(--type-${p.types[0]})`);
+          s.innerHTML = `
+            <img src="${p.image || art(p.id)}" alt="${anzeigename(p)}">
+            <span class="slot__name">${anzeigename(p)}</span>
+            <button class="slot__x" aria-label="${anzeigename(p)} entfernen">×</button>`;
+          s.querySelector(".slot__x").onclick = () => {
+            team = team.filter((x) => x.id !== p.id);
+            refresh();
+          };
+          slots.append(s);
+        });
+        for (let i = team.length; i < 6; i++) {
+          const s = document.createElement("div");
+          s.className = "slot slot--empty";
+          s.textContent = "+";
+          slots.append(s);
+        }
+      }
+
+      function dominantType() {
+        if (!team.length) return null;
+        const counts = {};
+        team.forEach((p) => (counts[p.types[0]] = (counts[p.types[0]] || 0) + 1));
+        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      }
+
+      function refresh() {
+        renderTeam();
+        $("teamCount").textContent = `${team.length} / 6`;
+        $("fightTeam").textContent = `Dein Team: ${team.length} / 6`;
+        const badge = $("teamBadge");
+        badge.textContent = team.length;
+        badge.hidden = team.length === 0;
+        $("eichText").textContent = team.length >= 6
+          ? "Sechs von sechs. Deine Feuer- und Wasser-Attacken decken viel ab — gegen Boden bleibst du anfällig."
+          : `Noch ${6 - team.length} ${6 - team.length === 1 ? "Platz" : "Plätze"} frei. Gegen Gestein fehlt dir eine Antwort — ein Wasser-Pokémon würde die Lücke schließen.`;
+        renderGrid(); // die Häkchen auf den Karten stimmen wieder
+        // Der Team-Bereich traegt die Farbe des Teams.
+        const teamTab = document.querySelector('.tab[data-view="team"]');
+        teamTab.dataset.type = dominantType() || "";
+        if (teamTab.getAttribute("aria-selected") === "true") setContext(dominantType());
+      }
+
+      function addToTeam(p) {
+        if (team.some((x) => x.id === p.id)) {
+          toast(`${anzeigename(p)} ist schon in deinem Team.`, false);
+          return;
+        }
+        if (team.length >= 6) {
+          toast("Dein Team ist voll. Nimm erst eins heraus.", false);
+          return;
+        }
+        team.push(p);
+        lastAdded = p.id;
+        refresh();
+        toast(`${anzeigename(p)} ist in deinem Team (${team.length}/6).`, true);
+      }
+
+      /* ---- Rückmeldung ---- */
+      let toastTimer = null;
+      function toast(text, undoable) {
+        $("toastText").textContent = text;
+        $("toastUndo").hidden = !undoable;
+        const el = $("toast");
+        el.setAttribute("data-show", "");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.removeAttribute("data-show"), 3200);
+      }
+      $("toastUndo").onclick = () => {
+        if (lastAdded == null) return;
+        team = team.filter((p) => p.id !== lastAdded);
+        lastAdded = null;
+        refresh();
+        $("toast").removeAttribute("data-show");
+      };
+
+      /* ---- Detailkarte: derselbe Umfang wie eure Originalkarte ---- */
+      const STAT_DE = {
+        hp: "KP", attack: "Angriff", defense: "Verteidigung",
+        "special-attack": "Sp. Angriff", "special-defense": "Sp. Vert.", speed: "Initiative",
+      };
+      const detailCache = new Map();
+
+      async function fetchDetail(id) {
+        if (detailCache.has(id)) return detailCache.get(id);
+        const [full, species] = await Promise.all([
+          fetch(`${BACKEND}/api/pokeapi/pokemon/${id}`).then((r) => r.json()),
+          fetch(`${BACKEND}/api/pokeapi/pokemon-species/${id}`).then((r) => r.json()).catch(() => null),
+        ]);
+        const text = species?.flavor_text_entries?.find((e) => e.language.name === "de")
+          || species?.flavor_text_entries?.find((e) => e.language.name === "en");
+        const data = {
+          desc: (text?.flavor_text || "").replace(/[\n\f]/g, " "),
+          height: (full.height / 10).toFixed(1),
+          weight: (full.weight / 10).toFixed(1),
+          exp: full.base_experience || "?",
+          stats: (full.stats || []).map((s) => ({ name: STAT_DE[s.stat.name] || s.stat.name, value: s.base_stat })),
+          moves: (full.moves || []).slice(0, 8).map((m) => m.move.name.replace(/-/g, " ")),
+          evolution: await fetchEvolution(species),
+        };
+        detailCache.set(id, data);
+        return data;
+      }
+
+      /* Die Entwicklungsreihe: Bisasam -> Bisaknosp -> Bisaflor.
+         Steckt hinter species.evolution_chain – eine Kette verschachtelter
+         Knoten, die wir zu einer flachen Liste ausrollen. */
+      async function fetchEvolution(species) {
+        const url = species?.evolution_chain?.url;
+        if (!url) return [];
+        try {
+          const pfad = url.split("/api/v2/")[1].replace(/\/$/, "");
+          const chain = await fetch(`${BACKEND}/api/pokeapi/${pfad}`).then((r) => r.json());
+          return stufenweise(chain.chain);
+        } catch {
+          return [];
+        }
+      }
+
+      /* Die Kette ebenenweise ausrollen, nicht nur die erste Linie:
+         Evoli hat acht Entwicklungen - eine davon zu zeigen waere gelogen.
+         Ergebnis: [[Evoli], [Aquana, Blitza, Flamara, ...]] */
+      function stufenweise(wurzel) {
+        const stufen = [];
+        let ebene = [wurzel];
+        while (ebene.length) {
+          stufen.push(
+            ebene.map((n) => ({
+              id: Number(n.species.url.split("/").filter(Boolean).pop()),
+              name: n.species.name,
+            })),
+          );
+          ebene = ebene.flatMap((n) => n.evolves_to || []);
+        }
+        return stufen;
+      }
+
+      function renderEvolution(stufen) {
+        const box = $("sheetEvo");
+        const title = $("sheetEvoTitle");
+        if (!stufen || stufen.length < 2) {
+          box.innerHTML = "";
+          box.hidden = true;
+          title.hidden = true;
+          return;
+        }
+        box.hidden = false;
+        title.hidden = false;
+        box.innerHTML = stufen
+          .map(
+            (ebene, i) => `
+          ${i ? '<span class="evo__arrow" aria-hidden="true">→</span>' : ""}
+          <div class="evo__stufe">
+            ${ebene
+              .map(
+                (s) => `
+              <button class="evo" data-evo="${s.id}">
+                <img src="${sprite(s.id)}" alt="" width="56" height="56">
+                <span class="evo__name">${NAME_DE.get(s.id) || s.name}</span>
+              </button>`,
+              )
+              .join("")}
+          </div>`,
+          )
+          .join("");
+        box.querySelectorAll("[data-evo]").forEach((b) => {
+          b.onclick = async () => {
+            const id = Number(b.dataset.evo);
+            await ensureLoaded([id]);
+            const p = DEX.find((x) => x.id === id);
+            if (p) openSheet(p); // dieselbe Karte, neues Pokemon
+          };
+        });
+      }
+
+      function openSheet(p) {
+        const card = $("sheetCard");
+        card.style.setProperty("--type", TYPE_HEX[p.types[0]] || "#a8a878");
+        $("sheetImg").src = p.image || art(p.id);
+        $("sheetImg").alt = p.name;
+        $("sheetNo").textContent = `#${String(p.id).padStart(3, "0")}`;
+        $("sheetName").textContent = anzeigename(p);
+        $("sheetTypes").innerHTML = p.types.map((t) => `<span class="t">${TYPE_DE[t] || t}</span>`).join("");
+        $("sheetDesc").textContent = "lädt …";
+        $("sheetFacts").innerHTML = "";
+        $("sheetStats").innerHTML = "";
+        $("sheetMoves").innerHTML = "";
+        $("sheetAdd").onclick = () => {
+          addToTeam(p);
+          closeSheet();
+        };
+        $("sheet").setAttribute("data-open", "");
+
+        fetchDetail(p.id)
+          .then((d) => fillSheet(d))
+          .catch(() => ($("sheetDesc").textContent = "Details nicht erreichbar. Läuft das Backend?"));
+      }
+
+      function fillSheet(d) {
+        $("sheetDesc").textContent = d.desc || "Keine Beschreibung vorhanden.";
+        $("sheetFacts").innerHTML = `
+          <div class="fact"><div class="fact__v">${d.height} m</div><div class="fact__l">Größe</div></div>
+          <div class="fact"><div class="fact__v">${d.weight} kg</div><div class="fact__l">Gewicht</div></div>
+          <div class="fact"><div class="fact__v">${d.exp}</div><div class="fact__l">Erfahrung</div></div>`;
+        $("sheetStats").innerHTML = d.stats
+          .map(
+            (s) => `
+          <div class="bar">
+            <span>${s.name}</span>
+            <span class="bar__track"><span class="bar__fill" data-w="${Math.min(100, (s.value / 200) * 100)}"></span></span>
+            <span style="text-align:right">${s.value}</span>
+          </div>`,
+          )
+          .join("");
+        // Erst im naechsten Frame fuellen, sonst springt der Balken ohne Animation.
+        requestAnimationFrame(() => {
+          document.querySelectorAll("#sheetStats .bar__fill").forEach((el, i) => {
+            el.style.transitionDelay = `${i * 70}ms`;
+            el.style.width = `${el.dataset.w}%`;
+          });
+        });
+        $("sheetMoves").innerHTML = d.moves.map((m) => `<span class="move">${m}</span>`).join("");
+        renderEvolution(d.evolution);
+      }
+      const closeSheet = () => $("sheet").removeAttribute("data-open");
+      $("sheetClose").onclick = closeSheet;
+      $("sheet").onclick = (e) => {
+        if (e.target === $("sheet")) closeSheet();
+      };
+      document.addEventListener("keydown", (e) => e.key === "Escape" && closeSheet());
+
+      /* ---- Tabs ---- */
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.onclick = () => {
+          document.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", "false"));
+          tab.setAttribute("aria-selected", "true");
+          document.querySelectorAll(".view").forEach((v) => v.removeAttribute("data-active"));
+          document.querySelector(`.view[data-view="${tab.dataset.view}"]`).setAttribute("data-active", "");
+          const view = tab.dataset.view;
+          if (view === "team") setContext(dominantType());
+          else if (view === "fight") setContext("rock"); // Farbe des Gegners
+          else if (view === "you") setContext(null);
+          else setContext(activeType); // Pokédex: der gewählte Typ, sonst Himmel
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+      });
+
+      /* ---- Konto-Demo ---- */
+      let loggedIn = false;
+      $("loginDemo").onclick = () => {
+        loggedIn = !loggedIn;
+        $("accountName").textContent = loggedIn ? "Ash" : "Anmelden";
+        $("accountTitle").textContent = loggedIn ? "Hallo, Ash" : "Melde dich an";
+        $("accountText").textContent = loggedIn
+          ? "Dein Team liegt auf dem Server. Sobald die Trainerkämpfe starten, treten andere gegen genau dieses Team an."
+          : "Mit Konto liegt dein Team auf dem Server — auf jedem Gerät dasselbe. Und sobald die Trainerkämpfe da sind, treten andere gegen genau dieses Team an.";
+        $("accountStats").hidden = !loggedIn;
+        $("loginDemo").textContent = loggedIn ? "Abmelden" : "Anmelden";
+      };
+      $("accountBtn").onclick = () => document.querySelector('.tab[data-view="you"]').click();
+
+      loadDex();
+    </script>
+  </body>
+</html>

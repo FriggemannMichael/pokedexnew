@@ -1,0 +1,87 @@
+/* Gespeicherte Teams ("Presets") unter dem Team-Builder.
+   Immer sichtbar - gerade bei leerem Team will man ja eins laden. */
+
+.team-presets {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 55%);
+  border: 1px solid rgb(255 255 255 / 60%);
+  backdrop-filter: blur(10px);
+}
+
+.team-presets__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.85rem;
+}
+
+.team-presets__title {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  color: var(--text-color, #1f2937);
+  margin: 0;
+}
+
+.team-presets__empty {
+  margin: 0;
+  opacity: 0.7;
+  font-size: 0.92rem;
+}
+
+.team-presets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.team-preset {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.85rem;
+  background: rgb(255 255 255 / 70%);
+}
+
+.team-preset__name {
+  font-weight: 600;
+  min-width: 8rem;
+}
+
+.team-preset__count {
+  font-size: 0.85rem;
+  opacity: 0.65;
+}
+
+.team-preset__sprites {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 6rem;
+}
+
+.team-preset__sprite {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.team-preset__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+@media (max-width: 576px) {
+  .team-preset__actions {
+    width: 100%;
+    margin-left: 0;
+  }
+}

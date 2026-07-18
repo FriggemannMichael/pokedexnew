@@ -1,0 +1,213 @@
+/* =========================================================
+   Grundlage aus dem abgenommenen Entwurf (design-draft/index.html):
+   Schriften, Farben, Himmel, Atmosphäre, Liquid-Glass-Rezeptur.
+   1:1 übernommen – nur die Font-Pfade zeigen auf assets/fonts.
+   ========================================================= */
+
+@font-face {
+  font-family: "Outfit";
+  src: url("../../fonts/Outfit-VariableFont_wght.ttf") format("truetype");
+  font-weight: 100 900;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("../../fonts/Poppins-Medium.ttf") format("truetype");
+  font-weight: 500;
+}
+@font-face {
+  font-family: "Poppins";
+  src: url("../../fonts/Poppins-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("../../fonts/Inter-VariableFont_opsz,wght.ttf") format("truetype");
+  font-weight: 100 900;
+}
+
+:root {
+  --primary: #ff6b6b;
+  --secondary: #4ecdc4;
+  --ink: #17303f;
+  --muted: #5b7183;
+
+  --type-fire: #f08030;
+  --type-water: #6890f0;
+  --type-grass: #78c850;
+  --type-electric: #f8d030;
+  --type-rock: #b8a038;
+  --type-poison: #a040a0;
+  --type-flying: #a890f0;
+  --type-dragon: #7038f8;
+  --type-ghost: #705898;
+  --type-normal: #a8a878;
+
+  --font-title: "Outfit", system-ui, sans-serif;
+  --font-ui: "Poppins", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+
+  /* Leitmotiv: Die App faerbt sich nach Kontext. */
+  --accent: var(--secondary);
+  --tab-h: 68px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ---------- Der Himmel: exakt der Verlauf aus main-base.css ---------- */
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  background: linear-gradient(135deg, #87ceeb 0%, #98e4e8 25%, #a8e6cf 50%, #87ceeb 75%, #b8e6b8 100%);
+  background-attachment: fixed;
+  transition: background 0.8s ease;
+}
+/* Der Punktraster-Schleier */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 50px 50px, 60px 60px, 30px 30px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+/* Typ-Hintergrund – für ALLE 18 Typen aus der Typfarbe gerechnet,
+   statt sechs handgeschriebene Verläufe. */
+body[data-type] {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--sky) 80%, #fff) 0%,
+    color-mix(in srgb, var(--sky) 95%, #fff) 25%,
+    color-mix(in srgb, var(--sky) 62%, #fff) 50%,
+    var(--sky) 75%,
+    color-mix(in srgb, var(--sky) 78%, #000) 100%
+  );
+  background-attachment: fixed;
+}
+
+/* ---------- Atmosphäre: Wolken, Partikel und Pokémon ----------
+   Nicht in einem 350px-Hero eingesperrt, sondern fest hinter der
+   ganzen App. */
+.ambient {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Nur der Inhalt braucht hier einen Stapelkontext. Die Tab-Leiste, das
+   Sheet und der Toast bringen ihre eigene Positionierung mit – die darf
+   man ihnen nicht wegnehmen. */
+.shell { position: relative; z-index: 2; }
+
+/* Kein backdrop-filter auf den Wolken: Sie bewegen sich staendig, und
+   eine Blur-Ebene, die jeden Frame neu gerechnet wird, bringt schwache
+   Grafik zum Flackern. Weiss mit Transparenz reicht voellig. */
+.ambient .cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50px;
+  opacity: 0.6;
+  will-change: transform;
+}
+.ambient .cloud:before,
+.ambient .cloud:after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50px;
+}
+.cloud-1 { width: 120px; height: 40px; top: 12%; left: -120px; animation: cloudMove1 25s linear infinite; }
+.cloud-1:before { width: 50px; height: 50px; top: -25px; left: 10px; }
+.cloud-1:after { width: 60px; height: 40px; top: -15px; right: 10px; }
+.cloud-2 { width: 80px; height: 30px; top: 34%; left: -80px; animation: cloudMove2 30s linear infinite 5s; }
+.cloud-2:before { width: 40px; height: 40px; top: -20px; left: 15px; }
+.cloud-2:after { width: 50px; height: 30px; top: -10px; right: 15px; }
+.cloud-3 { width: 100px; height: 35px; top: 62%; left: -100px; animation: cloudMove3 35s linear infinite 10s; }
+.cloud-3:before { width: 45px; height: 45px; top: -22px; left: 20px; }
+.cloud-3:after { width: 55px; height: 35px; top: -12px; right: 20px; }
+@keyframes cloudMove1 { 0% { transform: translateX(-120px); } 100% { transform: translateX(calc(100vw + 120px)); } }
+@keyframes cloudMove2 { 0% { transform: translateX(-80px); } 100% { transform: translateX(calc(100vw + 80px)); } }
+@keyframes cloudMove3 { 0% { transform: translateX(-100px); } 100% { transform: translateX(calc(100vw + 100px)); } }
+
+.ambient .particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+.particle-1 { width: 4px; height: 4px; bottom: 0; left: 10%; animation: particleFloat1 8s ease-in-out infinite; }
+.particle-2 { width: 6px; height: 6px; bottom: 0; left: 25%; animation: particleFloat2 10s ease-in-out infinite 2s; }
+.particle-3 { width: 3px; height: 3px; bottom: 0; left: 40%; animation: particleFloat3 7s ease-in-out infinite 1s; }
+.particle-4 { width: 5px; height: 5px; bottom: 0; left: 60%; animation: particleFloat4 9s ease-in-out infinite 3s; }
+.particle-5 { width: 4px; height: 4px; bottom: 0; left: 75%; animation: particleFloat5 8s ease-in-out infinite 1.5s; }
+.particle-6 { width: 6px; height: 6px; bottom: 0; left: 90%; animation: particleFloat6 11s ease-in-out infinite 4s; }
+@keyframes particleFloat1 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; } }
+@keyframes particleFloat2 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.8; } 100% { transform: translateY(-100vh) rotate(-360deg); opacity: 0; } }
+@keyframes particleFloat3 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(180deg); opacity: 0; } }
+@keyframes particleFloat4 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.9; } 100% { transform: translateY(-100vh) rotate(-180deg); opacity: 0; } }
+@keyframes particleFloat5 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 1; } 100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; } }
+@keyframes particleFloat6 { 0% { transform: translateY(0) rotate(0); opacity: 0; } 10%, 90% { opacity: 0.7; } 100% { transform: translateY(-100vh) rotate(-270deg); opacity: 0; } }
+
+/* Die kleinen Pokémon, die hinten aufblinken */
+.ambient .poke {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  opacity: 0.3;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  image-rendering: pixelated;
+  animation: floatPokemon 8s ease-in-out infinite;
+}
+.poke-1 { top: 18%; left: 8%; animation-delay: 0s; }
+.poke-2 { top: 58%; left: 84%; animation-delay: 1s; }
+.poke-3 { top: 40%; left: 4%; animation-delay: 2s; }
+.poke-4 { top: 78%; left: 62%; animation-delay: 3s; }
+.poke-5 { top: 26%; left: 78%; animation-delay: 4s; }
+.poke-6 { top: 68%; left: 28%; animation-delay: 5s; }
+.poke-7 { top: 88%; left: 14%; animation-delay: 2.5s; }
+@keyframes floatPokemon {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); opacity: 0.2; }
+  25% { transform: translateY(-15px) rotate(5deg) scale(1.1); opacity: 0.4; }
+  50% { transform: translateY(-8px) rotate(-3deg) scale(0.95); opacity: 0.3; }
+  75% { transform: translateY(-20px) rotate(8deg) scale(1.05); opacity: 0.45; }
+}
+
+/* ---------- Liquid Glass: die Rezeptur ---------- */
+.lg-surface {
+  background:
+    radial-gradient(55% 38% at 24% 4%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(125deg, transparent 0%, rgba(255, 255, 255, 0.2) 24%, transparent 38%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 22%, transparent 46%),
+    radial-gradient(95% 85% at 85% 104%, color-mix(in srgb, var(--accent) 52%, #000) 0%, transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 84%, #fff) 0%, var(--accent) 46%, color-mix(in srgb, var(--accent) 66%, #000) 100%);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 20px 60px rgba(31, 38, 135, 0.26),
+    inset 0 2px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -55px 90px rgba(0, 0, 0, 0.18);
+}
+.frost {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, .cloud, .particle, .poke { animation: none !important; transition: none !important; }
+}

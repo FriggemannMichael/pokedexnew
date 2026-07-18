@@ -54,24 +54,24 @@ Das Frontend muss dafür **nicht** umgebaut werden.
 
 ## Tech-Stack (bewusst schlank gehalten)
 
-| Baustein   | Wahl                       | Wofür                                  |
-| ---------- | -------------------------- | -------------------------------------- |
-| Framework  | Django + Django REST Framework | Web-Backend und REST-API           |
-| Datenbank  | SQLite (lokal)             | Null-Setup zum Entwickeln              |
-| API-Doku   | drf-spectacular (Swagger)  | API im Browser anschauen und testen    |
-| CORS       | django-cors-headers        | Frontend darf das Backend aufrufen     |
+| Baustein  | Wahl                           | Wofür                               |
+| --------- | ------------------------------ | ----------------------------------- |
+| Framework | Django + Django REST Framework | Web-Backend und REST-API            |
+| Datenbank | SQLite (lokal)                 | Null-Setup zum Entwickeln           |
+| API-Doku  | drf-spectacular (Swagger)      | API im Browser anschauen und testen |
+| CORS      | django-cors-headers            | Frontend darf das Backend aufrufen  |
 
 Login (JWT), PostgreSQL, Docker und Deployment kommen **später** – Schritt für
 Schritt, nicht alles auf einmal.
 
 ## Die Phasen (Meilensteine auf GitHub)
 
-| Meilenstein            | Inhalt                                                       |
-| ---------------------- | ----------------------------------------------------------- |
-| **M1 – Backend-Gerüst** | Django + DRF + Health-Endpoint + Swagger + diese Doku        |
-| **M2 – Daten holen & cachen** | PokéAPI-Proxy + KI-Proxy von Node nach Django umziehen |
-| **M3 – Login & Speichern** | Accounts + Datenbank für Team/Favoriten/Ratings/Notizen  |
-| **M4 – DevSecOps**      | Docker, CI/CD, Deployment, Security (nächster Kurs)         |
+| Meilenstein                   | Inhalt                                                  |
+| ----------------------------- | ------------------------------------------------------- |
+| **M1 – Backend-Gerüst**       | Django + DRF + Health-Endpoint + Swagger + diese Doku   |
+| **M2 – Daten holen & cachen** | PokéAPI-Proxy + KI-Proxy von Node nach Django umziehen  |
+| **M3 – Login & Speichern**    | Accounts + Datenbank für Team/Favoriten/Ratings/Notizen |
+| **M4 – DevSecOps**            | Docker, CI/CD, Deployment, Security (nächster Kurs)     |
 
 ## Lokal starten (sobald M1 gebaut ist)
 
@@ -91,5 +91,49 @@ Dann im Browser:
 
 ## Status
 
-Aktuell ist nur der **Plan** festgehalten. M1 (das Gerüst) wird als Nächstes
-gebaut – siehe die offenen Issues unter dem Meilenstein „M1 – Backend-Gerüst".
+**M1 ist gebaut:** Django, Django REST Framework, Health-Endpoint,
+Swagger/OpenAPI und CORS liegen unter `backend/`.
+
+**M2 ist gebaut:** PokeAPI-Zugriff _und_ KI-Anfragen laufen jetzt komplett ueber
+das Django-Backend.
+
+Konkret hat sich dadurch geaendert:
+
+- Das Frontend spricht **nicht mehr direkt** mit der PokeAPI. Alle Zugriffe
+  laufen ueber `script/utils/pokeapi-client.js` – die einzige Stelle, die die
+  PokeAPI ueberhaupt noch kennt (als Notfall-Rueckfallebene, falls das Backend
+  nicht laeuft).
+- Das **Nachladen der Detailseiten** ist ins Backend gewandert: Frueher holte der
+  Browser fuer die erste Seite 21 Ressourcen (1 Liste + 20 Details), heute
+  genuegt **eine** Anfrage an `/api/pokemon/`.
+- Die **KI** ist von Node (`server.js`) nach Django gezogen, samt Rate-Limit
+  (30 Anfragen pro Minute und IP). Inzwischen liegen dort auch die **Prompts**
+  (`backend/api/prompts.py`): Das Frontend schickt nur noch Rohdaten an einen
+  Endpoint je KI-Funktion (`backend/api/ai_views.py`) und bekommt fertigen Text
+  bzw. fertiges JSON zurueck. Faellt ein Anbieter aus, nimmt `backend/api/ai.py`
+  automatisch den naechsten.
+- Die alte, nirgends eingebundene `script/api.js` ist entfallen – ihre Logik
+  (`createPokemonData`, Typ-Filter) steckt jetzt in `backend/api/transform.py`
+  und `backend/api/views.py`.
+
+**Node ist damit fast weg:** `server.js` liefert nur noch die statischen Dateien
+aus (Port 3000). Express-Zusatzpakete (`cors`, `dotenv`, `node-fetch`) sind
+entfallen.
+
+## Beide Teile starten
+
+```bash
+# Terminal 1 – Backend (API, Cache, KI)
+cd backend
+.venv\Scripts\activate
+python manage.py runserver        # http://127.0.0.1:8000
+
+# Terminal 2 – Frontend
+npm start                         # http://localhost:3000
+```
+
+Laeuft das Backend nicht, faellt das Frontend automatisch auf die oeffentliche
+PokeAPI zurueck. Die KI-Funktionen sind dann still deaktiviert.
+
+**Als Naechstes:** M3 (Login und echte Persistenz fuer Team, Favoriten, Ratings,
+Notizen und Battle-Historie) und danach M4 (Docker, CI/CD, Deployment, Security).

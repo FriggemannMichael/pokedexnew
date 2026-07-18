@@ -8,14 +8,20 @@ const unusedVars = ["warn", { argsIgnorePattern: "^_" }];
 
 module.exports = [
   {
-    ignores: ["node_modules/**", "assets/**", "package-lock.json", "*.min.js"],
+    ignores: [
+      "node_modules/**",
+      "assets/**",
+      "backend/**",
+      "package-lock.json",
+      "*.min.js",
+    ],
   },
 
   // Klassische Browser-Skripte: teilen Funktionen ueber window-Globals.
   // no-undef und no-unused-vars passen nicht zu dieser Architektur
   // (Cross-File-Funktionen sind statisch nicht aufloesbar) -> deaktiviert.
   {
-    files: ["script/**/*.js", "js/**/*.js"],
+    files: ["js/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "script",
@@ -30,40 +36,9 @@ module.exports = [
     },
   },
 
-  // ESM-Dateien (import/export): echtes Modul-Scope -> unused-vars als Warnung.
+  // Node: Frontend-Server und Tooling.
   {
-    files: ["main.js", "script/app.js", "script/services/**/*.js"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      globals: { ...globals.browser },
-    },
-    rules: {
-      ...js.configs.recommended.rules,
-      "no-undef": "off",
-      "no-unused-vars": unusedVars,
-      "no-empty": noEmpty,
-      "no-unused-private-class-members": "warn",
-    },
-  },
-
-  // Dual-Env (UMD-Wrapper: nutzen module UND window).
-  {
-    files: [
-      "script/dom-cache.js",
-      "script/utils/team-actions.js",
-      "script/utils/type-effectiveness.js",
-    ],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "script",
-      globals: { ...globals.browser, ...globals.node },
-    },
-  },
-
-  // Node: Proxy-Server und Tooling.
-  {
-    files: ["server.js", "script/capture-screenshots.js"],
+    files: ["server.js", "tools/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",

@@ -3,9 +3,10 @@
 ![Pokémon](https://img.shields.io/badge/Pok%C3%A9mon-Pok%C3%A9dex-ffcb05?style=for-the-badge&logo=pokemon&logoColor=2a75bb)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES6%2B-f7df1e?style=for-the-badge&logo=javascript&logoColor=111)
 ![Node.js](https://img.shields.io/badge/Node.js-Express-339933?style=for-the-badge&logo=node.js&logoColor=fff)
+![Django](https://img.shields.io/badge/Django-REST%20Framework-092e20?style=for-the-badge&logo=django&logoColor=fff)
 ![Status](https://img.shields.io/badge/Status-Lernprojekt-4c8bf5?style=for-the-badge)
 
-Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle-Simulator, Gym-Challenge und optionaler KI-Unterstützung über einen lokalen Express-Proxy.
+Ein moderner Pokédex mit Team-Builder, Liga-Modus mit Orden, Arena-Kämpfen, Trainer-Duellen und optionaler KI-Unterstützung über das Django-Backend.
 
 ---
 
@@ -21,7 +22,7 @@ Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle
 - [Konfiguration](#konfiguration)
 - [Projektstruktur](#projektstruktur)
 - [Lokale Speicherung](#lokale-speicherung)
-- [API und AI-Proxy](#api-und-ai-proxy)
+- [API und KI](#api-und-ki)
 - [Bekannte Einschränkungen](#bekannte-einschränkungen)
 - [Roadmap](#roadmap)
 - [Weiterführende Doku](#weiterführende-doku)
@@ -31,22 +32,22 @@ Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle
 
 ## Über das Projekt
 
-`Pokedex New` ist eine statische Frontend-App mit lokalem Node-/Express-Server. Das Frontend lädt Pokémon-Daten aus der PokéAPI, rendert Karten und Detailansichten im Browser und speichert benutzerbezogene Daten wie Team, Favoriten, Ratings und Battle-Historie in `localStorage`.
+`Pokedex New` besteht aus zwei Teilen: einem statischen Frontend, das ein kleiner Express-Server ausliefert, und einem Django-Backend. Das Backend cached die PokéAPI serverseitig, stellt die KI-Endpunkte bereit und speichert mit Konto Team, Favoriten, Presets, Orden und Kampfhistorie in der Datenbank. Ohne Konto bleiben diese Daten im `localStorage` des Browsers – die App läuft dann genauso, nur ohne Geräte-Sync.
 
-Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bereit. Dadurch können Groq, Mistral und Gemini genutzt werden, ohne API-Keys direkt im Frontend-Code zu verankern.
+Die KI-Provider (Groq, Mistral, Gemini, OpenRouter) werden ausschließlich vom Backend angesprochen; API-Keys tauchen nie im Frontend auf.
 
-**Projektstatus:** Stand 17.06.2026
+**Projektstatus:** Stand 18.07.2026
 
 ## Highlights
 
 | Bereich | Beschreibung |
 | --- | --- |
-| Pokédex | Suche, Typ-Filter, Pagination, Load-More und Detailansichten |
-| Team-Builder | Aktives 6er-Team mit Drag-and-Drop, Slot-Replacement und Offcanvas |
-| Team-Analyse | Statische Checks für Coverage, Schwächen und Team-Zusammensetzung |
-| KI-Unterstützung | Optionale Teamberatung und Strategiehilfen über lokalen Proxy |
-| Battle-System | 1v1-Battle-Simulator, Battle-Log, Export und Gym-Challenge |
-| Persistenz | Favoriten, Ratings, Notizen, Presets und Battle-Historie im Browser |
+| Pokédex | Suche über den ganzen Pokédex, Typ-Filter, Ansichts-Chips, Detail-Sheet |
+| Team | Sechs Slots, Professor-Eich-Rat (optional per KI), gespeicherte Teams |
+| Liga | Acht Arenen plus Champ, Orden sammeln, steigende Level |
+| Kampf | Arena-Kämpfe mit echter Schadensformel; Auto-Modus oder selbst steuern |
+| Trainer | Echte Teams anderer Nutzer als Gegner plus Rangliste |
+| Konto | Token-Login; Team, Favoriten, Presets, Orden und Kämpfe in der Datenbank |
 
 ## Features
 
@@ -54,48 +55,42 @@ Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bere
 
 | Feature | Status |
 | --- | --- |
-| Pokémon-Daten aus der PokéAPI laden | Fertig |
-| Suche mit Dropdown-Vorschlägen | Fertig |
-| Filter nach Typ, Favoritenstatus und Bewertung | Fertig |
-| Karten- und Detailansichten | Fertig |
-| Responsive Navigation und mobiles Filter-Menü | Fertig |
-| Power-/Strength-Anzeigen und GO-inspirierte Zusatzfunktionen | Fertig |
+| Pokémon-Daten über den Backend-Cache laden | Fertig |
+| Suche über den ganzen Pokédex (lädt fehlende Treffer nach) | Fertig |
+| Typ-Filter mit allen 18 Typen und Kontext-Hintergrund | Fertig |
+| Ansichts-Chips: Alle / Favoriten / Mein Pokédex | Fertig |
+| Detail-Sheet mit Beschreibung, Stats, Entwicklung und Attacken | Fertig |
+| Favoriten direkt auf der Karte | Fertig |
+| Nachthimmel-Intro mit Konto-Wahl | Fertig |
 
-### Team-System
-
-| Feature | Status |
-| --- | --- |
-| Team-Offcanvas mit Mini-Cards und Counter | Fertig |
-| Active-Team-Builder mit sechs festen Slots | Fertig |
-| Drag-and-Drop für Team-Zusammenstellung | Fertig |
-| Slot-Replacement bei vollem Team | Fertig |
-| Synchronisation zwischen Builder, Offcanvas und `localStorage` | Fertig |
-| Statusmeldungen für Team-Änderungen | Fertig |
-
-### Team-Modal und Presets
+### Team
 
 | Feature | Status |
 | --- | --- |
-| Aktuelles Team anzeigen | Fertig |
-| Einzelne Pokémon entfernen | Fertig |
-| Team mischen | Fertig |
-| Nicht-Favoriten gesammelt entfernen | Fertig |
-| Team als JSON exportieren | Fertig |
-| Team über Share API oder Clipboard teilen | Fertig |
-| Team-Presets speichern | Teilweise |
+| Team mit sechs Slots, direkt aus dem Pokédex befüllt | Fertig |
+| Einzelne Pokémon entfernen, Zähler und Team-Färbung | Fertig |
+| Professor-Eich-Hinweis, auf Wunsch mit echtem KI-Rat | Fertig |
+| Team-Presets speichern, laden und löschen | Fertig |
 
-### Analyse, KI und Battle
+### Liga und Kampf
 
 | Feature | Status |
 | --- | --- |
-| Statische Team-Analyse | Fertig |
-| KI-Teamberatung im Team-Builder | Fertig |
-| KI-gestützte Analyse mit Provider-Fallback | Fertig |
-| Pokémon-Vergleich im Modal | Fertig |
-| 1v1-Battle-Simulator mit Rundensystem | Fertig |
-| Auto-Play und Battle-Log-Export | Fertig |
-| Gym-Challenge gegen generierte Gegnerteams | Fertig |
-| Lokale Battle-Statistiken mit Win-Rate, Damage und MVP | Fertig |
+| Liga mit acht Arenen in fester Reihenfolge plus Champ | Fertig |
+| Orden sammeln; ein Sieg schaltet die nächste Arena frei | Fertig |
+| Arena-Kampf: Auto-Modus als Standard, Attacken selbst wählbar | Fertig |
+| Schadensformel mit STAB, Effektivität, Volltreffern und Statusstufen | Fertig |
+| Arenaleiter-Dialoge mit optionaler KI | Fertig |
+| Andere Trainer als Gegner plus Rangliste | Fertig |
+| Kampfhistorie mit Sieg/Niederlage, Schaden und Zügen | Fertig |
+
+### Konto und Sync
+
+| Feature | Status |
+| --- | --- |
+| Registrieren, Anmelden und Abmelden (Token-Auth) | Fertig |
+| Sync von Team, Favoriten, Presets, Orden und Kämpfen | Fertig |
+| Statistik-Kacheln im Konto-Bereich | Fertig |
 
 ## Demo-Vorschau
 
@@ -104,11 +99,12 @@ Der lokale Server liefert die App aus und stellt zusätzlich einen AI-Proxy bere
 ```mermaid
 flowchart LR
   A[Pokédex durchsuchen] --> B[Pokémon öffnen]
-  B --> C[Bewerten oder favorisieren]
+  B --> C[Favorisieren]
   B --> D[Zum Team hinzufügen]
-  D --> E[Team analysieren]
-  E --> F[Battle simulieren]
-  F --> G[Gym-Challenge spielen]
+  D --> E[Eichs Rat einholen]
+  D --> F[Arena herausfordern]
+  F --> G[Orden sammeln]
+  G --> H[Trainer-Duelle und Rangliste]
 ```
 
 ### Desktop-Skizze
@@ -116,23 +112,21 @@ flowchart LR
 ```text
 ┌──────────────────────────────────────────────────────────────┐
 │                         POKÉDEX NEW                          │
-│        Suche, Typ-Filter, Favoriten, Ratings, Power           │
+│           [Suche …]   [Alle | Favoriten | Mein Pokédex]      │
 ├──────────────────────────────────────────────────────────────┤
-│ [Search Pokémon...] [Type] [Favorites] [Rating] [Load More]   │
-│                                                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
-│  │ #001     │ │ #004     │ │ #007     │ │ #025     │          │
-│  │ Bulbasaur│ │Charmander│ │ Squirtle │ │ Pikachu  │          │
-│  │ + Team   │ │ + Team   │ │ Compare  │ │ Details  │          │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│  │ #001     │ │ #004     │ │ #007     │ │ #025     │         │
+│  │ Bisasam  │ │ Glumanda │ │ Schiggy  │ │ Pikachu  │         │
+│  │  ♥  +    │ │  ♥  +    │ │  ♥  +    │ │  ♥  +    │         │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘         │
 ├──────────────────────────────────────────────────────────────┤
-│ Team-Builder │ Analyse │ Battle-Simulator │ Gym-Challenge     │
+│      Pokédex   │   Team   │   Kampf   │   Du                 │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ## Screenshots
 
-Die Screenshots werden mit Playwright aus der laufenden App erzeugt:
+Die Screenshots werden mit Playwright aus der laufenden App erzeugt (Backend muss dazu laufen):
 
 ```powershell
 npm run screenshots
@@ -141,9 +135,9 @@ npm run screenshots
 | Ansicht | Vorschau |
 | --- | --- |
 | Pokédex Desktop | ![Pokédex Desktop](./assets/screenshots/pokedex-desktop.png) |
-| Pokémon Detail | ![Pokémon Detail](./assets/screenshots/pokemon-detail.png) |
-| Team-Builder | ![Team-Builder](./assets/screenshots/team-builder.png) |
-| Gym-Challenge | ![Gym-Challenge](./assets/screenshots/gym-challenge.png) |
+| Detail-Sheet | ![Detail-Sheet](./assets/screenshots/pokemon-detail.png) |
+| Team | ![Team](./assets/screenshots/team.png) |
+| Liga | ![Liga](./assets/screenshots/liga.png) |
 | Mobile Ansicht | ![Mobile Ansicht](./assets/screenshots/mobile-view.png) |
 
 ## Technologien
@@ -153,10 +147,11 @@ npm run screenshots
 | HTML5 | Grundstruktur der App |
 | CSS3 | Layout, Responsive Design, Karten, Modal- und Battle-UI |
 | JavaScript ES6+ | Frontend-Logik, Module, State, DOM-Updates |
-| Node.js | Lokale Laufzeit für den Server |
-| Express | Statisches Hosting und AI-Proxy |
-| PokeAPI | Pokémon-Daten, Typen, Stats und Sprites |
-| Groq / Mistral / Gemini | Optionale KI-Provider für Analyse und Strategie |
+| Node.js | Lokale Laufzeit für den Frontend-Server |
+| Express | Statische Auslieferung des Frontends |
+| Django + DRF | Backend: PokéAPI-Cache, Token-Auth, Konto-Daten, KI-Proxy |
+| PokeAPI | Pokémon-Daten, Typen, Stats und Sprites (über den Backend-Cache) |
+| Groq / Mistral / Gemini / OpenRouter | Optionale KI-Provider für Analyse und Strategie |
 
 ## Installation
 
@@ -168,6 +163,8 @@ npm run screenshots
 
 ### Setup
 
+Frontend:
+
 ```bash
 npm install
 ```
@@ -176,45 +173,60 @@ npm install
 Copy-Item .env.example .env
 ```
 
-```bash
-npm start
+Backend (einmalig):
+
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
 ```
 
-Die App läuft danach standardmäßig unter:
+### Starten
 
-```text
-http://localhost:3000
+Beide Server laufen getrennt:
+
+```bash
+npm start                  # Frontend auf http://localhost:3000
+```
+
+```powershell
+cd backend
+python manage.py runserver # Backend auf http://127.0.0.1:8000
 ```
 
 ## Konfiguration
 
-Die Datei `.env.example` enthält die verfügbaren Server-Optionen:
+Die Datei `.env.example` liegt im Projektwurzelverzeichnis und wird vom Django-Backend gelesen (`backend/config/settings.py`); nur `PORT` betrifft den Express-Server:
 
 ```env
 GROQ_API_KEY=your-groq-api-key
 GROQ_MODEL=llama-3.1-8b-instant
 MISTRAL_API_KEY=your-mistral-api-key
 GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-2.5-flash
+OPENROUTER_API_KEY=your-openrouter-api-key
+OPENROUTER_MODEL=meta-llama/llama-3.1-8b-instruct
+AI_PROVIDER=
 PORT=3000
 ```
 
-Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen über den lokalen Proxy genutzt werden sollen. Die reine Pokédex- und Team-Funktionalität läuft ohne AI-Key.
+Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen genutzt werden sollen. Die reine Pokédex- und Team-Funktionalität läuft ohne AI-Key.
 
 ## Projektstruktur
 
 | Datei / Bereich | Zweck |
 | --- | --- |
-| `index.html` | Grundlayout, Filter, Offcanvas, Team-Modal, Team-Builder |
-| `main.js` | Bootstrap und Initialisierung der Frontend-Module |
-| `server.js` | Express-Server und AI-Proxy |
+| `index.html` | Grundlayout und feste Ladereihenfolge der Frontend-Skripte |
+| `js/app/*` | Frontend-Logik: klassische Skripte mit gemeinsamem globalem Scope |
+| `server.js` | Express-Server für die statische Auslieferung |
 | `assets/css/*` | Modulare Styles für Pokédex, Karten, Team, Analyse und Battle |
 | `assets/icon/*` | SVG-Icons für Pokémon-Typen |
 | `assets/img/9.png` | Favicon / Pokéball-Asset |
-| `script/pokemon-*` | Pokédex, Karten, Detailansichten und GO-Features |
-| `script/team-*` | Team-Builder, Team-Modal, Team-Analyse und Gym-Battle |
-| `script/battle-*` | Battle-Simulator und Battle-Historie |
-| `script/services/*` | API-, Storage-, State- und Service-Schicht |
-| `js/ai-service.js` | Frontend-AI-Client für Kampfkommentare und Dialoge |
+| `backend/` | Django-Backend: PokéAPI-Cache, Auth, Konto-Daten, KI-Endpoints |
+| `test/*` | Frontend-Unit-Tests (`node --test`) |
+| `tools/capture-screenshots.js` | Playwright-Skript für die README-Screenshots |
 
 ## Lokale Speicherung
 
@@ -224,56 +236,59 @@ Die App speichert nutzerbezogene Daten im Browser:
 | --- | --- |
 | `pokemonTeam` | Aktuelles Team |
 | `pokemonFavorites` | Favorisierte Pokémon |
-| `pokemonRatings` | Lokale Bewertungen |
-| `pokemonNotes` | Lokale Notizen |
 | `pokemonTeamPresets` | Gespeicherte Team-Presets |
 | `pokemonBattleHistory` | Verlauf und Statistiken der Kämpfe |
-| lokale AI-Key-Einträge | Optionale Frontend-Nutzung ohne Proxy |
+| `pokemonBadges` | Gewonnene Arena-Orden |
+| `pokedexToken` | Login-Token für das Backend (nur mit Konto) |
+| `pokedexIntroGesehen` | Merker, dass das Intro schon gezeigt wurde |
 
-## API und AI-Proxy
+Mit Konto werden Team, Favoriten, Presets, Orden und Kämpfe zusätzlich auf dem Server gespeichert (`js/app/sync.js`) und beim Login auf andere Geräte übernommen.
 
-### PokéAPI
+## API und KI
 
-Die App nutzt die öffentliche PokéAPI:
+### PokéAPI (über den Backend-Cache)
 
-```text
-https://pokeapi.co/api/v2/
-```
-
-Typische Endpoints:
+Das Frontend fragt die PokéAPI nicht direkt an, sondern geht über das Django-Backend, das die Antworten serverseitig cached:
 
 ```text
-GET /pokemon?limit=20&offset=0
-GET /pokemon/{id-or-name}
-GET /type/{type-name}
+GET http://127.0.0.1:8000/api/pokemon/?offset=0&limit=20
+GET http://127.0.0.1:8000/api/pokemon/by-type/{type}/
+GET http://127.0.0.1:8000/api/pokeapi/pokemon/{id}
 ```
 
-### Lokaler AI-Proxy
+Das spart wiederholte Browser-Requests an `https://pokeapi.co` und liefert Listen samt Details in einer Antwort.
 
-Der Express-Server stellt AI-Funktionen für Team-Analyse, Strategieauswertung und Dialoge bereit. Unterstützte Provider:
+### KI (im Django-Backend)
+
+Die KI-Funktionen – Team-Analyse, Strategieauswertung, Kampfkommentare und Dialoge – laufen komplett im Backend. Für jede gibt es einen eigenen Endpoint (`/api/ai/team-advice`, `/api/ai/battle-commentary`, `/api/ai/gym-dialogue`, `/api/ai/team-analysis`, `/api/ai/gym-strategy`). Das Frontend schickt nur Rohdaten wie das Team; den Prompt baut Django (`backend/api/prompts.py`).
+
+Unterstützte Provider:
 
 - Groq
 - Mistral
 - Gemini
+- OpenRouter
 
-Der Proxy ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben.
+Das Backend fragt der Reihe nach jeden Anbieter, für den ein Key hinterlegt ist – `AI_PROVIDER` (`groq`, `mistral`, `gemini` oder `openrouter`) zuerst, sonst Groq. Antwortet einer nicht, übernimmt der nächste.
+
+Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, während die übrigen App-Funktionen weiter nutzbar bleiben. Details: [backend/README.md](backend/README.md).
 
 ## Bekannte Einschränkungen
 
-- Notizen sind im Datenmodell und in Teilen der Logik vorhanden, aber nicht als voll ausgebaute Hauptfunktion sichtbar.
-- Team-Presets können gespeichert werden, es gibt aber noch keine vollständige Preset-Verwaltung mit Laden und Löschen.
-- Das Projekt enthält ältere und neuere Modulbereiche parallel. `main.js` initialisiert den aktuell genutzten Satz.
-- Es gibt aktuell nur ein Start-Script und keine automatisierte Test-Suite im `package.json`.
+- Notizen sind im Backend-Datenmodell vorhanden, im Frontend aber noch nicht sichtbar.
+- Team-Presets haben eine vollständige Verwaltung: Unter dem Team-Builder lassen sie sich speichern, laden und löschen. Mit Konto liegen sie auf dem Server.
+- Die Frontend-Tests decken bisher nur die Kampf-Logik ab; das Backend hat eine eigene Test-Suite (`python manage.py test api`).
+- Das Backend läuft lokal mit SQLite und Entwickler-Settings; env-basierte Settings und Deployment-Härtung sind als M4 (DevSecOps) geplant.
 
 ## Roadmap
 
 | Status | Thema |
 | --- | --- |
-| Geplant | Preset-Verwaltung mit Laden, Umbenennen und Löschen |
+| Fertig | Preset-Verwaltung mit Speichern, Laden und Löschen |
 | Geplant | Sichtbare Notizfunktion in Detailansichten |
-| Fertig | Automatisierte README-Screenshots mit Playwright |
-| Geplant | Automatisierte Tests für Team-State, Storage und Battle-Logik |
-| Optional | Deployment-Konzept für statisches Frontend plus AI-Proxy |
+| Fertig | Neue README-Screenshots vom umgebauten Design |
+| Teilweise | Automatisierte Frontend-Tests (Kampf-Logik fertig, Team/Storage offen) |
+| Geplant | M4 DevSecOps: env-basierte Settings, Deployment-Konzept, CI |
 
 ## Weiterführende Doku
 

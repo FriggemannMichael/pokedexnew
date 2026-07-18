@@ -1,0 +1,95 @@
+/* =========================================================
+   Footer: dunkles Band in voller Breite wie in der Legacy.
+   Sitzt immer ganz unten – auch wenn die Ansicht kurz ist
+   (body wird zur Flex-Spalte, die Shell füllt den Rest).
+   ========================================================= */
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.shell {
+  flex: 1 1 auto;
+  width: 100%;
+  padding-bottom: 1.5rem;
+}
+
+.footer {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(135deg, #17303f 0%, #24455a 50%, #142a38 100%);
+  color: rgba(255, 255, 255, 0.82);
+  /* Unten Platz lassen: am Handy schwebt dort die Tab-Leiste. */
+  padding: 1.4rem 1rem calc(var(--tab-h) + 1.8rem);
+}
+.footer__inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.9rem;
+}
+.footer__spalten {
+  display: grid;
+  gap: 1.1rem;
+}
+/* Am Handy ist alles zentriert – linksbündig gestapelt sah zerrupft aus. */
+.footer__block {
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  text-align: center;
+}
+.footer__titel {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.15rem;
+}
+.footer__name {
+  font-family: var(--font-title);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+}
+.footer a {
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+.footer a:hover {
+  text-decoration: underline;
+}
+.footer__copy {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  padding-top: 0.8rem;
+  text-align: center;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+/* Desktop: zwei Spalten wie in der Legacy, Tab-Leiste ist oben. */
+@media (min-width: 900px) {
+  .shell {
+    padding-bottom: 2.5rem;
+  }
+  .footer {
+    padding: 2rem 1rem 1.4rem;
+  }
+  .footer__spalten {
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+  }
+  .footer__block {
+    font-size: 0.78rem;
+    text-align: left;
+  }
+  .footer__block--rechts {
+    text-align: right;
+  }
+}
