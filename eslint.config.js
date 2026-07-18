@@ -36,9 +36,9 @@ module.exports = [
     },
   },
 
-  // Node: Frontend-Server.
+  // Node: Frontend-Server und Tooling.
   {
-    files: ["server.js"],
+    files: ["server.js", "tools/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",

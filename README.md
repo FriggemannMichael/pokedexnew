@@ -6,7 +6,7 @@
 ![Django](https://img.shields.io/badge/Django-REST%20Framework-092e20?style=for-the-badge&logo=django&logoColor=fff)
 ![Status](https://img.shields.io/badge/Status-Lernprojekt-4c8bf5?style=for-the-badge)
 
-Ein moderner Pokédex mit Team-Builder, Team-Analyse, Pokémon-Vergleich, Battle-Simulator, Gym-Challenge und optionaler KI-Unterstützung über das Django-Backend.
+Ein moderner Pokédex mit Team-Builder, Liga-Modus mit Orden, Arena-Kämpfen, Trainer-Duellen und optionaler KI-Unterstützung über das Django-Backend.
 
 ---
 
@@ -42,12 +42,12 @@ Die KI-Provider (Groq, Mistral, Gemini, OpenRouter) werden ausschließlich vom B
 
 | Bereich | Beschreibung |
 | --- | --- |
-| Pokédex | Suche, Typ-Filter, Pagination, Load-More und Detailansichten |
-| Team-Builder | Aktives 6er-Team mit Drag-and-Drop, Slot-Replacement und Offcanvas |
-| Team-Analyse | Statische Checks für Coverage, Schwächen und Team-Zusammensetzung |
-| KI-Unterstützung | Optionale Teamberatung und Strategiehilfen über das Django-Backend |
-| Battle-System | 1v1-Battle-Simulator, Battle-Log, Export und Gym-Challenge |
-| Persistenz | Favoriten, Ratings, Notizen, Presets und Battle-Historie im Browser |
+| Pokédex | Suche über den ganzen Pokédex, Typ-Filter, Ansichts-Chips, Detail-Sheet |
+| Team | Sechs Slots, Professor-Eich-Rat (optional per KI), gespeicherte Teams |
+| Liga | Acht Arenen plus Champ, Orden sammeln, steigende Level |
+| Kampf | Arena-Kämpfe mit echter Schadensformel; Auto-Modus oder selbst steuern |
+| Trainer | Echte Teams anderer Nutzer als Gegner plus Rangliste |
+| Konto | Token-Login; Team, Favoriten, Presets, Orden und Kämpfe in der Datenbank |
 
 ## Features
 
@@ -55,48 +55,42 @@ Die KI-Provider (Groq, Mistral, Gemini, OpenRouter) werden ausschließlich vom B
 
 | Feature | Status |
 | --- | --- |
-| Pokémon-Daten aus der PokéAPI laden | Fertig |
-| Suche mit Dropdown-Vorschlägen | Fertig |
-| Filter nach Typ, Favoritenstatus und Bewertung | Fertig |
-| Karten- und Detailansichten | Fertig |
-| Responsive Navigation und mobiles Filter-Menü | Fertig |
-| Power-/Strength-Anzeigen und GO-inspirierte Zusatzfunktionen | Fertig |
+| Pokémon-Daten über den Backend-Cache laden | Fertig |
+| Suche über den ganzen Pokédex (lädt fehlende Treffer nach) | Fertig |
+| Typ-Filter mit allen 18 Typen und Kontext-Hintergrund | Fertig |
+| Ansichts-Chips: Alle / Favoriten / Mein Pokédex | Fertig |
+| Detail-Sheet mit Beschreibung, Stats, Entwicklung und Attacken | Fertig |
+| Favoriten direkt auf der Karte | Fertig |
+| Nachthimmel-Intro mit Konto-Wahl | Fertig |
 
-### Team-System
-
-| Feature | Status |
-| --- | --- |
-| Team-Offcanvas mit Mini-Cards und Counter | Fertig |
-| Active-Team-Builder mit sechs festen Slots | Fertig |
-| Drag-and-Drop für Team-Zusammenstellung | Fertig |
-| Slot-Replacement bei vollem Team | Fertig |
-| Synchronisation zwischen Builder, Offcanvas und `localStorage` | Fertig |
-| Statusmeldungen für Team-Änderungen | Fertig |
-
-### Team-Modal und Presets
+### Team
 
 | Feature | Status |
 | --- | --- |
-| Aktuelles Team anzeigen | Fertig |
-| Einzelne Pokémon entfernen | Fertig |
-| Team mischen | Fertig |
-| Nicht-Favoriten gesammelt entfernen | Fertig |
-| Team als JSON exportieren | Fertig |
-| Team über Share API oder Clipboard teilen | Fertig |
-| Team-Presets speichern | Teilweise |
+| Team mit sechs Slots, direkt aus dem Pokédex befüllt | Fertig |
+| Einzelne Pokémon entfernen, Zähler und Team-Färbung | Fertig |
+| Professor-Eich-Hinweis, auf Wunsch mit echtem KI-Rat | Fertig |
+| Team-Presets speichern, laden und löschen | Fertig |
 
-### Analyse, KI und Battle
+### Liga und Kampf
 
 | Feature | Status |
 | --- | --- |
-| Statische Team-Analyse | Fertig |
-| KI-Teamberatung im Team-Builder | Fertig |
-| KI-gestützte Analyse mit Provider-Fallback | Fertig |
-| Pokémon-Vergleich im Modal | Fertig |
-| 1v1-Battle-Simulator mit Rundensystem | Fertig |
-| Auto-Play und Battle-Log-Export | Fertig |
-| Gym-Challenge gegen generierte Gegnerteams | Fertig |
-| Lokale Battle-Statistiken mit Win-Rate, Damage und MVP | Fertig |
+| Liga mit acht Arenen in fester Reihenfolge plus Champ | Fertig |
+| Orden sammeln; ein Sieg schaltet die nächste Arena frei | Fertig |
+| Arena-Kampf: Auto-Modus als Standard, Attacken selbst wählbar | Fertig |
+| Schadensformel mit STAB, Effektivität, Volltreffern und Statusstufen | Fertig |
+| Arenaleiter-Dialoge mit optionaler KI | Fertig |
+| Andere Trainer als Gegner plus Rangliste | Fertig |
+| Kampfhistorie mit Sieg/Niederlage, Schaden und Zügen | Fertig |
+
+### Konto und Sync
+
+| Feature | Status |
+| --- | --- |
+| Registrieren, Anmelden und Abmelden (Token-Auth) | Fertig |
+| Sync von Team, Favoriten, Presets, Orden und Kämpfen | Fertig |
+| Statistik-Kacheln im Konto-Bereich | Fertig |
 
 ## Demo-Vorschau
 
@@ -105,11 +99,12 @@ Die KI-Provider (Groq, Mistral, Gemini, OpenRouter) werden ausschließlich vom B
 ```mermaid
 flowchart LR
   A[Pokédex durchsuchen] --> B[Pokémon öffnen]
-  B --> C[Bewerten oder favorisieren]
+  B --> C[Favorisieren]
   B --> D[Zum Team hinzufügen]
-  D --> E[Team analysieren]
-  E --> F[Battle simulieren]
-  F --> G[Gym-Challenge spielen]
+  D --> E[Eichs Rat einholen]
+  D --> F[Arena herausfordern]
+  F --> G[Orden sammeln]
+  G --> H[Trainer-Duelle und Rangliste]
 ```
 
 ### Desktop-Skizze
@@ -117,30 +112,32 @@ flowchart LR
 ```text
 ┌──────────────────────────────────────────────────────────────┐
 │                         POKÉDEX NEW                          │
-│        Suche, Typ-Filter, Favoriten, Ratings, Power           │
+│           [Suche …]   [Alle | Favoriten | Mein Pokédex]      │
 ├──────────────────────────────────────────────────────────────┤
-│ [Search Pokémon...] [Type] [Favorites] [Rating] [Load More]   │
-│                                                              │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐          │
-│  │ #001     │ │ #004     │ │ #007     │ │ #025     │          │
-│  │ Bulbasaur│ │Charmander│ │ Squirtle │ │ Pikachu  │          │
-│  │ + Team   │ │ + Team   │ │ Compare  │ │ Details  │          │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘          │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│  │ #001     │ │ #004     │ │ #007     │ │ #025     │         │
+│  │ Bisasam  │ │ Glumanda │ │ Schiggy  │ │ Pikachu  │         │
+│  │  ♥  +    │ │  ♥  +    │ │  ♥  +    │ │  ♥  +    │         │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘         │
 ├──────────────────────────────────────────────────────────────┤
-│ Team-Builder │ Analyse │ Battle-Simulator │ Gym-Challenge     │
+│      Pokédex   │   Team   │   Kampf   │   Du                 │
 └──────────────────────────────────────────────────────────────┘
 ```
 
 ## Screenshots
 
-Die Screenshots zeigen noch das alte Design; nach dem laufenden UI-Umbau werden sie neu aufgenommen.
+Die Screenshots werden mit Playwright aus der laufenden App erzeugt (Backend muss dazu laufen):
+
+```powershell
+npm run screenshots
+```
 
 | Ansicht | Vorschau |
 | --- | --- |
 | Pokédex Desktop | ![Pokédex Desktop](./assets/screenshots/pokedex-desktop.png) |
-| Pokémon Detail | ![Pokémon Detail](./assets/screenshots/pokemon-detail.png) |
-| Team-Builder | ![Team-Builder](./assets/screenshots/team-builder.png) |
-| Gym-Challenge | ![Gym-Challenge](./assets/screenshots/gym-challenge.png) |
+| Detail-Sheet | ![Detail-Sheet](./assets/screenshots/pokemon-detail.png) |
+| Team | ![Team](./assets/screenshots/team.png) |
+| Liga | ![Liga](./assets/screenshots/liga.png) |
 | Mobile Ansicht | ![Mobile Ansicht](./assets/screenshots/mobile-view.png) |
 
 ## Technologien
@@ -229,6 +226,7 @@ Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen genutzt werden sollen. 
 | `assets/img/9.png` | Favicon / Pokéball-Asset |
 | `backend/` | Django-Backend: PokéAPI-Cache, Auth, Konto-Daten, KI-Endpoints |
 | `test/*` | Frontend-Unit-Tests (`node --test`) |
+| `tools/capture-screenshots.js` | Playwright-Skript für die README-Screenshots |
 
 ## Lokale Speicherung
 
@@ -288,7 +286,7 @@ Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, w
 | --- | --- |
 | Fertig | Preset-Verwaltung mit Speichern, Laden und Löschen |
 | Geplant | Sichtbare Notizfunktion in Detailansichten |
-| Geplant | Neue README-Screenshots vom umgebauten Design |
+| Fertig | Neue README-Screenshots vom umgebauten Design |
 | Teilweise | Automatisierte Frontend-Tests (Kampf-Logik fertig, Team/Storage offen) |
 | Geplant | M4 DevSecOps: env-basierte Settings, Deployment-Konzept, CI |
 

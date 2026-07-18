@@ -100,6 +100,7 @@ async function loadIndex() {
     }));
     data.names.forEach((n) => n.de && NAME_DE.set(n.id, n.de));
     renderGrid(); // Karten zeigen jetzt die deutschen Namen
+    renderTeam(); // und die Team-Slots auch
   } catch {
     INDEX = [];
   }

@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "node server.js",
+    "screenshots": "node tools/capture-screenshots.js",
     "test": "node --test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
