@@ -1,6 +1,5 @@
 /* Der Arena-Kampf: Zustand und Ablauf. Der Spieler klickt seine Attacke,
-   der Arenaleiter zieht zufällig. Wer zuerst keine Pokémon mehr hat, verliert.
-   Mechanik portiert aus script/team-battle-combat.js. */
+   der Arenaleiter zieht zufällig. Wer zuerst keine Pokémon mehr hat, verliert. */
 
 const kampf = {
   leader: null,

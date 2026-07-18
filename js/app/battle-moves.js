@@ -1,5 +1,5 @@
 /* Move-Auswahl für den Kampf: die vier besten Attacken eines Pokémon,
-   geladen über den Backend-Cache. Portiert aus script/battle-sim-moves.js. */
+   geladen über den Backend-Cache. */
 
 function pokeapiPfad(url) {
   const teil = String(url).split("/api/v2/")[1];

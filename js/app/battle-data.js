@@ -1,5 +1,5 @@
 /* Kampf-Grundlagen: Arenaleiter, Typen-Tabelle, Schadensformel, Effekte.
-   Reine Logik ohne DOM – portiert aus script/battle-sim-core.js. */
+   Reine Logik ohne DOM. */
 
 /* Die Kanto-Liga: acht Arenen in fester Reihenfolge, dann der Champ.
    Jedes Team ist typecht (gegen die PokéAPI geprüft), hat sechs Pokémon

@@ -133,11 +133,7 @@ flowchart LR
 
 ## Screenshots
 
-Die Screenshots werden mit Playwright aus der laufenden App erzeugt:
-
-```powershell
-npm run screenshots
-```
+Die Screenshots zeigen noch das alte Design; nach dem laufenden UI-Umbau werden sie neu aufgenommen.
 
 | Ansicht | Vorschau |
 | --- | --- |
@@ -233,7 +229,6 @@ Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen genutzt werden sollen. 
 | `assets/img/9.png` | Favicon / Pokéball-Asset |
 | `backend/` | Django-Backend: PokéAPI-Cache, Auth, Konto-Daten, KI-Endpoints |
 | `test/*` | Frontend-Unit-Tests (`node --test`) |
-| `tools/capture-screenshots.js` | Playwright-Skript für die README-Screenshots |
 
 ## Lokale Speicherung
 
@@ -293,7 +288,7 @@ Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, w
 | --- | --- |
 | Fertig | Preset-Verwaltung mit Speichern, Laden und Löschen |
 | Geplant | Sichtbare Notizfunktion in Detailansichten |
-| Fertig | Automatisierte README-Screenshots mit Playwright |
+| Geplant | Neue README-Screenshots vom umgebauten Design |
 | Teilweise | Automatisierte Frontend-Tests (Kampf-Logik fertig, Team/Storage offen) |
 | Geplant | M4 DevSecOps: env-basierte Settings, Deployment-Konzept, CI |
 
