@@ -1,6 +1,0 @@
-/* Main CSS - Split into logical modules */
-@import url("main-base.css");
-@import url("main-hero.css");
-@import url("main-sections.css");
-@import url("main-nav-footer.css");
-@import url("main-responsive.css");

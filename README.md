@@ -111,17 +111,18 @@ flowchart LR
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│                         POKÉDEX NEW                          │
-│           [Suche …]   [Alle | Favoriten | Mein Pokédex]      │
+│ POKÉDX       [ Pokédex | Team | Kampf | Konto ]   (Anmelden) │
 ├──────────────────────────────────────────────────────────────┤
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
-│  │ #001     │ │ #004     │ │ #007     │ │ #025     │         │
-│  │ Bisasam  │ │ Glumanda │ │ Schiggy  │ │ Pikachu  │         │
-│  │  ♥  +    │ │  ♥  +    │ │  ♥  +    │ │  ♥  +    │         │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘         │
-├──────────────────────────────────────────────────────────────┤
-│      Pokédex   │   Team   │   Kampf   │   Du                 │
+│ [ Pokémon suchen … ]                                   (Typ) │
+│ (Alle) (Favoriten) (Mein Pokédex)                            │
+│                                                              │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │
+│ │♥ #001  +│ │♥ #002  +│ │♥ #003  +│ │♥ #004  +│ │♥ #005  +│  │
+│ │ Bisasam │ │Bisaknosp│ │Bisaflor │ │Glumanda │ │ Glutexo │  │
+│ └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘  │
 └──────────────────────────────────────────────────────────────┘
+
+Am Handy wandern die vier Tabs in eine Leiste am unteren Rand.
 ```
 
 ## Screenshots
@@ -134,11 +135,11 @@ npm run screenshots
 
 | Ansicht | Vorschau |
 | --- | --- |
-| Pokédex Desktop | ![Pokédex Desktop](./assets/screenshots/pokedex-desktop.png) |
-| Detail-Sheet | ![Detail-Sheet](./assets/screenshots/pokemon-detail.png) |
+| Pokédex Desktop | ![Pokédex Desktop](./assets/screenshots/dex-desktop.png) |
+| Detail-Sheet | ![Detail-Sheet](./assets/screenshots/detail-sheet.png) |
 | Team | ![Team](./assets/screenshots/team.png) |
 | Liga | ![Liga](./assets/screenshots/liga.png) |
-| Mobile Ansicht | ![Mobile Ansicht](./assets/screenshots/mobile-view.png) |
+| Mobile Ansicht | ![Mobile Ansicht](./assets/screenshots/mobile.png) |
 
 ## Technologien
 
@@ -198,7 +199,7 @@ python manage.py runserver # Backend auf http://127.0.0.1:8000
 
 ## Konfiguration
 
-Die Datei `.env.example` liegt im Projektwurzelverzeichnis und wird vom Django-Backend gelesen (`backend/config/settings.py`); nur `PORT` betrifft den Express-Server:
+Die gesamte KI-Konfiguration (Groq, Mistral, Gemini, OpenRouter) gehört dem Django-Backend: `backend/config/settings.py` liest die `.env` aus dem Projektwurzelverzeichnis per `load_dotenv` ein, und nur dort werden die Keys benutzt. Der Express-Server liest aus derselben Datei ausschließlich `PORT`:
 
 ```env
 GROQ_API_KEY=your-groq-api-key
@@ -221,7 +222,7 @@ Mindestens ein AI-Key ist nur nötig, wenn KI-Funktionen genutzt werden sollen. 
 | `index.html` | Grundlayout und feste Ladereihenfolge der Frontend-Skripte |
 | `js/app/*` | Frontend-Logik: klassische Skripte mit gemeinsamem globalem Scope |
 | `server.js` | Express-Server für die statische Auslieferung |
-| `assets/css/*` | Modulare Styles für Pokédex, Karten, Team, Analyse und Battle |
+| `assets/css/design/*` | Styles des abgenommenen Designs (Shell, Dex, Team, Sheet, Kampf, Intro, Footer) |
 | `assets/icon/*` | SVG-Icons für Pokémon-Typen |
 | `assets/img/9.png` | Favicon / Pokéball-Asset |
 | `backend/` | Django-Backend: PokéAPI-Cache, Auth, Konto-Daten, KI-Endpoints |
@@ -293,7 +294,7 @@ Die KI ist optional. Ohne konfigurierte API-Keys fallen die KI-Funktionen weg, w
 ## Weiterführende Doku
 
 - [FEATURES.md](./FEATURES.md) - ausführliche Feature-Übersicht
-- [.env.example](./.env.example) - Beispielkonfiguration für den lokalen Server
+- [.env.example](./.env.example) - Beispielkonfiguration (KI-Keys für das Backend, Port des Frontend-Servers)
 
 ## Lizenz
 

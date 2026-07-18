@@ -74,12 +74,12 @@ async function schuss(page, datei) {
 
 async function desktopSchuesse(browser) {
   const page = await seitePraeparieren(browser, { width: 1440, height: 1100 });
-  await schuss(page, "pokedex-desktop.png");
+  await schuss(page, "dex-desktop.png");
   await page.locator(".card").first().click();
   await page.waitForSelector("#sheetImg[src]");
   await page.waitForTimeout(1000);
   await page.locator("#sheetCard").screenshot({
-    path: path.join(OUTPUT_DIR, "pokemon-detail.png"),
+    path: path.join(OUTPUT_DIR, "detail-sheet.png"),
   });
   await page.locator("#sheetClose").click();
   await tabOeffnen(page, "team");
@@ -91,7 +91,7 @@ async function desktopSchuesse(browser) {
 
 async function mobilSchuss(browser) {
   const page = await seitePraeparieren(browser, { width: 390, height: 844 });
-  await schuss(page, "mobile-view.png");
+  await schuss(page, "mobile.png");
   await page.close();
 }
 
